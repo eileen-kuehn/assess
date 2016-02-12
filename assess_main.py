@@ -1,0 +1,66 @@
+import argparse
+import logging
+
+from utility.report import update_parser, argparse_init, LVL
+from utility.exceptions import mainExceptionFrame
+
+from assess.prototypes.simpleprototypes import prototype_one
+from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
+from assess.algorithms.incrementalstructuredistancealgorithm import IncrementalStructureDistanceAlgorithm
+from assess.algorithms.treeinclusiondistancealgorithm import TreeInclusionDistanceAlgorithm
+from assess.events.events import ProcessStartEvent, ProcessExitEvent
+
+
+def main():
+    test = prototype_one()
+    alg = IncrementalDistanceAlgorithm()
+    alg.prototypes = [test]
+    alg.add_event(ProcessStartEvent(0, 1, 1, name="root"))
+    alg.add_event(ProcessStartEvent(0, 6, 1, name="test"))
+    alg.add_event(ProcessStartEvent(0, 2, 6, name="ls"))
+    alg.add_event(ProcessStartEvent(0, 3, 1, name="wget"))
+    alg.add_event(ProcessStartEvent(0, 4, 2, name="mv"))
+    alg.add_event(ProcessStartEvent(0, 5, 2, name="rm"))
+    alg.add_event(ProcessExitEvent(0, 5, 2, name="rm"))
+    alg.add_event(ProcessExitEvent(0, 4, 2, name="mv"))
+    alg.add_event(ProcessExitEvent(0, 3, 1, name="wget"))
+    alg.add_event(ProcessExitEvent(0, 2, 1, name="ls"))
+    alg.add_event(ProcessExitEvent(0, 1, 1, name="root"))
+
+    alg2 = IncrementalStructureDistanceAlgorithm()
+    alg2.prototypes = [test]
+    alg2.add_event(ProcessStartEvent(0, 1, 1, name="root"))
+    alg2.add_event(ProcessStartEvent(0, 6, 1, name="test"))
+    alg2.add_event(ProcessStartEvent(0, 2, 6, name="ls"))
+    alg2.add_event(ProcessStartEvent(0, 3, 1, name="wget"))
+    alg2.add_event(ProcessStartEvent(0, 4, 2, name="mv"))
+    alg2.add_event(ProcessStartEvent(0, 5, 2, name="rm"))
+    alg2.add_event(ProcessExitEvent(0, 5, 2, name="rm"))
+    alg2.add_event(ProcessExitEvent(0, 4, 2, name="mv"))
+    alg2.add_event(ProcessExitEvent(0, 3, 1, name="wget"))
+    alg2.add_event(ProcessExitEvent(0, 2, 1, name="ls"))
+    alg2.add_event(ProcessExitEvent(0, 1, 1, name="root"))
+
+    print("Starting to measure tree inclusion distance")
+    alg3 = TreeInclusionDistanceAlgorithm()
+    alg3.prototypes = [test]
+    alg3.add_event(ProcessStartEvent(0, 1, 1, name="root"))
+    alg3.add_event(ProcessStartEvent(0, 6, 1, name="test"))
+    alg3.add_event(ProcessStartEvent(0, 2, 6, name="ls"))
+    alg3.add_event(ProcessStartEvent(0, 3, 1, name="wget"))
+    alg3.add_event(ProcessStartEvent(0, 4, 2, name="mv"))
+    alg3.add_event(ProcessStartEvent(0, 5, 2, name="rm"))
+    alg3.add_event(ProcessExitEvent(0, 5, 2, name="rm"))
+    alg3.add_event(ProcessExitEvent(0, 4, 2, name="mv"))
+    alg3.add_event(ProcessExitEvent(0, 3, 1, name="wget"))
+    alg3.add_event(ProcessExitEvent(0, 2, 1, name="ls"))
+    alg3.add_event(ProcessExitEvent(0, 1, 1, name="root"))
+
+if __name__ == '__main__':
+    cli = argparse.ArgumentParser()
+    update_parser(cli)
+    argparse_init(cli.parse_args())
+
+    logging.getLogger().setLevel(LVL.WARNING)
+    logging.getLogger("EXCEPTION").setLevel(LVL.INFO)
+    mainExceptionFrame(main)
