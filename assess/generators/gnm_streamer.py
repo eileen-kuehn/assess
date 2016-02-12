@@ -50,13 +50,15 @@ class CSVStreamer(object):
 			yield heapq.heappop(exit_events_heap)[1]
 
 	def iter(self):
-		exit_event_queue = collections.deque()
+		exit_event_queue = []  # rightmost elements popped EARLIER
+		events = 0  # used to push parent events at same tme to the left
 		with open(self.path) as csv_file:
 			for process in csv.DictReader(csv_file):
 				now = float(process['tme'])
+				events += 1
 				# yield any exit events that should have happened so far
-				while exit_event_queue and exit_event_queue[0][0] < now:
-					yield exit_event_queue.pop()[1]
+				while exit_event_queue and exit_event_queue[-1][0] > -now:
+					yield exit_event_queue.pop()[2]
 				# create the events for the current process
 				process = self._convert_types(process)
 				start_event = ProcessStartEvent(**process)
@@ -64,9 +66,9 @@ class CSVStreamer(object):
 				exit_event = ProcessExitEvent(**process)
 				# process starts NOW, exists LATER
 				yield start_event
-				bisect.insort_left(exit_event_queue, (exit_event.tme, exit_event))
+				bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
 		while exit_event_queue:
-			yield heapq.heappop(exit_event_queue)[1]
+			yield exit_event_queue.pop()[2]
 
 	def _convert_types(self, row):
 		"""Convert all known items of a row to their appropriate types"""
