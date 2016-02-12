@@ -56,9 +56,30 @@ class Tree(object):
     def node_count(self):
         return len(self._graph.nodes())
 
-    def nodes(self):
-        for node_id in self._graph.nodes():
-            yield self._graph.node[node_id]["data"]
+    def nodes(self, depth_first=True):
+        def depth_first(root):
+            if root is None:
+                root = self.root()
+            yield root
+            try:
+                for child in root.children():
+                    for new_node in depth_first(child):
+                        yield new_node
+            except TypeError:
+                pass
+
+        def width_first(root):
+            if root is None:
+                root = self.root()
+                toVisit = [root]
+                while len(toVisit) > 0:
+                    root = toVisit.pop(0)
+                    yield root
+                    for child in root.children():
+                        toVisit.append(child)
+
+        for node in (depth_first(self.root()) if depth_first(self.root()) else width_first(self.root())):
+            yield node
 
     # TODO: this should just be one parent, not list of parents
     def parent(self, node):
