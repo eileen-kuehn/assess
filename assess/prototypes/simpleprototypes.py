@@ -176,3 +176,58 @@ def prototype_one():
     )
     # return prototype
     return T
+
+def prototype_two():
+    T = Prototype()
+    # create nodes
+    root_node = T.add_node(
+            "root",
+            n=1, n_err=0,
+            t=1, t_err=0,
+            m={
+                "v_i": 0,
+                "v_o": 0
+            }
+    )
+    ls_node = T.add_node(
+            "ls",
+            parent=root_node,
+            n=1, n_err=0,
+            t=1, t_err=0,
+            m={
+                "v_i": 0,
+                "v_o": 0
+            }
+    )
+    T.add_node(
+            "rm",
+            parent=root_node,
+            n=1, n_err=0,
+            t=1, t_err=0,
+            m={
+                "v_i": 0,
+                "v_o": 0
+            }
+    )
+    T.add_node(
+            "mv",
+            parent=ls_node,
+            n=1, n_err=0,
+            t=1, t_err=0,
+            m={
+                "v_i": 0,
+                "v_o": 0
+            }
+    )
+    T.add_node(
+            "rm",
+            parent=ls_node,
+            n=1, n_err=0,
+            t=1, t_err=0,
+            m={
+                "v_i": 0,
+                "v_o": 0
+            }
+    )
+    # return prototype
+    return T

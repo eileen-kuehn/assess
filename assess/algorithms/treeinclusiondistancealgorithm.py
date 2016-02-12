@@ -1,4 +1,3 @@
-from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
 from assess.exceptions.exceptions import EventNotSupportedException, NodeNotFoundException
@@ -9,7 +8,7 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._prototype_dict = {}
         self._monitoring_dict = {}
-        self._monitoring_results_dict = {}
+        self._monitoring_results = []
         self._event_counter = 0
 
     def _add_event(self, event, **kwargs):
@@ -21,6 +20,7 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
             pass
         else:
             raise EventNotSupportedException(event)
+        return [value for value in self._monitoring_results[-1].values()]
 
     def _create_node(self, event):
         parent = self._monitoring_dict.get(event.ppid, None)
@@ -40,23 +40,17 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
             result_dict[prototype] = self._calculate_distance(prototype.root(), tree.root())
 
         # add local node distance to global tree distance
-        self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)
-        print(self._tree.tree_repr())
-        print(self._prototypes[0].tree_repr())
-        print("measured distances after %d events: %s" % (
-              self._event_counter,
-              [value for value in self._monitoring_results_dict.values()]))
+        self._add_result_dicts(result_dict)
 
     def _perform_calculation(self, prototype, tree):
         distance = 0
 
-        if prototype.name in tree.name:
-            # TODO: for all nodes in prototype
+        if prototype.node_id in tree.node_id:
             tree_nodes = list(tree.children())
             last_valid_position = 0
             for node in prototype.children():
                 for i in range(last_valid_position, len(tree_nodes)):
-                    if node.name in tree_nodes[i].name:
+                    if node.node_id in tree_nodes[i].node_id:
                         # matched
                         last_valid_position = i+1
                         distance += self._perform_calculation(node, tree_nodes[i])
@@ -66,7 +60,7 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
                     distance += prototype._prototype.subtree_node_count(node)
         else:
             # distance is sum of all nodes
-            return prototype._prototype.subtree_node_count(prototype) + tree._prototype.subtree_node_count(tree)
+            return prototype._prototype.subtree_node_count(prototype)
         return distance
 
     def _calculate_distance(self, prototype, tree):
@@ -75,6 +69,5 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
         distance += self._perform_calculation(tree, prototype)
         return distance
 
-    def _add_result_dicts(self, first, second):
-        #result = dict((key, first[key] + second[key]) for key in set(first.keys() + second.keys()))
-        return first
+    def _add_result_dicts(self, results):
+        return self._monitoring_results.append(results)

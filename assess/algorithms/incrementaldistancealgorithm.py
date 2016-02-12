@@ -18,8 +18,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():
-                # TODO: handle collisions
-                self._prototype_dict[process.node_id] = [process]
+                self._prototype_dict.setdefault(process.node_id, []).append(process)
             # initialize default distance to prototypes
             self._monitoring_results_dict[prototype] = 0
         print(self._prototype_dict)
@@ -35,6 +34,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             self._add_traffic(event)
         else:
             raise EventNotSupportedException(event)
+        return [value for value in self._monitoring_results_dict.values()]
 
     def _create_process(self, event):
         parent = self._monitoring_dict.get(event.ppid, None)

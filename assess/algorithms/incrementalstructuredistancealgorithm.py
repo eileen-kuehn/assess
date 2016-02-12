@@ -26,10 +26,11 @@ class IncrementalStructureDistanceAlgorithm(TreeDistanceAlgorithm):
                 else:
                     neighbors = process.parent().children()
                     count = self._node_number_on_layer(process, neighbors)
-                    name = "%s.%d" % (process.parent().algorithm_id, count)
+                    name = "%s.%d" % (process.parent().name, count)
+                process.name = name
+                name = Tree.unique_name(name, depth, process.parent().algorithm_id if process.parent() is not None else process.name)
                 process.algorithm_id = name
-                # TODO: several should be able to be stored here
-                self._prototype_dict[name] = [process]
+                self._prototype_dict.setdefault(name, []).append(process)
             # initialize default distance to prototypes
             self._monitoring_results_dict[prototype] = 0
         print(self._prototype_dict)
@@ -53,6 +54,7 @@ class IncrementalStructureDistanceAlgorithm(TreeDistanceAlgorithm):
             self._add_traffic(event)
         else:
             raise EventNotSupportedException(event)
+        return [value for value in self._monitoring_results_dict.values()]
 
     def _create_process(self, event):
         parent = self._monitoring_dict.get(event.ppid, None)
@@ -65,9 +67,7 @@ class IncrementalStructureDistanceAlgorithm(TreeDistanceAlgorithm):
                 processname=event.name)
         # TODO: whenever pid is not unique, I will overwrite value
         self._monitoring_dict[event.pid] = node
-        self._update_distances(self._prototype_dict.get(node.name, []), node)
-        print(node.name)
-        print([node.algorithm_id for node in self._prototypes[0].nodes()])
+        self._update_distances(self._prototype_dict.get(node.node_id, []), node)
         print("measured distances after %d events: %s" % (
               self._event_counter,
               [value for value in self._monitoring_results_dict.values()]))
@@ -82,7 +82,7 @@ class IncrementalStructureDistanceAlgorithm(TreeDistanceAlgorithm):
     def _update_distances(self, prototype_nodes, monitoring_node):
         result_dict = dict(zip(self._prototypes, [1] * len(self._prototypes)))
         for prototype_node in prototype_nodes:
-            if monitoring_node.name in prototype_node.algorithm_id:
+            if monitoring_node.node_id in prototype_node.algorithm_id:
                 result_dict[prototype_node._prototype] = 0
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)
