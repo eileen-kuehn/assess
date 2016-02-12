@@ -2,7 +2,6 @@
 Generators for event streams for GNM monitoring files
 """
 import csv
-import heapq
 import bisect
 
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
@@ -36,26 +35,7 @@ class CSVStreamer(object):
         self.path = csv_path
 
     def __iter__(self):
-        exit_events_heap = []  # (event.tme, event); heapq will do some magic on this
-        with open(self.path) as csv_file:
-            for process in csv.DictReader(csv_file):
-                now = float(process['tme'])
-                # yield any exit events that should have happened so far
-                while exit_events_heap and exit_events_heap[0][0] < now:
-                    yield heapq.heappop(exit_events_heap)[1]
-                # create the events for the current process
-                process = self._convert_types(process)
-                start_event = ProcessStartEvent(**process)
-                process['tme'], process['start_tme'] = process['exit_tme'], process['tme']
-                exit_event = ProcessExitEvent(**process)
-                # process starts NOW, exists LATER
-                yield start_event
-                heapq.heappush(exit_events_heap, (exit_event.tme, exit_event))
-        while exit_events_heap:
-            yield heapq.heappop(exit_events_heap)[1]
-
-    def iter(self):
-        exit_event_queue = []  # rightmost elements popped EARLIER
+        exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
         with open(self.path) as csv_file:
             for process in csv.DictReader(csv_file):
@@ -88,4 +68,3 @@ class CSVStreamer(object):
             except KeyError:
                 pass
         return row
-
