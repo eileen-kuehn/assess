@@ -17,3 +17,13 @@ class NodeNotFoundException(BasicException):
             self,
             "Cannot find %s between %s" % (node, amount)
         )
+
+
+class MatrixDoesNotMatchBounds(BasicException):
+    """Thrown when the distance matrix is expanded over its bounds"""
+    def __init__(self, expected=None, width=None, height=None):
+        BasicException.__init__(
+            self,
+            "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
+            %(expected, expected, width, height)
+        )

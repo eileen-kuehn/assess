@@ -9,24 +9,28 @@ from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAl
 from assess.algorithms.incrementalstructuredistancealgorithm import IncrementalStructureDistanceAlgorithm
 from assess.algorithms.treeinclusiondistancealgorithm import TreeInclusionDistanceAlgorithm
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
+from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 
 
 def main():
     test = prototype_one()
     test2 = prototype_two()
+    decorator = DistanceMatrixDecorator(normalized=True)
     alg = IncrementalDistanceAlgorithm()
     alg.prototypes = [test, test2]
-    alg.add_event(ProcessStartEvent(0, 1, 1, name="root"))
-    alg.add_event(ProcessStartEvent(0, 6, 1, name="test"))
-    alg.add_event(ProcessStartEvent(0, 2, 6, name="ls"))
-    alg.add_event(ProcessStartEvent(0, 3, 1, name="wget"))
-    alg.add_event(ProcessStartEvent(0, 4, 2, name="mv"))
-    alg.add_event(ProcessStartEvent(0, 5, 2, name="rm"))
-    alg.add_event(ProcessExitEvent(0, 5, 2, 0, name="rm"))
-    alg.add_event(ProcessExitEvent(0, 4, 2, 0, name="mv"))
-    alg.add_event(ProcessExitEvent(0, 3, 1, 0, name="wget"))
-    alg.add_event(ProcessExitEvent(0, 2, 1, 0, name="ls"))
-    alg.add_event(ProcessExitEvent(0, 1, 1, 0, name="root"))
+    decorator.algorithm = alg
+    decorator.add_event(ProcessStartEvent(0, 1, 1, name="root"))
+    decorator.add_event(ProcessStartEvent(0, 6, 1, name="test"))
+    decorator.add_event(ProcessStartEvent(0, 2, 6, name="ls"))
+    decorator.add_event(ProcessStartEvent(0, 3, 1, name="wget"))
+    decorator.add_event(ProcessStartEvent(0, 4, 2, name="mv"))
+    decorator.add_event(ProcessStartEvent(0, 5, 2, name="rm"))
+    decorator.add_event(ProcessExitEvent(0, 5, 2, 0, name="rm"))
+    decorator.add_event(ProcessExitEvent(0, 4, 2, 0, name="mv"))
+    decorator.add_event(ProcessExitEvent(0, 3, 1, 0, name="wget"))
+    decorator.add_event(ProcessExitEvent(0, 2, 1, 0, name="ls"))
+    decorator.add_event(ProcessExitEvent(0, 1, 1, 0, name="root"))
+    print("distance matrix %s" % decorator.distance_matrix)
 
     alg2 = IncrementalStructureDistanceAlgorithm()
     alg2.prototypes = [test, test2]
