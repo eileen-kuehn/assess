@@ -4,16 +4,13 @@ Generators for event streams for GNM monitoring files
 import csv
 import bisect
 
+from gnmutils.objectcache import ObjectCache
+
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
+from assess.prototypes.simpleprototypes import Prototype
 
 
-class CSVStreamer(object):
-    """
-    Generator for event stream from GNM csv files
-
-    :param csv_path: path to a csv file
-    :type csv_path: str or unicode
-    """
+class GNMImporter(object):
     default_key_type = {
         'tme': float,
         'exit_tme': float,
@@ -31,6 +28,34 @@ class CSVStreamer(object):
         'valid': int,
     }
 
+
+class CSVTreeBuilder(GNMImporter):
+    def build(self, csv_path):
+        process_cache = ObjectCache()
+        result = Prototype()
+
+        with open(csv_path) as csv_file:
+            for process in csv.DictReader(csv_file):
+                parent = process_cache.getObject(tme=process.get("tme", 0), pid=process.get("ppid", 0))
+                node = result.add_node(
+                    process.get("name", "."),
+                    parent=parent,
+                    tme=process.get("tme", 0),
+                    exit_tme=process.get("exit_tme", 0),
+                    pid=process.get("pid", 0),
+                    ppid=process.get("ppid", 0)
+                )
+                process_cache.addObject(object=node, pid=process.get("pid", 0), tme=process.get("tme", 0))
+        return result
+
+
+class CSVEventStreamer(GNMImporter):
+    """
+    Generator for event stream from GNM csv files
+
+    :param csv_path: path to a csv file
+    :type csv_path: str or unicode
+    """
     def __init__(self, csv_path):
         self.path = csv_path
 
