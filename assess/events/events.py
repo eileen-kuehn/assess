@@ -30,6 +30,15 @@ class Event(object):
     def ppid(self, value=None):
         self._ppid = value
 
+    def __repr__(self):
+        return "%s(tme=%.1f, pid=%d, ppid=%d, %s)" % (
+            self.__class__.__name__,
+            self.tme,
+            self.pid,
+            self.pid,
+            ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self))
+        )
+
 
 class ProcessStartEvent(Event):
     def __init__(self, tme, pid, ppid, **kwargs):
