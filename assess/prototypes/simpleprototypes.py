@@ -129,11 +129,11 @@ class Tree(object):
             hash(parent_info)
         )
 
-    def tree_repr(self, id_attr="name", sequence_fmt="[%s]"):
+    def tree_repr(self, node_repr=lambda node: node.name, sequence_fmt="[%s]"):
         def subtree_repr(root):
             if list(root.children()):
-                return getattr(root, id_attr) + ": " + sequence_fmt % ", ".join(subtree_repr(child) for child in root.children())
-            return getattr(root, id_attr)
+                return node_repr(root) + ": " + sequence_fmt % ", ".join(subtree_repr(child) for child in root.children())
+            return node_repr(root)
         return sequence_fmt % (subtree_repr(self.root()))
 
     def __repr__(self):

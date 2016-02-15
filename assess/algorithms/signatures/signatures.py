@@ -1,8 +1,12 @@
-from assess.prototypes.simpleprototypes import Tree
 from assess.exceptions.exceptions import NodeNotFoundException
 
 
 class Signature(object):
+    """
+    Signatures are a concept to create IDs based on processes inside the trees.
+    By using signatures, similar nodes might be grouped for example. This improves
+    the compression factor but might decrease the precision of the algorithm.
+    """
     def prepare_signature(self, node):
         self._prepare_signature(node, node.name)
 
@@ -16,9 +20,21 @@ class Signature(object):
             self.prepare_signature(node)
             return node.signature_id[self]
 
+    def _node_number(self, node, neighboring_nodes):
+        for i in range(0, len(neighboring_nodes)):
+            if node == neighboring_nodes[i]:
+                number = i
+                break
+        else:
+            raise NodeNotFoundException
+        return number
+
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class ParentCountedChildrenByNameTopologySignature(Signature):
-    def __init__(self, count=0):
+    def __init__(self, count=20):
         Signature.__init__(self)
         self._count = count
 
@@ -38,15 +54,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         results = []
         neighbors = list(neighbors)
         if len(neighbors) > 0:
-            position = 0
-            for i in range(0, len(neighbors)):
-                if neighbors[i] == node:
-                    position = i
-                else:
-                    continue
-                break
-            else:
-                raise NodeNotFoundException()
+            position = self._node_number(node, neighbors)
             for j in range(position-1, position-1-self._count, -1):
                 if j >= 0:
                     results.insert(0, neighbors[j].name)
@@ -55,6 +63,9 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         else:
             results = ["" for i in range(0, self._count)]
         return results
+
+    def __repr__(self):
+        return self.__class__.__name__ + " (count: %d)" % self._count
 
 
 class ParentChildByNameTopologySignature(Signature):
@@ -68,45 +79,25 @@ class ParentChildByNameTopologySignature(Signature):
 
 class ParentChildOrderTopologySignature(Signature):
     def prepare_signature(self, node):
-        depth = node.depth()
-        if depth == 0:
-            # root processes
-            name = "%d" % depth
-        else:
-            neighbors = node.parent().children()
-            count = self._node_number_on_layer(node, neighbors)
-            name = "%s.%d" % (node.parent().name, count)
-        algorithm_id = Tree.unique_name(
-                name,
-                node.depth(),
-                self.get_signature(node.parent()) if node.parent() is not None else node.name
+        count = self._node_number(node, list(node.parent().children()) if node.parent() is not None else [node])
+        algorithm_id = "%s.%d_%s" % (
+            self._first_part_algorithm_id(self.get_signature(node.parent()) if node.parent() is not None else ""),
+            count,
+            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
         )
-        node.name = name
         self._prepare_signature(node, algorithm_id)
 
-    def _node_number_on_layer(self, process, neighboring_processes):
-        count = 0
-        for node in neighboring_processes:
-            count += 1
-            if node == process:
-                return count
-        raise NodeNotFoundException(process, neighboring_processes)
+    def _first_part_algorithm_id(self, algorithm_id):
+        return algorithm_id.split("_")[0]
 
 
 class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature):
-    # TODO: numbers have wrong order?!
     def prepare_signature(self, node):
-        depth = node.depth()
-        if depth == 0:
-            # root processes
-            name = "%s.%d" % (node.name, depth)
-        else:
-            neighbors = node.parent().children()
-            count = self._node_number_on_layer(node, neighbors)
-            name = "%s.%d" % (node.name, count)
-        algorithm_id = Tree.unique_name(
-                name,
-                node.depth(),
-                self.get_signature(node.parent()) if node.parent() is not None else node.name
+        count = self._node_number(node, list(node.parent().children()) if node.parent() is not None else [node])
+        algorithm_id = "%s.%d_%s_%s" % (
+            self._first_part_algorithm_id(self.get_signature(node.parent()) if node.parent() is not None else ""),
+            count,
+            node.name,
+            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)

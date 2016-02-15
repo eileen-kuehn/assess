@@ -49,10 +49,9 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         self._signature.prepare_signature(node)
         # TODO: whenever pid is not unique, I will overwrite value
         self._monitoring_dict[event.pid] = node
+        # print(self._prototypes[0].tree_repr(node_repr=lambda thenode: thenode.signature_id[self._signature]))
+        # print(self._monitoring_tree.tree_repr(node_repr=lambda thenode: thenode.signature_id[self._signature]))
         self._update_distances(self._prototype_dict.get(self._signature.get_signature(node), []), node)
-        #print("measured distances after %d events: %s" % (
-        #      self._event_counter,
-        #      [value / float(self._event_counter) for value in self._monitoring_results_dict.values()]))
 
     def _finish_process(self, event):
         # just ignoring the exit event of processes here
