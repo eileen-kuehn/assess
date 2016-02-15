@@ -5,8 +5,8 @@ from assess.exceptions.exceptions import EventNotSupportedException
 
 
 class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
-    def __init__(self):
-        TreeDistanceAlgorithm.__init__(self)
+    def __init__(self, **kwargs):
+        TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._prototype_dict = {}
         self._monitoring_tree = Tree()
         self._monitoring_dict = {}
@@ -18,11 +18,13 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():
-                self._prototype_dict.setdefault(process.node_id, []).append(process)
+                self._prototype_dict.setdefault(self._signature.get_signature(process), []).append(process)
             # initialize default distance to prototypes
             self._monitoring_results_dict[prototype] = 0
-        print(self._prototype_dict)
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
+
+    def prototypes_converted_for_algorithm(self):
+        return self._prototype_dict
 
     def _add_event(self, event, **kwargs):
         self._event_counter += 1
@@ -44,12 +46,13 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
                 tme=event.tme,
                 pid=event.pid,
                 ppid=event.ppid)
+        self._signature.prepare_signature(node)
         # TODO: whenever pid is not unique, I will overwrite value
         self._monitoring_dict[event.pid] = node
-        self._update_distances(self._prototype_dict.get(node.node_id, []), node)
-        print("measured distances after %d events: %s" % (
-              self._event_counter,
-              [value / float(self._event_counter) for value in self._monitoring_results_dict.values()]))
+        self._update_distances(self._prototype_dict.get(self._signature.get_signature(node), []), node)
+        #print("measured distances after %d events: %s" % (
+        #      self._event_counter,
+        #      [value / float(self._event_counter) for value in self._monitoring_results_dict.values()]))
 
     def _finish_process(self, event):
         # just ignoring the exit event of processes here
@@ -62,7 +65,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         # TODO: this should maybe also be a dictionary
         result_dict = dict(zip(self._prototypes, [1] * len(self._prototypes)))
         for prototype_node in prototype_nodes:
-            if monitoring_node.node_id in prototype_node.node_id:
+            if self._signature.get_signature(monitoring_node) in self._signature.get_signature(prototype_node):
                 result_dict[prototype_node._prototype] = 0
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)

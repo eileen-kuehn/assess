@@ -1,10 +1,11 @@
+from assess.decorators.decorator import Decorator
 from assess.events.events import ProcessStartEvent
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
 
 
-class DistanceMatrixDecorator(object):
+class DistanceMatrixDecorator(Decorator):
     def __init__(self, normalized=False):
-        self._algorithm = None
+        Decorator.__init__(self)
         self._distance_matrix = []
         self._event_counter = 0
         self._normalized = normalized
@@ -13,13 +14,9 @@ class DistanceMatrixDecorator(object):
     def distance_matrix(self):
         return self._distance_matrix
 
-    @property
-    def algorithm(self):
-        return self._algorithm
-
-    @algorithm.setter
+    @Decorator.algorithm.setter
     def algorithm(self, value):
-        self._algorithm = value
+        Decorator.algorithm.__set__(self, value)
         size = self._matrix_size()
         if 0 < size <= len(self._distance_matrix):
             raise MatrixDoesNotMatchBounds(size, size, len(self._matrix_size()) + 1)

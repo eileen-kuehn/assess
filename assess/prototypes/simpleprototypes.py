@@ -36,7 +36,8 @@ class Tree(object):
         self._graph = nx.DiGraph()
 
     def add_node(self, name, parent=None, **kwargs):
-        node_id = self._unique_name(name, parent)
+        #node_id = self._unique_name(name, parent)
+        node_id = nx.utils.generate_unique_node()
         node = Process(self, node_id, name=name, **kwargs)
         self._graph.add_node(
             node_id,

@@ -6,7 +6,6 @@ from assess.exceptions.exceptions import EventNotSupportedException, NodeNotFoun
 class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
-        self._prototype_dict = {}
         self._monitoring_dict = {}
         self._monitoring_results = []
         self._event_counter = 0
@@ -45,12 +44,12 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
     def _perform_calculation(self, prototype, tree):
         distance = 0
 
-        if prototype.node_id in tree.node_id:
+        if self._signature.get_signature(prototype) in self._signature.get_signature(tree):
             tree_nodes = list(tree.children())
             last_valid_position = 0
             for node in prototype.children():
                 for i in range(last_valid_position, len(tree_nodes)):
-                    if node.node_id in tree_nodes[i].node_id:
+                    if self._signature.get_signature(node) in self._signature.get_signature(tree_nodes[i]):
                         # matched
                         last_valid_position = i+1
                         distance += self._perform_calculation(node, tree_nodes[i])
