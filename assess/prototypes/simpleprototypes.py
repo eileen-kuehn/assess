@@ -1,5 +1,7 @@
 import networkx as nx
 
+from assess.exceptions.exceptions import NodeNotFoundException
+
 
 class Process(object):
     def __init__(self, prototype, node_id, **kwargs):
@@ -92,13 +94,15 @@ class Tree(object):
     def root(self):
         try:
             root = self._graph.node[self._graph.nodes()[0]]["data"]
-        except:
+            while root.parent() is not None:
+                root = root.parent()
+        except Exception as e:
+            print(e)
             return None
         else:
             if root.parent() is None:
                 return root
-            print("this shouldn't happen...")
-            return None
+            raise NodeNotFoundException()
 
     def children(self, node):
         for node_id in self._graph.successors(node.node_id):
