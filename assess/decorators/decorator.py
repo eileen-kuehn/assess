@@ -31,3 +31,9 @@ class Decorator(object):
 
     def _event_added(self, event, result):
         pass
+
+    def data(self):
+        raise NotImplementedError()
+
+    def accumulated_data(self):
+        raise NotImplementedError()

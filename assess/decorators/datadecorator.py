@@ -2,6 +2,9 @@ from assess.decorators.decorator import Decorator
 
 
 class DataDecorator(Decorator):
+    """
+    The DataDecorator collects information on the node count of currently analysed prototypes.
+    """
     def __init__(self):
         Decorator.__init__(self)
         self._data = None

@@ -10,8 +10,7 @@ class DistanceMatrixDecorator(Decorator):
         self._event_counter = 0
         self._normalized = normalized
 
-    @property
-    def distance_matrix(self):
+    def data(self):
         return self._distance_matrix
 
     def _algorithm_updated(self):

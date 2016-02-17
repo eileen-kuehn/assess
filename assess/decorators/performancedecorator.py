@@ -25,10 +25,10 @@ class PerformanceDecorator(Decorator):
         for key, value in result_dict:
             self._performances[-1].setdefault(key, []).append(value)
 
-    def performances(self):
+    def data(self):
         return self._performances
 
-    def accumulated_performances(self):
+    def accumulated_data(self):
         result = []
         for performance in self._performances:
             result.append({})

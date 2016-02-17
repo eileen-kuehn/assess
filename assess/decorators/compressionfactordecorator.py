@@ -12,7 +12,7 @@ class CompressionFactorDecorator(Decorator):
     def compression_factor(self):
         return 1.0 - self._compressed_size() / float(self._original_size())
 
-    def compression_factors(self):
+    def data(self):
         return self._compressions
 
     def _original_size(self):
