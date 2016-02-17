@@ -10,6 +10,9 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
         self._monitoring_results = []
         self._event_counter = 0
 
+    def node_counts(self):
+        return [self._tree.node_count() + prototype.node_count() for prototype in self._prototypes]
+
     def _add_event(self, event, **kwargs):
         # just adding, but not removing nodes
         self._event_counter += 1

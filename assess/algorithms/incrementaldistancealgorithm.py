@@ -20,6 +20,9 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             self._monitoring_results_dict[prototype] = 0
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
 
+    def node_counts(self):
+        return [self._tree.node_count() for prototype in self._prototypes]
+
     def prototypes_converted_for_algorithm(self):
         return self._prototype_dict
 

@@ -20,6 +20,9 @@ class TreeDistanceAlgorithm(object):
     def prototypes(self, value=None):
         self._prototypes = value
 
+    def node_counts(self):
+        return [0 for prototype in self._prototypes]
+
     def prototypes_converted_for_algorithm(self):
         return self._prototypes
 
