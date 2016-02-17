@@ -6,9 +6,7 @@ class CompressionFactorDecorator(Decorator):
         Decorator.__init__(self)
         self._compressions = []
 
-    @Decorator.algorithm.setter
-    def algorithm(self, value):
-        Decorator.algorithm.__set__(self, value)
+    def _algorithm_updated(self):
         self._compressions.append(self.compression_factor())
 
     def compression_factor(self):

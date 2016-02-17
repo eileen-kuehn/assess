@@ -8,28 +8,33 @@ class PerformanceDecorator(Decorator):
         Decorator.__init__(self)
         self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
         self._performances = []
+        self._start = None
 
-    @Decorator.algorithm.setter
-    def algorithm(self, value):
-        Decorator.algorithm.__set__(self, value)
-        self._performances.append([])
+    def _algorithm_updated(self):
+        # TODO: algorithm description should be given by another decorator
+        # TODO: there should be another decorator describing the data itself
+        self._performances.append({})
 
-    def add_event(self, event, **kwargs):
-        start = os.times()
-        result = self._algorithm.add_event(event, **kwargs)
+    def _event_will_be_added(self):
+        self._start = os.times()
+
+    def _event_added(self, event, result):
         end = os.times()
-        self._performances[-1].append([end[i]-start[i] for i in range(0, len(start))])
-        return result
+        result_dict = zip(self._items, [end[i] - self._start[i] for i in range(len(self._start))])
+        self._start = None
+        for key, value in result_dict:
+            self._performances[-1].setdefault(key, []).append(value)
 
     def performances(self):
         return self._performances
 
     def accumulated_performances(self):
-        results = []
+        result = []
         for performance in self._performances:
-            result = [0 for i in range(0, len(performance[0]))]
-            for values in performance:
-                for i in range(0, len(values)):
-                    result[i] += values[i]
-            results.append(result)
-        return results
+            result.append({})
+            for key in performance:
+                try:
+                    result[-1][key] = sum(performance[key])
+                except TypeError:
+                    result[-1][key] = performance[key]
+        return result
