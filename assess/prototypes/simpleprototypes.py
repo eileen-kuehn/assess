@@ -84,11 +84,11 @@ class Tree(object):
         for node in (depth_first(self.root()) if depth_first(self.root()) else width_first(self.root())):
             yield node
 
-    # TODO: this should just be one parent, not list of parents
     def parent(self, node):
         result = []
         for node_id in self._graph.predecessors(node.node_id):
             result.append(self.node_with_node_id(node_id))
+        assert len(result) <= 1
         return result[0] if len(result) > 0 else None
 
     def root(self):
