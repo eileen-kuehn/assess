@@ -27,8 +27,11 @@ class DistanceMatrixDecorator(Decorator):
             raise MatrixDoesNotMatchBounds(size, len(result), len(self._distance_matrix))
         if type(event) is ProcessStartEvent:
             self._event_counter += 1
-        self._distance_matrix[-1] = result if not self._normalized else \
-            [value/float(self._event_counter) for value in result]
+        if self._normalized:
+            node_counts = self._algorithm.node_counts()
+            for i in range(len(result)):
+                result[i] /= float(node_counts[i])
+        self._distance_matrix[-1] = result
 
     def _matrix_size(self):
         if len(self._distance_matrix) > 0:
