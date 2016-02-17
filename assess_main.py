@@ -10,6 +10,7 @@ from utility.exceptions import mainExceptionFrame
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.decorators.performancedecorator import PerformanceDecorator
+from assess.decorators.datadecorator import DataDecorator
 from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signatures import *
 
@@ -69,10 +70,12 @@ def check_algorithms(paths=[], configurations=[]):
                 # Most critical, so take as leading decorator
                 performance = PerformanceDecorator()
                 compression = CompressionFactorDecorator()
-                distance = DistanceMatrixDecorator(normalized=False)
+                data = DataDecorator()
+                distance = DistanceMatrixDecorator(normalized=True)
                 # Build decorator chain with performance as last
                 compression.decorator = performance
-                distance.decorator = compression
+                data.decorator = compression
+                distance.decorator = data
                 for path in paths:
                     signature_object = signature()
                     alg = algorithm(signature=signature_object)
@@ -83,6 +86,7 @@ def check_algorithms(paths=[], configurations=[]):
                 results["results"].append({
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,
+                    "data": data.data(),
                     "compression": compression.compression_factors(),
                     "accumulated_performance": performance.accumulated_performances(),
                     #"performance": performance.performances(),
