@@ -58,8 +58,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     def _update_distances(self, prototype_nodes, node_signature):
         result_dict = dict(zip(self._prototypes, [1] * len(self._prototypes)))
         for prototype_node in prototype_nodes:
-            if node_signature in self._signature.get_signature(prototype_node):
-                result_dict[prototype_node._prototype] = 0
+            result_dict[prototype_node._prototype] = 0
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)
 
