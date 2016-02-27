@@ -35,7 +35,7 @@ class CSVTreeBuilder(GNMImporter):
         result = Prototype()
 
         with open(csv_path) as csv_file:
-            for process in csv.DictReader(csv_file):
+            for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
                 parent = process_cache.getObject(tme=process.get("tme", 0), pid=process.get("ppid", 0))
                 node = result.add_node(
                     process.get("name", "."),
