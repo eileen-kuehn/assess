@@ -1,32 +1,71 @@
 import networkx as nx
 
-from assess.exceptions.exceptions import NodeNotFoundException
+from assess.exceptions.exceptions import TreeInvalidatedException
 
 
 class Process(object):
+    # TODO: can this be exchanged by process from gnmutils? or extended?
+    """
+    A process represents the actual node inside the process tree.
+    """
     def __init__(self, prototype, node_id, **kwargs):
         self._prototype = prototype
         self.node_id = node_id
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
+    def add_child(self, name, **kwargs):
+        """
+        Method to add a child node to the current node.
+        :param name: The name of the new process.
+        :param kwargs: Additional parameters.
+        :return: The newly created node.
+        """
+        # TODO: ensure not to overwrite given pid and ppid
+        ppid = self.pid
+        pid = self._prototype.node_count() + 1
+        return self._prototype.add_node(name, self, pid=pid, ppid=ppid, **kwargs)
+
     def depth(self):
+        """
+        Returns the depth of the node. The root node has depth 0.
+        :return: Depth of the node.
+        """
         depth = 0
         node = self
-        while self._prototype.parent(node) is not None:
+        while node.parent() is not None:
             depth += 1
             # update node
-            node = self._prototype.parent(node)
+            node = node.parent()
         return depth
 
     def parent(self):
+        """
+        Returns the parent node of the current node.
+        :return: Parent.
+        """
         return self._prototype.parent(self)
 
     def children(self):
+        """
+        Generator for children of the current node.
+        :return: Generator for children of node.
+        """
         for child in self._prototype.children(self):
             yield child
 
+    def node_number(self):
+        """
+        Returns number in relation to its neighbouring nodes. First means number 0.
+        :return: Number between neighbouring nodes.
+        """
+        return self._prototype.node_number(self)
+
     def child_count(self):
+        """
+        Returns the count of children from current node.
+        :return: Child count.
+        """
         return self._prototype.child_count(self)
 
     def __repr__(self):
@@ -38,9 +77,10 @@ class Tree(object):
         self._graph = nx.DiGraph()
 
     def add_node(self, name, parent=None, **kwargs):
-        #node_id = self._unique_name(name, parent)
         node_id = nx.utils.generate_unique_node()
         node = Process(self, node_id, name=name, **kwargs)
+        if parent is None and self.root() is not None:
+            raise TreeInvalidatedException()
         self._graph.add_node(
             node_id,
             data=node
@@ -49,7 +89,7 @@ class Tree(object):
             self._graph.add_edge(
                 parent.node_id,
                 node_id,
-                weight=0.5
+                weight=1.0
             )
         return node
 
@@ -57,81 +97,116 @@ class Tree(object):
         return self._graph.node[node_id]["data"]
 
     def node_count(self):
-        return len(self._graph.nodes())
+        return len(list(self.nodes()))
 
+    # TODO: implement stop condition for depth and width first
     def nodes(self, depth_first=True):
-        def depth_first(root):
+        """
+        Method that returns a generator yielding all nodes inside the tree, either in
+        depth first or width first order.
+        :param depth_first: Depth first order if True, otherwise width first.
+        :return: Generator for tree nodes.
+        """
+        def dfs(root):
             if root is None:
                 root = self.root()
             yield root
             try:
                 for child in root.children():
-                    for new_node in depth_first(child):
+                    for new_node in dfs(child):
                         yield new_node
             except TypeError:
                 pass
+            except AttributeError:
+                pass
 
-        def width_first(root):
+        def wfs(root):
             if root is None:
                 root = self.root()
-                toVisit = [root]
-                while len(toVisit) > 0:
-                    root = toVisit.pop(0)
-                    yield root
-                    for child in root.children():
-                        toVisit.append(child)
+            to_visit = [root]
+            while len(to_visit) > 0:
+                root = to_visit.pop(0)
+                yield root
+                for child in root.children():
+                    to_visit.append(child)
 
-        for node in (depth_first(self.root()) if depth_first(self.root()) else width_first(self.root())):
-            yield node
+        root = self.root()
+        if root is not None:
+            for node in (dfs(root) if depth_first else wfs(root)):
+                yield node
 
     def parent(self, node):
+        """
+        Method that returns the parent node of given node.
+        :param node: A node inside the tree.
+        :return: Parent node of node.
+        """
         result = []
         for node_id in self._graph.predecessors(node.node_id):
             result.append(self.node_with_node_id(node_id))
         assert len(result) <= 1
         return result[0] if len(result) > 0 else None
 
+    def node_number(self, node):
+        """
+        The node number of node with respect to its neighbouring nodes.
+        :param node: A node inside the tree.
+        :return: The node number of node.
+        """
+        number = 0
+        parent = self.parent(node)
+        neighboring_nodes = list(self.children(parent)) if parent is not None else []
+        for i in range(0, len(neighboring_nodes)):
+            if node == neighboring_nodes[i]:
+                number = i
+                break
+        return number
+
     def root(self):
+        """
+        Method that returns the root node of a tree. None otherwise.
+        :return: Root node. None otherwise.
+        """
         try:
             root = self._graph.node[self._graph.nodes()[0]]["data"]
             while root.parent() is not None:
                 root = root.parent()
         except Exception as e:
-            print(e)
             return None
         else:
-            if root.parent() is None:
-                return root
-            raise NodeNotFoundException()
+            return root
 
     def children(self, node):
+        """
+        Generator that yields children of given node.
+        :param node: A node inside the tree.
+        :return: A generator for children of node.
+        """
         for node_id in self._graph.successors(node.node_id):
             yield self.node_with_node_id(node_id)
 
     def child_count(self, node):
-        return len(self._graph.successors(node.node_id))
+        """
+        Method that returns the number of children for the specified node.
+        :param node: A node inside the tree.
+        :return: The number of children of node.
+        """
+        return len(list(self.children(node)))
 
-    def subtree_node_count(self, node):
+    def subtree_node_count(self, node=None):
+        """
+        Method that gives the number of nodes in subtree rooted at node. If node is not given,
+        the node count of the complete tree is returned.
+        :param node: Node where subtree is rooted.
+        :return: Node count of subtree rooted at ndoe.
+        """
+        if node is None:
+            node = self.root()
         count = 1
         if self.child_count(node) > 0:
             for child in self.children(node):
                 count += self.subtree_node_count(child)
         return count
-
-    def _unique_name(self, name, parent):
-        return "%s_%d_%X" % (
-            name,
-            parent.depth() + 1 if parent is not None else 0,
-            hash(parent.node_id) if parent is not None else hash(name)
-        )
-
-    @staticmethod
-    def unique_name(name, depth, parent_info):
-        return "%s_%d_%X" % (
-            name,
-            depth,
-            hash(parent_info)
-        )
 
     def tree_repr(self, node_repr=lambda node: node.name, sequence_fmt="[%s]"):
         def subtree_repr(root):
@@ -147,113 +222,3 @@ class Tree(object):
 class Prototype(Tree):
     pass
 
-
-def prototype_one():
-    T = Prototype()
-    # create nodes
-    root_node = T.add_node(
-            "root",
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    ls_node = T.add_node(
-            "ls",
-            parent=root_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "wget",
-            parent=root_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "mv",
-            parent=ls_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "rm",
-            parent=ls_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    # return prototype
-    return T
-
-def prototype_two():
-    T = Prototype()
-    # create nodes
-    root_node = T.add_node(
-            "root",
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    ls_node = T.add_node(
-            "ls",
-            parent=root_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "rm",
-            parent=root_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "mv",
-            parent=ls_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    T.add_node(
-            "rm",
-            parent=ls_node,
-            n=1, n_err=0,
-            t=1, t_err=0,
-            m={
-                "v_i": 0,
-                "v_o": 0
-            }
-    )
-    # return prototype
-    return T

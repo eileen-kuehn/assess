@@ -1,13 +1,24 @@
+import zss
+
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
-from assess.exceptions.exceptions import EventNotSupportedException, NodeNotFoundException
+from assess.exceptions.exceptions import EventNotSupportedException
 
 
-class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
+class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
         self._event_counter = 0
+
+    def add_events(self, eventgenerator, **kwargs):
+        events = list(eventgenerator)
+        while len(events) > 1:
+            event = events.pop(0)
+            if type(event) is ProcessStartEvent:
+                TreeDistanceAlgorithm._create_node(self, event)
+        self._create_node(events.pop(0))
+        return [value for value in self._monitoring_results[-1].values()]
 
     def _add_event(self, event, **kwargs):
         # just adding, but not removing nodes
@@ -34,32 +45,14 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
         # add local node distance to global tree distance
         self._add_result_dicts(result_dict)
 
-    def _perform_calculation(self, prototype, tree):
-        distance = 0
-
-        if self._signature.get_signature(prototype) in self._signature.get_signature(tree):
-            tree_nodes = list(tree.children())
-            last_valid_position = 0
-            for node in prototype.children():
-                for i in range(last_valid_position, len(tree_nodes)):
-                    if self._signature.get_signature(node) in self._signature.get_signature(tree_nodes[i]):
-                        # matched
-                        last_valid_position = i+1
-                        distance += self._perform_calculation(node, tree_nodes[i])
-                        break
-                else:
-                    # did not match any node
-                    distance += prototype._prototype.subtree_node_count(node)
-        else:
-            # distance is sum of all nodes
-            return prototype._prototype.subtree_node_count(prototype)
-        return distance
-
     def _calculate_distance(self, prototype, tree):
-        distance = 0
-        distance += self._perform_calculation(prototype, tree)
-        distance += self._perform_calculation(tree, prototype)
-        return distance
+        return zss.simple_distance(
+                prototype,
+                tree,
+                lambda node: list(node.children()),
+                lambda node: self._signature.get_signature(node),
+                lambda prototype_label, tree_label: prototype_label != tree_label
+        )
 
     def _add_result_dicts(self, results):
         return self._monitoring_results.append(results)

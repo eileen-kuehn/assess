@@ -6,6 +6,22 @@ class Event(object):
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
+    @staticmethod
+    def from_tree(tree):
+        for node in tree.nodes(depth_first=False):
+            # TODO: how to pass on complete dict?
+            yield ProcessStartEvent(tme=node.tme, pid=node.pid, ppid=node.ppid, name=node.name)
+
+    @staticmethod
+    def start(tme, pid, ppid, **kwargs):
+        # TODO: handle different parameters from process
+        return ProcessStartEvent(tme, pid, ppid, **kwargs)
+
+    @staticmethod
+    def exit(tme, pid, ppid, start_tme, **kwargs):
+        # TODO: handle different parameters from process
+        return ProcessExitEvent(tme, pid, ppid, start_tme, **kwargs)
+
     @property
     def tme(self):
         return self._tme

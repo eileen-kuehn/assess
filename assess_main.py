@@ -22,6 +22,11 @@ CLI.add_argument(
     help="Provide JSON output formatting"
 )
 CLI.add_argument(
+    "--skip",
+    action="store_true",
+    help="When given two input trees, just a 1x1 matrix is calculated"
+)
+CLI.add_argument(
     "--paths",
     nargs='+',
     help="Input files where trees are read from",
@@ -55,15 +60,18 @@ def main():
 
 def check_algorithms(paths=[], configurations=[]):
     results = {
-        "files": paths,
+        "files": paths[:],
         "version": subprocess.check_output(["git", "describe"]).strip(),
         "results": []
     }
     # fill general information
     tree_builder = CSVTreeBuilder()
     prototypes = []
-    for path in paths:
-        prototypes.append(tree_builder.build(path))
+    if options.skip and len(paths) == 2:
+        prototypes.append(tree_builder.build(paths.pop(0)))
+    else:
+        for path in paths:
+            prototypes.append(tree_builder.build(path))
     for configuration in configurations:
         for algorithm in configuration["algorithms"]:
             for signature in configuration["signatures"]:
@@ -71,11 +79,13 @@ def check_algorithms(paths=[], configurations=[]):
                 performance = PerformanceDecorator()
                 compression = CompressionFactorDecorator()
                 data = DataDecorator()
-                distance = DistanceMatrixDecorator(normalized=True)
+                distance = DistanceMatrixDecorator(normalized=False)
+                distance2 = DistanceMatrixDecorator(normalized=True)
                 # Build decorator chain with performance as last
                 compression.decorator = performance
                 data.decorator = compression
-                distance.decorator = data
+                distance2.decorator = data
+                distance.decorator = distance2
                 for path in paths:
                     signature_object = signature()
                     alg = algorithm(signature=signature_object)
@@ -87,10 +97,11 @@ def check_algorithms(paths=[], configurations=[]):
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,
                     "data": data.data(),
-                    "compression": compression.compression_factors(),
-                    "accumulated_performance": performance.accumulated_performances(),
+                    "compression": compression.data(),
+                    "accumulated_performance": performance.accumulated_data(),
                     #"performance": performance.performances(),
-                    "matrix": distance.distance_matrix
+                    "matrix": distance.data(),
+                    "normalized_matrix": distance2.data()
                 })
     return results
 

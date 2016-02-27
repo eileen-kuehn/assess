@@ -6,12 +6,18 @@ from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
 class DistanceMatrixDecorator(Decorator):
     def __init__(self, normalized=False):
         Decorator.__init__(self)
-        self._distance_matrix = []
+        self._distance_matrix = None
         self._event_counter = 0
         self._normalized = normalized
 
+        self._tmp_prototype_counts = None
+
     def data(self):
-        return self._distance_matrix
+        results = []
+        for result in self._distance_matrix:
+            adapted = [value if value >= 0 else 0 for value in result]
+            results.append(adapted)
+        return results
 
     def _algorithm_updated(self):
         size = self._matrix_size()
@@ -27,12 +33,16 @@ class DistanceMatrixDecorator(Decorator):
         if type(event) is ProcessStartEvent:
             self._event_counter += 1
         if self._normalized:
-            node_counts = self._algorithm.node_counts()
+            if self._tmp_prototype_counts is None:
+                self._tmp_prototype_counts = self._algorithm.prototype_counts(original=False)
+            node_counts = self._algorithm.node_counts(original=False)
             for i in range(len(result)):
-                result[i] /= float(node_counts[i])
+                result[i] /= float(node_counts[i]+self._tmp_prototype_counts[i])
         self._distance_matrix[-1] = result
 
     def _matrix_size(self):
+        if self._distance_matrix is None:
+            self._distance_matrix = []
         if len(self._distance_matrix) > 0:
             return len(self._distance_matrix[0])
         return 0

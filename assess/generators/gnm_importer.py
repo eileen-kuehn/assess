@@ -6,7 +6,7 @@ import bisect
 
 from gnmutils.objectcache import ObjectCache
 
-from assess.events.events import ProcessStartEvent, ProcessExitEvent
+from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent
 from assess.prototypes.simpleprototypes import Prototype
 
 
@@ -71,9 +71,11 @@ class CSVEventStreamer(GNMImporter):
                     yield exit_event_queue.pop()[2]
                 # create the events for the current process
                 process = self._convert_types(process)
-                start_event = ProcessStartEvent(**process)
+                start_event = Event.start(**process)
+                #start_event = ProcessStartEvent(**process)
                 process['tme'], process['start_tme'] = process['exit_tme'], process['tme']
-                exit_event = ProcessExitEvent(**process)
+                exit_event = Event.exit(**process)
+                #exit_event = ProcessExitEvent(**process)
                 # process starts NOW, exists LATER
                 yield start_event
                 bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))

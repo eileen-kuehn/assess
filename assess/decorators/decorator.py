@@ -23,7 +23,7 @@ class Decorator(object):
             result = self.decorator.add_event(event, **kwargs)
         else:
             result = self._algorithm.add_event(event, **kwargs)
-        self._event_added(event, result)
+        self._event_added(event, result[:])
         return result
 
     def _event_will_be_added(self):

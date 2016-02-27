@@ -19,6 +19,15 @@ class NodeNotFoundException(BasicException):
         )
 
 
+class TreeInvalidatedException(BasicException):
+    """Thrown when an invalid tree is being created"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "An invalid tree is being created"
+        )
+
+
 class MatrixDoesNotMatchBounds(BasicException):
     """Thrown when the distance matrix is expanded over its bounds"""
     def __init__(self, expected=None, width=None, height=None):
