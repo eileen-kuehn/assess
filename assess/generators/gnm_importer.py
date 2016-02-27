@@ -63,7 +63,7 @@ class CSVEventStreamer(GNMImporter):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
         with open(self.path) as csv_file:
-            for process in csv.DictReader(csv_file):
+            for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
                 now = float(process['tme'])
                 events += 1
                 # yield any exit events that should have happened so far
