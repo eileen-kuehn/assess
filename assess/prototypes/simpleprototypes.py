@@ -24,7 +24,8 @@ class Process(object):
         # TODO: ensure not to overwrite given pid and ppid
         ppid = self.pid
         pid = self._prototype.node_count() + 1
-        return self._prototype.add_node(name, self, pid=pid, ppid=ppid, **kwargs)
+        position = self.child_count()
+        return self._prototype.add_node(name, self, pid=pid, ppid=ppid, position=position, **kwargs)
 
     def depth(self):
         """
@@ -83,7 +84,8 @@ class Tree(object):
             raise TreeInvalidatedException()
         self._graph.add_node(
             node_id,
-            data=node
+            data=node,
+            position=kwargs.get("position", parent.child_count() if parent is not None else 0)
         )
         if parent is not None:
             self._graph.add_edge(
@@ -182,7 +184,7 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: A generator for children of node.
         """
-        for node_id in self._graph.successors(node.node_id):
+        for node_id in sorted(self._graph.successors(node.node_id), key=lambda nid: self._graph.node[nid]['position']):
             yield self.node_with_node_id(node_id)
 
     def child_count(self, node):
