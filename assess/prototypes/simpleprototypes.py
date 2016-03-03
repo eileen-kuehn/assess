@@ -52,8 +52,7 @@ class Process(object):
         Generator for children of the current node.
         :return: Generator for children of node.
         """
-        for child in self._prototype.children(self):
-            yield child
+        return self._prototype.children(self)
 
     def node_number(self):
         """
