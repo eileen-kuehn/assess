@@ -18,8 +18,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():
                 signature = self._signature.get_signature(process)
-                if self._prototype_dict.get(signature, [None])[-1] != prototype:
-                    self._prototype_dict.setdefault(signature, []).append(prototype)
+                self._prototype_dict.setdefault(signature, set()).add(prototype)
             # initialize default distance to prototypes
             self._monitoring_results_dict[prototype] = self.node_count_for_prototype(prototype, original=False)
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
@@ -63,7 +62,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         node_signature = self._signature.get_signature(node)
         if node_signature not in self._measured_nodes:
             self._update_distances(
-                    self._prototype_dict.get(node_signature, []),
+                    self._prototype_dict.get(node_signature, set()),
                     node_signature)
             self._measured_nodes.add(node_signature)
         return node
