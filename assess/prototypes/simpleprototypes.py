@@ -99,7 +99,7 @@ class Tree(object):
         return self._graph.node[node_id]["data"]
 
     def node_count(self):
-        return len(list(self.nodes()))
+        return self._graph.number_of_nodes()
 
     # TODO: implement stop condition for depth and width first
     def nodes(self, depth_first=True):
@@ -223,4 +223,3 @@ class Tree(object):
 
 class Prototype(Tree):
     pass
-
