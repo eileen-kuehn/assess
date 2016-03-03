@@ -146,8 +146,10 @@ class Tree(object):
         result = []
         for node_id in self._graph.predecessors(node.node_id):
             result.append(self.node_with_node_id(node_id))
-        assert len(result) <= 1
-        return result[0] if len(result) > 0 else None
+        try:
+            return result[0]
+        except:
+            return None
 
     def node_number(self, node):
         """
