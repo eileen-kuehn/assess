@@ -192,7 +192,8 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: The number of children of node.
         """
-        return len(list(self.children(node)))
+        # TODO: can be refactored by counting number of edges
+        return len(self._graph.successors(node.node_id))
 
     def subtree_node_count(self, node=None):
         """
