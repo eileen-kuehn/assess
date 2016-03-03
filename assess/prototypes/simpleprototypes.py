@@ -75,6 +75,7 @@ class Process(object):
 class Tree(object):
     def __init__(self):
         self._graph = nx.DiGraph()
+        self._root = None
 
     def add_node(self, name, parent=None, **kwargs):
         node_id = nx.utils.generate_unique_node()
@@ -168,14 +169,17 @@ class Tree(object):
         Method that returns the root node of a tree. None otherwise.
         :return: Root node. None otherwise.
         """
+        if self._root is not None:
+            return self._root
         try:
             root = self._graph.node[self._graph.nodes()[0]]["data"]
             while root.parent() is not None:
                 root = root.parent()
+            self._root = root
         except Exception as e:
             return None
         else:
-            return root
+            return self._root
 
     def children(self, node):
         """
