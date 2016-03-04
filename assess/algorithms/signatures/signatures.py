@@ -73,7 +73,8 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
         self._prepare_signature(node, algorithm_id)
 
     def _grouped_count(self, node, position):
-        children = list(node.parent().children()) if node.parent() is not None else []
+        parent = node.parent()
+        children = list(parent.children()) if parent is not None else []
         names = []
         if len(children) <= 0:
             return 0
