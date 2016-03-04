@@ -34,9 +34,10 @@ class Signature(object):
 
 class ParentChildByNameTopologySignature(Signature):
     def prepare_signature(self, node):
+        parent = node.parent()
         algorithm_id = "%s_%s" %(
             node.name,
-            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
+            hash(self.get_signature(parent) if parent is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -44,10 +45,12 @@ class ParentChildByNameTopologySignature(Signature):
 class ParentChildOrderTopologySignature(Signature):
     def prepare_signature(self, node):
         count = node.node_number()
+        parent = node.parent()
+        parent_signature = self.get_signature(parent) if parent is not None else None
         algorithm_id = "%s.%d_%s" % (
-            self._first_part_algorithm_id(self.get_signature(node.parent()) if node.parent() is not None else ""),
+            self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             count,
-            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
+            hash(parent_signature if parent_signature is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -63,21 +66,23 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
     """
     def prepare_signature(self, node):
         count = node.node_number()
+        parent = node.parent()
+        parent_signature = self.get_signature(parent) if parent is not None else None
         grouped_count = self._grouped_count(node, count)
         algorithm_id = "%s.%d_%s_%s" % (
-            self._first_part_algorithm_id(self.get_signature(node.parent()) if node.parent() is not None else ""),
+            self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             grouped_count,
             node.name,
-            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
+            hash(parent_signature if parent_signature is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
 
     def _grouped_count(self, node, position):
         parent = node.parent()
-        children = list(parent.children()) if parent is not None else []
-        names = []
-        if len(children) <= 0:
+        if parent is None or parent.child_count() <= 0:
             return 0
+        children = list(parent.children())
+        names = []
         for i in range(position+1):
             current_name = str(children[i].name)
             last_name = names[len(names)-1] if len(names) > 0 else ""
@@ -97,18 +102,20 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         self._count = count
 
     def prepare_signature(self, node):
+        parent = node.parent()
         neighbors = self.predecessors(
                 node,
-                node.parent().children() if node.parent() is not None else [],
+                parent.children() if parent is not None else [],
         )
         algorithm_id = "%s_%s_%s" %(
             "_".join(str(node) for node in neighbors),
             node.name,
-            hash(self.get_signature(node.parent()) if node.parent() is not None else node.name)
+            hash(self.get_signature(parent) if parent is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
 
     def predecessors(self, node, neighbors):
+        # TODO: can be improved
         results = []
         neighbors = list(neighbors)
         if len(neighbors) > 0:
