@@ -78,14 +78,14 @@ class Tree(object):
         self._root = None
 
     def add_node(self, name, parent=None, **kwargs):
-        node_id = nx.utils.generate_unique_node()
-        node = Process(self, node_id, name=name, **kwargs)
         if parent is None and self.root() is not None:
             raise TreeInvalidatedException()
+        node_id = nx.utils.generate_unique_node()
+        node = Process(self, node_id, name=name, **kwargs)
+        node.position = kwargs.get("position", parent.child_count() if parent is not None else 0)
         self._graph.add_node(
             node_id,
-            data=node,
-            position=kwargs.get("position", parent.child_count() if parent is not None else 0)
+            data=node
         )
         if parent is not None:
             self._graph.add_edge(
@@ -157,14 +157,7 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: The node number of node.
         """
-        number = 0
-        parent = self.parent(node)
-        neighboring_nodes = list(self.children(parent)) if parent is not None else []
-        for i in range(0, len(neighboring_nodes)):
-            if node == neighboring_nodes[i]:
-                number = i
-                break
-        return number
+        return node.position
 
     def root(self):
         """
@@ -189,7 +182,7 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: A generator for children of node.
         """
-        for node_id in sorted(self._graph.successors(node.node_id), key=lambda nid: self._graph.node[nid]['position']):
+        for node_id in sorted(self._graph.successors(node.node_id), key=lambda nid: self._graph.node[nid]['data'].position):
             yield self.node_with_node_id(node_id)
 
     def child_count(self, node):
