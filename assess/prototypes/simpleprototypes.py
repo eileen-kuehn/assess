@@ -83,6 +83,7 @@ class Tree(object):
         node_id = nx.utils.generate_unique_node()
         node = Process(self, node_id, name=name, **kwargs)
         node.position = kwargs.get("position", parent.child_count() if parent is not None else 0)
+        node.predecessor = parent
         self._graph.add_node(
             node_id,
             data=node
@@ -143,13 +144,7 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: Parent node of node.
         """
-        result = []
-        for node_id in self._graph.predecessors(node.node_id):
-            result.append(self.node_with_node_id(node_id))
-        try:
-            return result[0]
-        except:
-            return None
+        return node.predecessor
 
     def node_number(self, node):
         """
@@ -204,9 +199,8 @@ class Tree(object):
         if node is None:
             node = self.root()
         count = 1
-        if self.child_count(node) > 0:
-            for child in self.children(node):
-                count += self.subtree_node_count(child)
+        for child in self.children(node):
+            count += self.subtree_node_count(child)
         return count
 
     def tree_repr(self, node_repr=lambda node: node.name, sequence_fmt="[%s]"):
