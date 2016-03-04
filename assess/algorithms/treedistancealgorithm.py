@@ -45,6 +45,13 @@ class TreeDistanceAlgorithm(object):
     def prototypes_converted_for_algorithm(self):
         return self._prototypes
 
+    def start_tree(self):
+        self._tree = Tree()
+        self._tree_dict = ObjectCache()
+
+    def finish_tree(self):
+        pass
+
     def add_events(self, eventgenerator, **kwargs):
         for event in eventgenerator:
             result = self.add_event(event, **kwargs)
@@ -66,7 +73,7 @@ class TreeDistanceAlgorithm(object):
             pid=event.pid,
             ppid=event.ppid
         )
-        signature = self._signature.get_signature(node)
+        signature = self._signature.get_signature(node, parent)
         self._tree_dict.addObject(node, pid=event.pid, tme=event.tme)
         return signature
 

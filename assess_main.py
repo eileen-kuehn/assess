@@ -75,6 +75,10 @@ def check_algorithms(paths=[], configurations=[]):
     for configuration in configurations:
         for algorithm in configuration["algorithms"]:
             for signature in configuration["signatures"]:
+                signature_object = signature()
+                alg = algorithm(signature=signature_object)
+                alg.prototypes = prototypes
+
                 # Most critical, so take as leading decorator
                 performance = PerformanceDecorator()
                 compression = CompressionFactorDecorator()
@@ -86,13 +90,12 @@ def check_algorithms(paths=[], configurations=[]):
                 data.decorator = compression
                 distance2.decorator = data
                 distance.decorator = distance2
+                distance.algorithm = alg
                 for path in paths:
-                    signature_object = signature()
-                    alg = algorithm(signature=signature_object)
-                    alg.prototypes = prototypes
-                    distance.algorithm = alg
+                    distance.start_tree()
                     for event in CSVEventStreamer(csv_path=path):
                         distance.add_event(event=event)
+                    distance.finish_tree()
                 results["results"].append({
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,

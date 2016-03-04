@@ -12,10 +12,21 @@ class Decorator(object):
         if self.decorator:
             self.decorator.algorithm = value
         self._algorithm = value
-        self._algorithm_updated()
+        #self._algorithm_updated()
 
     def _algorithm_updated(self):
         pass
+
+    def start_tree(self):
+        if self.decorator:
+            self.decorator.start_tree()
+        else:
+            self._algorithm.start_tree()
+        self._algorithm_updated()
+
+    def finish_tree(self):
+        if not self.decorator:
+            self._algorithm.finish_tree()
 
     def add_event(self, event, **kwargs):
         self._event_will_be_added()

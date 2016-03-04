@@ -11,6 +11,11 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         self._monitoring_results = []
         self._event_counter = 0
 
+    def start_tree(self):
+        self._monitoring_results = []
+        self._event_counter = 0
+        TreeDistanceAlgorithm.start_tree(self)
+
     def add_events(self, eventgenerator, **kwargs):
         events = list(eventgenerator)
         while len(events) > 1:
