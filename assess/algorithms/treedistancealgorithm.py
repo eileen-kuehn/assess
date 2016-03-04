@@ -66,9 +66,9 @@ class TreeDistanceAlgorithm(object):
             pid=event.pid,
             ppid=event.ppid
         )
-        self._signature.prepare_signature(node)
+        signature = self._signature.get_signature(node)
         self._tree_dict.addObject(node, pid=event.pid, tme=event.tme)
-        return node
+        return signature
 
     def _update_distances(self, **kwargs):
         raise NotImplementedError

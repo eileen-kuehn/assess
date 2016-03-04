@@ -34,6 +34,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         if original:
             return prototype.node_count()
         count = 0
+        # TODO: maybe work with a filter here
         for values in self._prototype_dict.values():
             for value in values:
                 if value == prototype:
@@ -56,16 +57,15 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         return [value for value in self._monitoring_results_dict.values()]
 
     def _create_node(self, event, **kwargs):
-        node = TreeDistanceAlgorithm._create_node(self, event, **kwargs)
+        signature = TreeDistanceAlgorithm._create_node(self, event, **kwargs)
         # print(self._prototypes[0].tree_repr(node_repr=lambda thenode: thenode.signature_id[self._signature]))
         # print(self._monitoring_tree.tree_repr(node_repr=lambda thenode: thenode.signature_id[self._signature]))
-        node_signature = self._signature.get_signature(node)
-        if node_signature not in self._measured_nodes:
+        if signature not in self._measured_nodes:
             self._update_distances(
-                    self._prototype_dict.get(node_signature, set()),
-                    node_signature)
-            self._measured_nodes.add(node_signature)
-        return node
+                    self._prototype_dict.get(signature, set()),
+                    signature)
+            self._measured_nodes.add(signature)
+        return signature
 
     def _finish_node(self, event):
         # just ignoring the exit event of processes here

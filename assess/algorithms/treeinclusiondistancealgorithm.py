@@ -21,9 +21,9 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
         return [value for value in self._monitoring_results[-1].values()]
 
     def _create_node(self, event):
-        node = TreeDistanceAlgorithm._create_node(self, event)
+        signature = TreeDistanceAlgorithm._create_node(self, event)
         self._update_distances(self._prototypes, self._tree)
-        return node
+        return signature
 
     def _update_distances(self, prototypes, tree):
         result_dict = dict(zip(self._prototypes, [0] * len(self._prototypes)))
