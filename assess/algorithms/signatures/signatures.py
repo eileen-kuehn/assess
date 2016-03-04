@@ -4,7 +4,7 @@ class Signature(object):
     By using signatures, similar nodes might be grouped for example. This improves
     the compression factor but might decrease the precision of the algorithm.
     """
-    def prepare_signature(self, node):
+    def prepare_signature(self, node, parent):
         """
         Methods takes a node and prepares its signature. The signature is directly
         attached to the node.
@@ -15,7 +15,7 @@ class Signature(object):
     def _prepare_signature(self, node, node_id):
         node.__dict__.setdefault('signature_id', {})[self] = str(node_id)
 
-    def get_signature(self, node):
+    def get_signature(self, node, parent=None):
         """
         Method returns the signature of the given node. If no signature has been
         assigned so far, it is calculated and attached.
@@ -25,7 +25,7 @@ class Signature(object):
         try:
             return node.signature_id[self]
         except (AttributeError, KeyError):
-            self.prepare_signature(node)
+            self.prepare_signature(node, parent)
             return node.signature_id[self]
 
     def __repr__(self):
@@ -33,8 +33,7 @@ class Signature(object):
 
 
 class ParentChildByNameTopologySignature(Signature):
-    def prepare_signature(self, node):
-        parent = node.parent()
+    def prepare_signature(self, node, parent):
         algorithm_id = "%s_%s" %(
             node.name,
             hash(self.get_signature(parent) if parent is not None else node.name)
@@ -43,9 +42,8 @@ class ParentChildByNameTopologySignature(Signature):
 
 
 class ParentChildOrderTopologySignature(Signature):
-    def prepare_signature(self, node):
+    def prepare_signature(self, node, parent):
         count = node.node_number()
-        parent = node.parent()
         parent_signature = self.get_signature(parent) if parent is not None else None
         algorithm_id = "%s.%d_%s" % (
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
@@ -64,9 +62,8 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
     same name after each other, they get the same name. If they appear again after another
     process it differs.
     """
-    def prepare_signature(self, node):
+    def prepare_signature(self, node, parent):
         count = node.node_number()
-        parent = node.parent()
         parent_signature = self.get_signature(parent) if parent is not None else None
         grouped_count = self._grouped_count(node, count)
         algorithm_id = "%s.%d_%s_%s" % (
@@ -101,8 +98,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         Signature.__init__(self)
         self._count = count
 
-    def prepare_signature(self, node):
-        parent = node.parent()
+    def prepare_signature(self, node, parent):
         neighbors = self.predecessors(
                 node,
                 parent.children() if parent is not None else [],
