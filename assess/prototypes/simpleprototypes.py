@@ -25,6 +25,9 @@ class OrderedTreeNode(object):
     def children(self):
         return self._children
 
+    def children_list(self):
+        return self._children
+
     def child_count(self):
         return len(self._children)
 
@@ -219,6 +222,9 @@ class Tree(object):
         """
         for child in node.children():
             yield child
+
+    def children_list(self, node):
+        return node.children()
 
     def child_count(self, node):
         """

@@ -99,27 +99,15 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         self._count = count
 
     def prepare_signature(self, node, parent):
-        neighbors = self.predecessors(
-                node,
-                parent.children() if parent is not None else [],
-        )
+        position = node.node_number()
+        neighbors = parent.children_list()[-((len(parent.children_list())-position) + self._count):position] \
+            if parent is not None else []
         algorithm_id = "%s_%s_%s" %(
-            "_".join(str(node) for node in neighbors),
+            "_".join(str(node.name) for node in neighbors),
             node.name,
             hash(self.get_signature(parent, None) if parent is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
-
-    def predecessors(self, node, neighbors):
-        # TODO: can be improved
-        results = []
-        neighbors = list(neighbors)
-        if len(neighbors) > 0:
-            position = node.node_number()
-            for j in range(position-1, position-1-self._count, -1):
-                if j >= 0:
-                    results.insert(0, neighbors[j].name)
-        return results
 
     def __repr__(self):
         return self.__class__.__name__ + " (count: %d)" % self._count
