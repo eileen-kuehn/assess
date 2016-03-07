@@ -55,15 +55,16 @@ class OrderedTree(object):
         self.root = None
         self._node_counter = 0
 
+    def _unique_node_id(self):
+        # nx.utils.generate_unique_node()
+        return str(self.node_count())
+
     def node_count(self):
         return self._node_counter
 
-    def node_added(self):
-        self._node_counter += 1
-
     def add_node(self, name=None, parent=None, **kwargs):
         node = OrderedTreeNode(
-                node_id=nx.utils.generate_unique_node(),
+                node_id=self._unique_node_id(),
                 name=name,
                 parent=parent,
                 tree=self,
