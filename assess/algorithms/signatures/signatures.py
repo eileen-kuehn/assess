@@ -64,8 +64,15 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
     """
     def prepare_signature(self, node, parent):
         count = node.node_number()
+        if count > 0:
+            previous_node = parent.children_list()[count-1]
+            grouped_count = previous_node.group_position \
+                if previous_node.name == node.name else previous_node.group_position + 1
+        else:
+            grouped_count = 0
+        node.group_position = grouped_count
+
         parent_signature = self.get_signature(parent, None) if parent is not None else None
-        grouped_count = self._grouped_count(node, count)
         algorithm_id = "%s.%d_%s_%s" % (
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             grouped_count,
@@ -73,19 +80,6 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
             hash(parent_signature if parent_signature is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
-
-    def _grouped_count(self, node, position):
-        parent = node.parent()
-        if parent is None or parent.child_count() <= 0:
-            return 0
-        children = list(parent.children())
-        names = []
-        for i in range(position+1):
-            current_name = str(children[i].name)
-            last_name = names[len(names)-1] if len(names) > 0 else ""
-            if current_name != last_name:
-                names.append(current_name)
-        return len(names)-1
 
 
 class ParentCountedChildrenByNameTopologySignature(Signature):
