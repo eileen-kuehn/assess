@@ -55,7 +55,7 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
                 prototype,
                 tree,
                 lambda node: list(node.children()),
-                lambda node: self._signature.get_signature(node),
+                lambda node: self._signature.get_signature(node, node.parent()),
                 lambda prototype_label, tree_label: prototype_label != tree_label
         )
 

@@ -37,22 +37,22 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
     def _perform_calculation(self, prototype, tree):
         distance = 0
 
-        if self._signature.get_signature(prototype) in self._signature.get_signature(tree):
+        if self._signature.get_signature(prototype, prototype.parent()) in self._signature.get_signature(tree, tree.parent()):
             tree_nodes = list(tree.children())
             last_valid_position = 0
             for node in prototype.children():
                 for i in range(last_valid_position, len(tree_nodes)):
-                    if self._signature.get_signature(node) in self._signature.get_signature(tree_nodes[i]):
+                    if self._signature.get_signature(node, node.parent()) in self._signature.get_signature(tree_nodes[i], tree_nodes[i].parent()):
                         # matched
                         last_valid_position = i+1
                         distance += self._perform_calculation(node, tree_nodes[i])
                         break
                 else:
                     # did not match any node
-                    distance += prototype._prototype.subtree_node_count(node)
+                    distance += node.node_count()
         else:
             # distance is sum of all nodes
-            return prototype._prototype.subtree_node_count(prototype)
+            return prototype.node_count()
         return distance
 
     def _calculate_distance(self, prototype, tree):

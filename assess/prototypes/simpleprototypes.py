@@ -3,6 +3,78 @@ import networkx as nx
 from assess.exceptions.exceptions import TreeInvalidatedException
 
 
+class OrderedTreeNode(object):
+    def __init__(self, node_id, name=None, parent=None, position=0, tree=None, **kwargs):
+        self.node_id = node_id
+        self.name = name
+        self._parent = parent
+        self._children = []
+        self._prototype = tree
+        self.position = position
+        for key, value in kwargs.items():
+            setattr(self, key, value)
+
+    def depth(self):
+        count = 0
+        node = self
+        while node.parent():
+            count += 1
+            node = node.parent()
+        return count
+
+    def children(self):
+        return self._children
+
+    def child_count(self):
+        return len(self._children)
+
+    def node_count(self):
+        count = 1
+        for child in self._children:
+            count += child.node_count()
+        return count
+
+    def node_number(self):
+        return self.position
+
+    def parent(self):
+        return self._parent
+
+    def add_node(self, name=None, **kwargs):
+        return self._prototype.add_node(name=name, parent=self, **kwargs)
+
+    #def __repr__(self):
+    #    return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg)) for arg in vars(self)) + ")"
+
+
+class OrderedTree(object):
+    def __init__(self):
+        self.root = None
+        self._node_counter = 0
+
+    def node_count(self):
+        return self._node_counter
+
+    def node_added(self):
+        self._node_counter += 1
+
+    def add_node(self, name=None, parent=None, **kwargs):
+        node = OrderedTreeNode(
+                node_id=nx.utils.generate_unique_node(),
+                name=name,
+                parent=parent,
+                tree=self,
+                position=parent.child_count() if parent is not None else 0,
+                **kwargs
+        )
+        if self.root is None:
+            self.root = node
+        else:
+            parent._children.append(node)
+        self._node_counter += 1
+        return node
+
+
 class Process(object):
     # TODO: can this be exchanged by process from gnmutils? or extended?
     """
@@ -74,33 +146,15 @@ class Process(object):
 
 class Tree(object):
     def __init__(self):
-        self._graph = nx.DiGraph()
-        self._root = None
+        self._graph = OrderedTree()
 
     def add_node(self, name, parent=None, **kwargs):
         if parent is None and self.root() is not None:
-            raise TreeInvalidatedException()
-        node_id = nx.utils.generate_unique_node()
-        node = Process(self, node_id, name=name, **kwargs)
-        node.position = kwargs.get("position", parent.child_count() if parent is not None else 0)
-        node.predecessor = parent
-        self._graph.add_node(
-            node_id,
-            data=node
-        )
-        if parent is not None:
-            self._graph.add_edge(
-                parent.node_id,
-                node_id,
-                weight=1.0
-            )
-        return node
-
-    def node_with_node_id(self, node_id):
-        return self._graph.node[node_id]["data"]
+            raise TreeInvalidatedException
+        return self._graph.add_node(name=name, parent=parent, **kwargs)
 
     def node_count(self):
-        return self._graph.number_of_nodes()
+        return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
     def nodes(self, depth_first=True):
@@ -111,8 +165,6 @@ class Tree(object):
         :return: Generator for tree nodes.
         """
         def dfs(root):
-            if root is None:
-                root = self.root()
             yield root
             try:
                 for child in root.children():
@@ -124,16 +176,14 @@ class Tree(object):
                 pass
 
         def wfs(root):
-            if root is None:
-                root = self.root()
             to_visit = [root]
-            while len(to_visit) > 0:
+            while to_visit:
                 root = to_visit.pop(0)
                 yield root
                 for child in root.children():
                     to_visit.append(child)
 
-        root = self.root()
+        root = self._graph.root
         if root is not None:
             for node in (dfs(root) if depth_first else wfs(root)):
                 yield node
@@ -144,7 +194,7 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: Parent node of node.
         """
-        return node.predecessor
+        return node.parent()
 
     def node_number(self, node):
         """
@@ -159,17 +209,7 @@ class Tree(object):
         Method that returns the root node of a tree. None otherwise.
         :return: Root node. None otherwise.
         """
-        if self._root is not None:
-            return self._root
-        try:
-            root = self._graph.node[self._graph.nodes()[0]]["data"]
-            while root.parent() is not None:
-                root = root.parent()
-            self._root = root
-        except Exception as e:
-            return None
-        else:
-            return self._root
+        return self._graph.root
 
     def children(self, node):
         """
@@ -177,8 +217,8 @@ class Tree(object):
         :param node: A node inside the tree.
         :return: A generator for children of node.
         """
-        for node_id in sorted(self._graph.successors(node.node_id), key=lambda nid: self._graph.node[nid]['data'].position):
-            yield self.node_with_node_id(node_id)
+        for child in node.children():
+            yield child
 
     def child_count(self, node):
         """
@@ -187,9 +227,9 @@ class Tree(object):
         :return: The number of children of node.
         """
         # TODO: can be refactored by counting number of edges
-        return len(self._graph.successors(node.node_id))
+        return len(node.children())
 
-    def subtree_node_count(self, node=None):
+    def subtree_node_count(self, node):
         """
         Method that gives the number of nodes in subtree rooted at node. If node is not given,
         the node count of the complete tree is returned.
@@ -205,13 +245,14 @@ class Tree(object):
 
     def tree_repr(self, node_repr=lambda node: node.name, sequence_fmt="[%s]"):
         def subtree_repr(root):
-            if list(root.children()):
-                return node_repr(root) + ": " + sequence_fmt % ", ".join(subtree_repr(child) for child in root.children())
+            children = list(self.children(root))
+            if children:
+                return node_repr(root) + ": " + sequence_fmt % ", ".join(subtree_repr(child) for child in children)
             return node_repr(root)
         return sequence_fmt % (subtree_repr(self.root()))
 
     def __repr__(self):
-        return self.__class__.__name__ + " (" + ", ".join(node for node in self._graph.nodes()) + ")"
+        return self.__class__.__name__ + " (" + ", ".join(str(node) for node in self.nodes()) + ")"
 
 
 class Prototype(Tree):

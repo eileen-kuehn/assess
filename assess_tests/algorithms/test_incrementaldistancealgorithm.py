@@ -9,113 +9,167 @@ from assess.events.events import Event
 class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
     def setUp(self):
         self.prototype = Prototype()
-        root = self.prototype.add_node("root", tme=0, pid=1, ppid=0)
+        pid_count = 1
+        root = self.prototype.add_node("root", tme=0, pid=pid_count, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[1]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=3)
+            pid_count += 1
         child_child = list(child.children())[5]
+        ppid = pid_count - 5
         for i in range(5):
-            child_child.add_child("node", tme=0)
+            child_child.add_node("node", tme=0, pid=pid_count, ppid=ppid)
+            pid_count += 1
 
+        pid_count = 1
         self.modified_prototype_position = Prototype()
-        root = self.modified_prototype_position.add_node("root", tme=0, pid=1, ppid=0)
+        root = self.modified_prototype_position.add_node("root", tme=0, pid=pid_count, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[3]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=5)
+            pid_count += 1
         child_child = list(child.children())[5]
+        ppid = pid_count - 5
         for i in range(5):
-            child_child.add_child("node", tme=0)
+            child_child.add_node("node", tme=0, pid=pid_count, ppid=ppid)
+            pid_count += 1
 
+        pid_count = 1
         self.modified_prototype_position2 = Prototype()
         root = self.modified_prototype_position2.add_node("root", tme=0, pid=1, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[11]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=13)
+            pid_count += 1
         child_child = list(child.children())[5]
+        ppid = pid_count - 5
         for i in range(5):
-            child_child.add_child("node", tme=0)
+            child_child.add_node("node", tme=0, pid=pid_count, ppid=ppid)
+            pid_count += 1
 
+        pid_count = 1
         self.modified_prototype_name = Prototype()
         root = self.modified_prototype_name.add_node("root", tme=0, pid=1, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child3", tme=0)
+            root.add_node("child3", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[1]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=3)
+            pid_count += 1
         child_child = list(child.children())[5]
+        ppid = pid_count - 5
         for i in range(5):
-            child_child.add_child("node", tme=0)
+            child_child.add_node("node", tme=0, pid=pid_count, ppid=ppid)
+            pid_count += 1
 
+        pid_count = 1
         self.modified_prototype_frequency = Prototype()
         root = self.modified_prototype_frequency.add_node("root", tme=0, pid=1, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(12):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[1]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=3)
+            pid_count += 1
         child_child = list(child.children())[5]
+        ppid = pid_count - 5
         for i in range(5):
-            child_child.add_child("node", tme=0)
+            child_child.add_node("node", tme=0, pid=pid_count, ppid=ppid)
+            pid_count += 1
 
+        pid_count = 1
         self.modified_prototype_skipped = Prototype()
         root = self.modified_prototype_skipped.add_node("root", tme=0, pid=1, ppid=0)
+        pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child", tme=0)
+            root.add_node("child", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         for i in range(10):
-            root.add_child("child2", tme=0)
+            root.add_node("child2", tme=0, pid=pid_count, ppid=1)
+            pid_count += 1
         child = list(root.children())[1]
         for i in range(10):
-            child.add_child(i, tme=0)
+            child.add_node(i, tme=0, pid=pid_count, ppid=3)
+            pid_count += 1
 
     def _add_events(self, algorithm=None, events=None):
+        algorithm.start_tree()
         for event in Event.from_tree(events):
             result = algorithm.add_event(event)
+        algorithm.finish_tree()
         return result
 
     def _test_signature(self, algorithm=None, signature=None, events=None, prototype=None):
         if prototype is None:
             prototype = self.prototype
-        signature=signature()
+        signature = signature()
         algorithm = algorithm(signature=signature)
         algorithm.prototypes = [prototype]
 

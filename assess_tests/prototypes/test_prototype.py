@@ -25,12 +25,12 @@ class TestPrototypeFunctions(unittest.TestCase):
         nodes = []
         prototype = Prototype()
         root = prototype.add_node("root", pid=1, ppid=0)
-        one = root.add_child("1")
-        one_one = one.add_child("1.1")
-        one_one_one = one_one.add_child("1.1.1")
-        one_two = one.add_child("1.2")
-        two = root.add_child("2")
-        three = root.add_child("3")
+        one = root.add_node("1")
+        one_one = one.add_node("1.1")
+        one_one_one = one_one.add_node("1.1.1")
+        one_two = one.add_node("1.2")
+        two = root.add_node("2")
+        three = root.add_node("3")
 
         nodes.append(root)
         nodes.append(one)
@@ -48,12 +48,12 @@ class TestPrototypeFunctions(unittest.TestCase):
         nodes = []
         prototype = Prototype()
         root = prototype.add_node("root", pid=1, ppid=0)
-        one = root.add_child("1")
-        one_one = one.add_child("1.1")
-        one_one_one = one_one.add_child("1.1.1")
-        one_two = one.add_child("1.2")
-        two = root.add_child("2")
-        three = root.add_child("3")
+        one = root.add_node("1")
+        one_one = one.add_node("1.1")
+        one_one_one = one_one.add_node("1.1.1")
+        one_two = one.add_node("1.2")
+        two = root.add_node("2")
+        three = root.add_node("3")
 
         nodes.append(root)
         nodes.append(one)
@@ -83,9 +83,6 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(prototype.subtree_node_count(node_3), 1, "Subtree of node_3 should have 1 node")
 
         nodes = [node_1, node_2, node_3, node_4]
-        # check for node_ids
-        for node in nodes:
-            self.assertEqual(prototype.node_with_node_id(node.node_id), node)
         self.assertEqual(len(list(prototype.nodes())), len(nodes))
         for node in prototype.nodes():
             self.assertTrue(node in nodes)
@@ -132,7 +129,7 @@ class TestPrototypeFunctions(unittest.TestCase):
         prototype = Prototype()
         root = prototype.add_node("root")
         for i in range(20):
-            prototype.add_node(i, root)
+            prototype.add_node(name=i, parent=root)
 
         self.assertEqual(prototype.child_count(root), 20)
         # check order of nodes
@@ -143,7 +140,7 @@ class TestPrototypeFunctions(unittest.TestCase):
         prototype = Prototype()
         root = prototype.add_node("root", pid=1, ppid=0)
         for i in range(20):
-            root.add_child(i)
+            root.add_node(i)
 
         self.assertEqual(root.child_count(), 20)
         for node in root.children():
@@ -153,9 +150,9 @@ class TestPrototypeFunctions(unittest.TestCase):
         prototype = Prototype()
         root = prototype.add_node("node", pid=1, ppid=0)
         for i in range(20):
-            root.add_child("node")
+            root.add_node("node")
         one_child = list(root.children())[0]
         for i in range(20):
-            one_child.add_child("node")
+            one_child.add_node("node")
 
         self.assertEqual(prototype.node_count(), 41)
