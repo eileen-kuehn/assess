@@ -8,8 +8,12 @@ class DataDecorator(Decorator):
     def __init__(self):
         Decorator.__init__(self)
         self._data = None
+        self._name = "data"
 
     def _algorithm_updated(self):
+        self._data = None
+
+    def _tree_started(self):
         if not self._data:
             # measure size of prototypes to compare with
             self._data = {

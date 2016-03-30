@@ -5,8 +5,12 @@ class CompressionFactorDecorator(Decorator):
     def __init__(self):
         Decorator.__init__(self)
         self._compressions = None
+        self._name = "compression"
 
     def _algorithm_updated(self):
+        self._compressions = None
+
+    def _tree_started(self):
         if self._compressions is None:
             self._compressions = {
                 "prototypes": self._compression_factor(),

@@ -9,8 +9,6 @@ from utility.exceptions import mainExceptionFrame
 
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
-from assess.decorators.performancedecorator import PerformanceDecorator
-from assess.decorators.datadecorator import DataDecorator
 from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signatures import *
 
@@ -45,7 +43,10 @@ def main():
     assert configdict["configurations"] is not None
     paths = options.paths
 
-    results = check_algorithms(paths=paths, configurations=configdict["configurations"])
+    results = check_algorithms(
+        paths=paths,
+        configurations=configdict["configurations"]
+    )
     if options.json:
         dump = {
             "meta": {
@@ -78,33 +79,20 @@ def check_algorithms(paths=[], configurations=[]):
                 signature_object = signature()
                 alg = algorithm(signature=signature_object)
                 alg.prototypes = prototypes
-
-                # Most critical, so take as leading decorator
-                performance = PerformanceDecorator()
-                compression = CompressionFactorDecorator()
-                data = DataDecorator()
-                distance = DistanceMatrixDecorator(normalized=False)
-                distance2 = DistanceMatrixDecorator(normalized=True)
-                # Build decorator chain with performance as last
-                compression.decorator = performance
-                data.decorator = compression
-                distance2.decorator = data
-                distance.decorator = distance2
-                distance.algorithm = alg
+                # TODO: what if there is no decorator at all? Is it possible?
+                decorator = configuration["decorator"]
+                decorator.algorithm = alg
                 for path in paths:
-                    distance.start_tree()
+                    decorator.start_tree()
                     for event in CSVEventStreamer(csv_path=path):
-                        distance.add_event(event=event)
-                    distance.finish_tree()
+                        decorator.add_event(event=event)
+                    decorator.finish_tree()
                 results["results"].append({
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,
-                    "data": data.data(),
-                    "compression": compression.data(),
-                    "accumulated_performance": performance.accumulated_data(),
-                    #"performance": performance.performances(),
-                    "matrix": distance.data(),
-                    "normalized_matrix": distance2.data()
+                    "decorator": [
+                        decorator.descriptive_data()
+                    ]
                 })
     return results
 

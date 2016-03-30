@@ -4,13 +4,22 @@ from assess.decorators.decorator import Decorator
 
 
 class PerformanceDecorator(Decorator):
-    def __init__(self):
+    def __init__(self, accumulated=True):
         Decorator.__init__(self)
         self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
         self._performances = []
         self._start = None
+        self._accumulated = accumulated
+        if self._accumulated:
+            self._name = "accumulated_performance"
+        else:
+            self._name = "performance"
 
     def _algorithm_updated(self):
+        self._performances = []
+        self._start = None
+
+    def _tree_started(self):
         # TODO: algorithm description should be given by another decorator
         # TODO: there should be another decorator describing the data itself
         self._performances.append({})
@@ -26,15 +35,16 @@ class PerformanceDecorator(Decorator):
             self._performances[-1].setdefault(key, []).append(value)
 
     def data(self):
-        return self._performances
+        if self._accumulated:
+            result = []
+            for performance in self._performances:
+                result.append({})
+                for key in performance:
+                    try:
+                        result[-1][key] = sum(performance[key])
+                    except TypeError:
+                        result[-1][key] = performance[key]
+            return result
+        else:
+            return self._performances
 
-    def accumulated_data(self):
-        result = []
-        for performance in self._performances:
-            result.append({})
-            for key in performance:
-                try:
-                    result[-1][key] = sum(performance[key])
-                except TypeError:
-                    result[-1][key] = performance[key]
-        return result

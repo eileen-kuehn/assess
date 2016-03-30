@@ -2,6 +2,7 @@ class Decorator(object):
     def __init__(self):
         self._algorithm = None
         self.decorator = None
+        self._name = "decorator"
 
     @property
     def algorithm(self):
@@ -12,9 +13,12 @@ class Decorator(object):
         if self.decorator:
             self.decorator.algorithm = value
         self._algorithm = value
-        #self._algorithm_updated()
+        self._algorithm_updated()
 
     def _algorithm_updated(self):
+        pass
+
+    def _tree_started(self):
         pass
 
     def start_tree(self):
@@ -22,7 +26,7 @@ class Decorator(object):
             self.decorator.start_tree()
         else:
             self._algorithm.start_tree()
-        self._algorithm_updated()
+        self._tree_started()
 
     def finish_tree(self):
         if not self.decorator:
@@ -46,5 +50,9 @@ class Decorator(object):
     def data(self):
         raise NotImplementedError()
 
-    def accumulated_data(self):
-        raise NotImplementedError()
+    def descriptive_data(self):
+        if self.decorator:
+            result = "%s, %s: %s" % (self.decorator.descriptive_data(), self._name, self.data())
+        else:
+            result = "%s: %s" % (self._name, self.data())
+        return result

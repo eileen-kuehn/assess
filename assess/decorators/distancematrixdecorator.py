@@ -9,6 +9,10 @@ class DistanceMatrixDecorator(Decorator):
         self._distance_matrix = None
         self._event_counter = 0
         self._normalized = normalized
+        if self._normalized:
+            self._name = "normalized_matrix"
+        else:
+            self._name = "matrix"
 
         self._tmp_prototype_counts = None
 
@@ -20,9 +24,13 @@ class DistanceMatrixDecorator(Decorator):
         return results
 
     def _algorithm_updated(self):
+        self._distance_matrix = None
+        self._event_counter = 0
+
+    def _tree_started(self):
         size = self._matrix_size()
         if 0 < size <= len(self._distance_matrix):
-            raise MatrixDoesNotMatchBounds(size, size, len(self._matrix_size()) + 1)
+            raise MatrixDoesNotMatchBounds(size, size, len(self._distance_matrix) + 1)
         # add a new row for a new algorithm
         self._distance_matrix.append([0 for x in range(self._matrix_size())])
 
