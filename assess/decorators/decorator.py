@@ -29,8 +29,13 @@ class Decorator(object):
         self._tree_started()
 
     def finish_tree(self):
-        if not self.decorator:
-            self._algorithm.finish_tree()
+        if self.decorator:
+            result = self.decorator.finish_tree()
+        else:
+            result = self._algorithm.finish_tree()
+        if result is not None:
+            self._event_added(None, result[:])
+        return result
 
     def add_event(self, event, **kwargs):
         self._event_will_be_added()
@@ -51,8 +56,7 @@ class Decorator(object):
         raise NotImplementedError()
 
     def descriptive_data(self):
+        result = {self._name: self.data()}
         if self.decorator:
-            result = "%s, %s: %s" % (self.decorator.descriptive_data(), self._name, self.data())
-        else:
-            result = "%s: %s" % (self._name, self.data())
+            result.update(self.decorator.descriptive_data())
         return result

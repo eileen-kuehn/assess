@@ -90,9 +90,7 @@ def check_algorithms(paths=[], configurations=[]):
                 results["results"].append({
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,
-                    "decorator": [
-                        decorator.descriptive_data()
-                    ]
+                    "decorator": decorator.descriptive_data()
                 })
     return results
 

@@ -28,6 +28,8 @@ class PerformanceDecorator(Decorator):
         self._start = os.times()
 
     def _event_added(self, event, result):
+        if event is None:
+            return
         end = os.times()
         result_dict = zip(self._items, [end[i] - self._start[i] for i in range(len(self._start))])
         self._start = None
