@@ -2,6 +2,17 @@ from assess.algorithms.distances.distance import Distance
 
 
 class SimpleDistance(Distance):
+    """
+    SimpleDistance class implements an exact measure by initialising the distance with the number of nodes inside
+    the prototype. For each signature (that has not been checked before) the base distance is initialised with one.
+    If the signature does match a prototype, the distance is set to -1.
+    This distance measure has the property, that it is rising and falling. Maybe not adequate for anomaly detection
+    but it delivers exact results without considering a final step.
+
+    The currently implemented formula is the following:
+    * Explicit version: $\delta = |H(P)| - |H(T_{i})| + 2|H(T^{\mathrm{add}}_{i})|$
+    * Recursive version: Too long ;)
+    """
     def init_distance(self, prototypes=None, prototype_node_count=None):
         Distance.init_distance(self, prototype_node_count=prototype_node_count)
         for prototype in prototypes:
