@@ -23,7 +23,7 @@ class RandomGenerator(object):
     def prototype(self):
         if self._prototype is None:
             prototype = Prototype()
-            root = prototype.add_node(name=id_generator(size=6), tme=0, pid=1, ppid=0)
+            root = prototype.add_node(name=id_generator(size=6), tme=0, exit_tme=0, pid=1, ppid=0)
             for i in range(self._prototype_node_count):
                 # TODO: check if this is < or <=
                 if root.child_count() > 0 and random.random() <= self._relative_repetition:
@@ -31,7 +31,7 @@ class RandomGenerator(object):
                     print("picked name")
                 else:
                     node_name = id_generator()
-                prototype.add_node(name=node_name, parent=root, tme=0, pid=i+2, ppid=1)
+                prototype.add_node(name=node_name, parent=root, tme=0, exit_tme=0, pid=i+2, ppid=1)
             assert prototype.node_count()-1 == self._prototype_node_count
             self._prototype = prototype
         return self._prototype
