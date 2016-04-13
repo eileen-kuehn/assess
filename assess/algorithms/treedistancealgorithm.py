@@ -5,6 +5,15 @@ from gnmutils.objectcache import ObjectCache
 
 
 class TreeDistanceAlgorithm(object):
+    """
+    The class TreeDistanceAlgorithm creates the API for different algorithms calculating the distance between trees.
+    The most important methods to consider for implementation of a new distance algorithm are
+    * node_count_for_prototype,
+    * prototypes_converted_for_algorithm,
+    * start_tree and finish_tree,
+    * _add_event, and
+    * _update_distance
+    """
     def __init__(self, signature=Signature()):
         self._signature = signature
         self._prototypes = []
@@ -28,7 +37,7 @@ class TreeDistanceAlgorithm(object):
         :return: The count of nodes used for monitoring tree (either for tree or based on signatures)
         """
         count = self._tree.node_count()
-        return [count for i in range(len(self._prototypes))]
+        return [count for _ in range(len(self._prototypes))]
 
     def prototype_counts(self, original=False):
         """
@@ -40,24 +49,57 @@ class TreeDistanceAlgorithm(object):
         return [self.node_count_for_prototype(prototype, original=original) for prototype in self._prototypes]
 
     def node_count_for_prototype(self, prototype, original=False):
+        """
+        This method provides the number of nodes for a given prototype, either for the original or the adapted
+        version of the prototype.
+        :param prototype: The prototype for which the number should be determined.
+        :param original: Should the original tree prototype be used or the one by the algorithm.
+        :return: Number of nodes inside prototype.
+        """
         return prototype.node_count()
 
     def prototypes_converted_for_algorithm(self):
+        """
+        Method to differ between the different kinds of prototypes that might be used. Either original trees or
+        maybe a dictionary or something else. It actually depends on the algorithm.
+        :return: Prototypes like being used by the actual algorithm.
+        """
         return self._prototypes
 
     def start_tree(self):
+        """
+        Method that should be called before a new event stream is started. It takes care on initialising things.
+        """
         self._tree = Tree()
         self._tree_dict = ObjectCache()
 
     def finish_tree(self):
-        pass
+        """
+        Method that should be called after the event stream has been finished. Some of the algorithms might rely on
+        this method to be called.
+        :return: Returns final distance after all events have been applied.
+        """
+        return None
 
     def add_events(self, eventgenerator, **kwargs):
+        """
+        Convenience method that takes an event generator and calls method add_event for each event that is yielded.
+        :param eventgenerator: Event generator yielding events.
+        :param kwargs:
+        :return: Returns final distances after all events have been applied.
+        """
         for event in eventgenerator:
             result = self.add_event(event, **kwargs)
         return result
 
     def add_event(self, event, **kwargs):
+        """
+        Method to add an event. For each event the actual distance from the stream object to different prototypes
+        are calculated. The calculated distance is returned.
+        :param event: The event to be added to the current distance measurement.
+        :param kwargs:
+        :return: Returns the current distances after the event has been applied.
+        """
         return self._add_event(event, **kwargs)
 
     def _add_event(self, event, **kwargs):
@@ -75,6 +117,12 @@ class TreeDistanceAlgorithm(object):
         )
         signature = self._signature.get_signature(node, parent)
         self._tree_dict.addObject(node, pid=event.pid, tme=event.tme)
+        return signature
+
+    def _finish_node(self, event, **kwargs):
+        parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
+        node = self._tree_dict.getObject(tme=event.tme, pid=event.pid)
+        signature = self._signature.get_signature(node, parent)
         return signature
 
     def _update_distances(self, **kwargs):
