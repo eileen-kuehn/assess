@@ -10,6 +10,7 @@ class Distance(object):
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
         self._prototype_node_count = None
+        self._based_on_original = False
 
     def __iter__(self):
         for value in self._monitoring_results_dict.values():
@@ -25,7 +26,7 @@ class Distance(object):
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None):
+    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None, **kwargs):
         """
         This method is called whenever a new event has been received.
         :param signature: Signature of the node the event belongs to.
@@ -43,6 +44,12 @@ class Distance(object):
         :return: Array of distances in prototype order.
         """
         pass
+
+    def node_count(self):
+        return len(self._measured_nodes)
+
+    def is_prototype_based_on_original(self):
+        return self._based_on_original
 
     def _add_result_dicts(self, first, second):
         result = dict((key, first[key] + second[key]) for key in set(first.keys() + second.keys()))

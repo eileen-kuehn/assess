@@ -18,7 +18,7 @@ class SimpleDistance(Distance):
         for prototype in prototypes:
             self._monitoring_results_dict[prototype] = self._prototype_node_count(prototype, original=False)
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None):
+    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None, **kwargs):
         if signature not in self._measured_nodes:
             self._update_distances(
                     prototype_nodes=matching_prototypes,
