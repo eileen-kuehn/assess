@@ -1,9 +1,11 @@
 import math
 
+from cachemap.frequencycachemap import FrequencyCacheMap
+
 
 class SignatureCache(object):
     def __init__(self):
-        self._prototype_dict = {}
+        self._prototype_dict = FrequencyCacheMap()
 
     def add_signature(self, signature=None):
         if signature not in self._prototype_dict:
@@ -12,7 +14,7 @@ class SignatureCache(object):
             self._prototype_dict[signature] += 1
 
     def get(self, signature=None, **kwargs):
-        return self._prototype_dict.get(signature, 0)
+        return self._prototype_dict.get(signature, dict())
 
     def node_count(self, **kwargs):
         return sum(self._prototype_dict.values())
