@@ -9,38 +9,38 @@ class Distance(object):
     def __init__(self):
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
-        self._prototype_node_count = None
         self._based_on_original = False
 
     def __iter__(self):
         for value in self._monitoring_results_dict.values():
             yield value
 
-    def init_distance(self, prototypes=None, prototype_node_count=None):
+    def init_distance(self, prototypes=None, signature_prototypes=None):
         """
         This method is just for initialisation purposes. Internal states are reset.
         :param prototypes: The prototypes whose distances are measured.
-        :param prototype_node_count: A reference to the method to determine the nodes per prototype.
         """
-        self._prototype_node_count = prototype_node_count
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None, **kwargs):
+    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
+                        signature_prototypes=None, **kwargs):
         """
         This method is called whenever a new event has been received.
         :param signature: Signature of the node the event belongs to.
         :param matching_prototypes: The prototypes that actually contain the signature.
         :param prototypes: Reference to the actual prototypes.
+        :param signature_prototypes:
         :return: signature
         """
         pass
 
-    def finish_distance(self, prototypes=None):
+    def finish_distance(self, prototypes=None, signature_prototypes=None):
         """
         This method is usually called, when the tree has been finished. It can be used to make adaptions/corrections
         to the calculated distance.
         :param prototypes: Reference to the actual prototypes.
+        :param signature_prototypes:
         :return: Array of distances in prototype order.
         """
         pass

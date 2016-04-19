@@ -7,32 +7,35 @@ class AdditionalMissingDistance(Distance):
         self._additional_nodes_dict = {}
         self._missing_nodes_dict = {}
 
-    def init_distance(self, prototypes=None, prototype_node_count=None):
-        Distance.init_distance(self, prototype_node_count=prototype_node_count)
+    def init_distance(self, prototypes=None, signature_prototypes=None):
+        Distance.init_distance(self, prototypes=prototypes, signature_prototypes=signature_prototypes)
         for prototype in prototypes:
             self._monitoring_results_dict[prototype] = 0
             self._additional_nodes_dict[prototype] = 0
             self._missing_nodes_dict[prototype] = 0
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None, **kwargs):
+    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
+                        signature_prototypes=None, **kwargs):
         if signature not in self._measured_nodes:
             self._update_additional_distances(
                 prototype_nodes=matching_prototypes,
                 node_signature=signature,
-                prototypes=prototypes
+                prototypes=prototypes,
+                signature_prototypes=signature_prototypes
             )
         self._update_missing_distances(
             prototype_nodes=matching_prototypes,
             node_signature=signature,
-            prototypes=prototypes
+            prototypes=prototypes,
+            signature_prototypes=signature_prototypes
         )
         self._measured_nodes.add(signature)
         return signature
 
-    def finish_distance(self, prototypes=None):
+    def finish_distance(self, prototypes=None, signature_prototypes=None):
         result_dict = dict(zip(prototypes, [0] * len(prototypes)))
         for prototype in prototypes:
-            prototype_count = self._prototype_node_count(prototype, original=False)
+            prototype_count = signature_prototypes.node_count(prototype=prototype)
             # matching
             result_dict[prototype] = (prototype_count - (len(self._measured_nodes) - self._additional_nodes_dict[prototype])) - \
                                      (self._monitoring_results_dict[prototype] - self._additional_nodes_dict[prototype])
@@ -40,7 +43,7 @@ class AdditionalMissingDistance(Distance):
         self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)
         return [value for value in self._monitoring_results_dict.values()]
 
-    def _update_additional_distances(self, prototype_nodes=None, node_signature=None, prototypes=None):
+    def _update_additional_distances(self, prototype_nodes=None, node_signature=None, prototypes=None, signature_prototypes=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = 0
@@ -48,7 +51,7 @@ class AdditionalMissingDistance(Distance):
         self._monitoring_results_dict = self._add_result_dicts(result_dict, self._monitoring_results_dict)
         self._additional_nodes_dict = self._add_result_dicts(result_dict, self._additional_nodes_dict)
 
-    def _update_missing_distances(self, prototype_nodes=None, node_signature=None, prototypes=None):
+    def _update_missing_distances(self, prototype_nodes=None, node_signature=None, prototypes=None, signature_prototypes=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = 0

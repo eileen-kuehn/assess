@@ -196,7 +196,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         signature = signature()
         algorithm = algorithm(signature=signature)
         algorithm.prototypes = [self.prototype]
-        return algorithm.prototype_counts()
+        return algorithm.prototype_node_counts(signature=True)
 
     def test_distance_zero(self):
         self.assertEqual(self._test_signature(

@@ -18,8 +18,8 @@ class DataDecorator(Decorator):
             # measure size of prototypes to compare with
             self._data = {
                 "prototypes": {
-                    "original": self._algorithm.prototype_counts(original=True),
-                    "converted": self._algorithm.prototype_counts(original=False)
+                    "original": self._algorithm.prototype_node_counts(signature=False),
+                    "converted": self._algorithm.prototype_node_counts(signature=True)
                 },
                 "monitoring": [{}]
             }
@@ -27,9 +27,10 @@ class DataDecorator(Decorator):
             self._data["monitoring"].append(dict())
 
     def _event_added(self, event, result):
+        # TODO: maybe this should only be done once?!
         self._data["monitoring"][-1] = {
-            "original": self._algorithm.node_counts(original=True),
-            "converted": self._algorithm.node_counts(original=False)
+            "original": self._algorithm.tree.node_count(),
+            "converted": self._algorithm.signature_tree.node_count()
         }
 
     def data(self):

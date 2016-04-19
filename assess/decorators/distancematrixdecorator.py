@@ -7,14 +7,12 @@ class DistanceMatrixDecorator(Decorator):
     def __init__(self, normalized=False):
         Decorator.__init__(self)
         self._distance_matrix = None
-        self._event_counter = 0
+        self._tmp_prototype_counts = None
         self._normalized = normalized
         if self._normalized:
             self._name = "normalized_matrix"
         else:
             self._name = "matrix"
-
-        self._tmp_prototype_counts = None
 
     def data(self):
         results = []
@@ -25,27 +23,25 @@ class DistanceMatrixDecorator(Decorator):
 
     def _algorithm_updated(self):
         self._distance_matrix = None
-        self._event_counter = 0
+        self._tmp_prototype_counts = None
 
     def _tree_started(self):
         size = self._matrix_size()
         if 0 < size <= len(self._distance_matrix):
             raise MatrixDoesNotMatchBounds(size, size, len(self._distance_matrix) + 1)
         # add a new row for a new algorithm
-        self._distance_matrix.append([0 for x in range(self._matrix_size())])
+        self._distance_matrix.append([0 for _ in range(self._matrix_size())])
 
     def _event_added(self, event, result):
         size = self._matrix_size()
         if 0 < size != len(result):
             raise MatrixDoesNotMatchBounds(size, len(result), len(self._distance_matrix))
-        if type(event) is ProcessStartEvent:
-            self._event_counter += 1
         if self._normalized:
             if self._tmp_prototype_counts is None:
-                self._tmp_prototype_counts = self._algorithm.prototype_counts(original=False)
-            node_counts = self._algorithm.node_counts(original=False)
+                self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
+            event_counts = self._algorithm.event_counts()
             for i in range(len(result)):
-                result[i] /= float(node_counts[i]+self._tmp_prototype_counts[i])
+                result[i] /= float(event_counts[i]+self._tmp_prototype_counts[i])
         self._distance_matrix[-1] = result
 
     def _matrix_size(self):
