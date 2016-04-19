@@ -20,7 +20,7 @@ class CompressionFactorDecorator(Decorator):
         else:
             self._compressions["monitoring"].append(None)
 
-    def _event_added(self, event, result):
+    def _tree_finished(self, result):
         self._compressions["monitoring"][-1] = self._monitoring_compression_factor()
 
     def _monitoring_compression_factor(self):
@@ -34,7 +34,6 @@ class CompressionFactorDecorator(Decorator):
     def _accumulated_compression_factor(self):
         original = sum(self._original_sizes())
         converted = self._algorithm.signature_prototypes
-        # TODO: this definitely needs to be checked
         try:
             compressed = converted.node_count()
         except:
@@ -43,10 +42,6 @@ class CompressionFactorDecorator(Decorator):
 
     def data(self):
         return self._compressions
-
-    def accumulated_data(self):
-        # TODO: implement me!
-        return 0
 
     def _original_sizes(self):
         return self._algorithm.prototype_node_counts(signature=False)

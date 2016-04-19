@@ -26,8 +26,7 @@ class DataDecorator(Decorator):
         else:
             self._data["monitoring"].append(dict())
 
-    def _event_added(self, event, result):
-        # TODO: maybe this should only be done once?!
+    def _tree_finished(self, result):
         self._data["monitoring"][-1] = {
             "original": self._algorithm.tree.node_count(),
             "converted": self._algorithm.signature_tree.node_count()

@@ -21,6 +21,9 @@ class Decorator(object):
     def _tree_started(self):
         pass
 
+    def _tree_finished(self, result):
+        pass
+
     def start_tree(self):
         if self.decorator:
             self.decorator.start_tree()
@@ -33,8 +36,7 @@ class Decorator(object):
             result = self.decorator.finish_tree()
         else:
             result = self._algorithm.finish_tree()
-        if result is not None:
-            self._event_added(None, result[:])
+        self._tree_finished(result[:] if result is not None else None)
         return result
 
     def add_event(self, event, **kwargs):

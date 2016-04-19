@@ -33,6 +33,7 @@ class DistanceMatrixDecorator(Decorator):
         self._distance_matrix.append([0 for _ in range(self._matrix_size())])
 
     def _event_added(self, event, result):
+        # TODO: might be changed to _tree_finished
         size = self._matrix_size()
         if 0 < size != len(result):
             raise MatrixDoesNotMatchBounds(size, len(result), len(self._distance_matrix))

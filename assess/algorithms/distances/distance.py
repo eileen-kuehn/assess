@@ -33,7 +33,7 @@ class Distance(object):
         :param signature_prototypes:
         :return: signature
         """
-        pass
+        raise NotImplementedError
 
     def finish_distance(self, prototypes=None, signature_prototypes=None):
         """
@@ -43,7 +43,7 @@ class Distance(object):
         :param signature_prototypes:
         :return: Array of distances in prototype order.
         """
-        pass
+        raise NotImplementedError
 
     def node_count(self):
         return len(self._measured_nodes)
