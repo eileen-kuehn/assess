@@ -1,6 +1,6 @@
 class Distance(object):
     """
-    If you plan to implement another distance function, you should subclass dist class and write a new distance.
+    If you plan to implement another distance function, you should subclass this class and write a new distance.
     Base methods that are called are *init_distance* for initialisation or when a new tree is started,
     *update_distance* when a new event has arrived, and *finish_distance* when the tree has finished.
 
@@ -12,6 +12,7 @@ class Distance(object):
         self._based_on_original = False
 
     def __iter__(self):
+        # TODO: is this actually being used?
         for value in self._monitoring_results_dict.values():
             yield value
 
@@ -46,9 +47,18 @@ class Distance(object):
         raise NotImplementedError
 
     def node_count(self):
+        """
+        Returns the count of nodes considered for the actual distance measurement. This count is important to
+        calculate the normalised distance with regard to the used distance.
+        :return: Count of nodes considered from distance
+        """
         return len(self._measured_nodes)
 
     def is_prototype_based_on_original(self):
+        """
+        True if the distance is based on the original nodes from the prototypes three, otherwise False.
+        :return: True if prototype is based on the original tree
+        """
         return self._based_on_original
 
     def _add_result_dicts(self, first, second):
