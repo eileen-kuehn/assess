@@ -20,11 +20,11 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         )
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
 
-    def start_tree(self):
+    def start_tree(self, **kwargs):
+        TreeDistanceAlgorithm.start_tree(self, **kwargs)
         self._distance.init_distance(prototypes=self.prototypes, signature_prototypes=self.signature_prototypes)
         self._event_counter = 0
         self._measured_nodes = set()
-        TreeDistanceAlgorithm.start_tree(self)
 
     def _prototype_event_counts(self):
         if self._distance.is_prototype_based_on_original():

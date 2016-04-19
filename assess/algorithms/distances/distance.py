@@ -52,5 +52,6 @@ class Distance(object):
         return self._based_on_original
 
     def _add_result_dicts(self, first, second):
-        result = dict((key, first[key] + second[key]) for key in set(first.keys() + second.keys()))
+        result = dict((key, first.setdefault(key, 0) + second.setdefault(key, 0))
+                      for key in set(first.keys() + second.keys()))
         return result

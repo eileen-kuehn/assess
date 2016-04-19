@@ -24,11 +24,11 @@ class Decorator(object):
     def _tree_finished(self, result):
         pass
 
-    def start_tree(self):
+    def start_tree(self, **kwargs):
         if self.decorator:
-            self.decorator.start_tree()
+            self.decorator.start_tree(**kwargs)
         else:
-            self._algorithm.start_tree()
+            self._algorithm.start_tree(**kwargs)
         self._tree_started()
 
     def finish_tree(self):

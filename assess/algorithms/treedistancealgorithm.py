@@ -23,6 +23,7 @@ class TreeDistanceAlgorithm(object):
         self._tree = Tree()
         self._signature_tree = SignatureCache()
         self._tree_dict = ObjectCache()
+        self._maxlen = None
 
     @property
     def tree(self):
@@ -30,7 +31,7 @@ class TreeDistanceAlgorithm(object):
 
     @property
     def prototypes(self):
-        return self._prototypes
+        return self._prototypes[:self._maxlen]
 
     @prototypes.setter
     def prototypes(self, value=None):
@@ -85,13 +86,17 @@ class TreeDistanceAlgorithm(object):
         count = self._event_count()
         return [count for _ in range(len(self._prototypes))]
 
-    def start_tree(self):
+    def start_tree(self, maxlen=None, **kwargs):
         """
         Method that should be called before a new event stream is started. It takes care on initialising things.
+
+        :param maxlen: How many prototypes are considered for distance measurement.
         """
         self._tree = Tree()
         self._tree_dict = ObjectCache()
         self._signature_tree = SignatureCache()
+        # TODO: write warning if maxlen is bigger then count of prototypes
+        self._maxlen = maxlen
 
     def finish_tree(self):
         """

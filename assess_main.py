@@ -35,6 +35,16 @@ CLI.add_argument(
     help="Path to configuration used for algorithms",
     type=str
 )
+CLI.add_argument(
+    "--no_diagonal",
+    action="store_true",
+    help="When given, the diagonal (regarding a distance matrix) is not calculated"
+)
+CLI.add_argument(
+    "--no_upper",
+    action="store_true",
+    help="When given, the upper part (regarding a distance matrix) is not calculated"
+)
 
 
 def main():
@@ -82,8 +92,12 @@ def check_algorithms(paths=[], configurations=[]):
                 # TODO: what if there is no decorator at all? Is it possible?
                 decorator = configuration["decorator"]
                 decorator.algorithm = alg
-                for path in paths:
-                    decorator.start_tree()
+                for index, path in enumerate(paths):
+                    if options.no_upper:
+                        # TODO: is it ok to ignore no_diagonal when no_upper is not given?
+                        decorator.start_tree(maxlen=index + (0 if options.no_diagonal else 1))
+                    else:
+                        decorator.start_tree()
                     for event in CSVEventStreamer(csv_path=path):
                         decorator.add_event(event=event)
                     decorator.finish_tree()
