@@ -17,6 +17,9 @@ class SignatureCache(object):
         return self._prototype_dict.get(signature, dict())
 
     def node_count(self, **kwargs):
+        return len(self._prototype_dict.keys())
+
+    def frequency(self, **kwargs):
         return sum(self._prototype_dict.values())
 
     def internal(self):
@@ -83,6 +86,8 @@ class PrototypeSignatureCache(SignatureCache):
 
     def node_count(self, prototype=None):
         # TODO: maybe work with a filter here
+        if prototype is None:
+            return len(self._prototype_dict)
         count = 0
         for values in self._prototype_dict.values():
             for value in values:
