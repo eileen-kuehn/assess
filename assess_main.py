@@ -31,6 +31,16 @@ CLI.add_argument(
     type=str
 )
 CLI.add_argument(
+    "--file",
+    help="File to read input files where trees are read from",
+    type=str
+)
+CLI.add_argument(
+    "--maximum_number_of_files",
+    help="Maximum number of files considered from given file",
+    type=int
+)
+CLI.add_argument(
     "--configuration",
     help="Path to configuration used for algorithms",
     type=str
@@ -51,7 +61,15 @@ def main():
     configdict = {}
     execfile(options.configuration, configdict)
     assert configdict["configurations"] is not None
-    paths = options.paths
+
+    if options.file is not None:
+        # load paths from file
+        with open(options.file) as input_file:
+            paths = input_file.readlines()
+            if options.maximum_number_of_files is not None:
+                paths = paths[:options.maximum_number_of_files]
+    else:
+        paths = options.paths
 
     results = check_algorithms(
         paths=paths,
