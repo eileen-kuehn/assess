@@ -68,7 +68,7 @@ def main():
         with open(options.file) as input_file:
             for index, line in enumerate(input_file):
                 if options.maximum_number_of_files is not None and \
-                                options.maximum_number_of_files >= index:
+                                index >= options.maximum_number_of_files:
                     break
                 paths.append(line.strip())
     else:
