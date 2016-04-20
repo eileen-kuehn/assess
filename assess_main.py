@@ -64,10 +64,13 @@ def main():
 
     if options.file is not None:
         # load paths from file
+        paths = []
         with open(options.file) as input_file:
-            paths = input_file.readlines()
-            if options.maximum_number_of_files is not None:
-                paths = paths[:options.maximum_number_of_files]
+            for index, line in enumerate(input_file):
+                if options.maximum_number_of_files is not None and \
+                                options.maximum_number_of_files >= index:
+                    break
+                paths.append(line.strip())
     else:
         paths = options.paths
 
