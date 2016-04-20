@@ -14,7 +14,7 @@ class SimpleDistance(Distance):
     * Recursive version: Too long ;)
     """
     def init_distance(self, prototypes=None, signature_prototypes=None):
-        Distance.init_distance(self, prototypes=prototypes)
+        Distance.init_distance(self, prototypes=prototypes, signature_prototypes=signature_prototypes)
         for prototype in prototypes:
             self._monitoring_results_dict[prototype] = signature_prototypes.node_count(prototype=prototype)
 

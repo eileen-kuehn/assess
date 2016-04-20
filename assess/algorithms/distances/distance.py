@@ -8,13 +8,13 @@ class Distance(object):
     """
     def __init__(self):
         self._monitoring_results_dict = {}
+        self._prototypes = None
         self._measured_nodes = set()
         self._based_on_original = False
 
     def __iter__(self):
-        # TODO: is this actually being used?
-        for value in self._monitoring_results_dict.values():
-            yield value
+        for prototype in self._prototypes:
+            yield self._monitoring_results_dict[prototype]
 
     def init_distance(self, prototypes=None, signature_prototypes=None):
         """
@@ -23,6 +23,7 @@ class Distance(object):
         """
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
+        self._prototypes = prototypes
 
     def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
                         signature_prototypes=None, **kwargs):
