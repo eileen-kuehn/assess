@@ -8,12 +8,15 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     def __init__(self, distance=SimpleDistance, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._event_counter = 0
-        self._distance = distance()
+        self._distance = None
         self._measured_nodes = set()
+        self._distance_builder = distance
 
     @TreeDistanceAlgorithm.prototypes.setter
     def prototypes(self, value=None):
         # initialize default distance to prototypes
+        if self._distance is None:
+            self._distance = self._distance_builder(prototypes=value)
         self._distance.init_distance(
             prototypes=self.prototypes,
             signature_prototypes=self.signature_prototypes

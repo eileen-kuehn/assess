@@ -6,15 +6,15 @@ class Distance(object):
 
     The class itself can be used as an iterator returning the different distances it currently stores.
     """
-    def __init__(self):
+    def __init__(self, prototypes=None):
         self._monitoring_results_dict = {}
-        self._prototypes = None
+        self._prototypes = prototypes
         self._measured_nodes = set()
         self._based_on_original = False
 
     def __iter__(self):
         for prototype in self._prototypes:
-            yield self._monitoring_results_dict[prototype]
+            yield self._monitoring_results_dict.setdefault(prototype, 0)
 
     def init_distance(self, prototypes=None, signature_prototypes=None):
         """
@@ -23,7 +23,6 @@ class Distance(object):
         """
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
-        self._prototypes = prototypes
 
     def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
                         signature_prototypes=None, **kwargs):
