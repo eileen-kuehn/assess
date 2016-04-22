@@ -2,8 +2,8 @@ from assess.algorithms.distances.distance import Distance
 
 
 class AdditionalMissingDistance(Distance):
-    def __init__(self):
-        Distance.__init__(self)
+    def __init__(self, **kwargs):
+        Distance.__init__(self, **kwargs)
         self._additional_nodes_dict = {}
         self._missing_nodes_dict = {}
 

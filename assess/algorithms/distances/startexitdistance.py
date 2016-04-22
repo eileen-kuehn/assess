@@ -6,8 +6,8 @@ class StartExitDistance(Distance):
     """
     TODO: write description
     """
-    def __init__(self):
-        Distance.__init__(self)
+    def __init__(self, **kwargs):
+        Distance.__init__(self, **kwargs)
         self._based_on_original = True
         self._signature_cache = SignatureCache()
 
