@@ -14,7 +14,7 @@ class SignatureCache(object):
             self._prototype_dict[signature] += 1
 
     def get(self, signature=None, **kwargs):
-        return self._prototype_dict.get(signature, dict())
+        return self._prototype_dict.get(signature, 0)
 
     def node_count(self, **kwargs):
         return len(self._prototype_dict.keys())
@@ -94,3 +94,6 @@ class PrototypeSignatureCache(SignatureCache):
                 if value == prototype:
                     count += 1
         return count
+
+    def get(self, signature=None, **kwargs):
+        return self._prototype_dict.get(signature, dict())
