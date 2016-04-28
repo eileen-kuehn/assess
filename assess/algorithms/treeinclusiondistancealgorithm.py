@@ -7,11 +7,9 @@ class TreeInclusionDistanceAlgorithm(TreeDistanceAlgorithm):
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
-        self._event_counter = 0
 
     def _add_event(self, event, **kwargs):
         # just adding, but not removing nodes
-        self._event_counter += 1
         if type(event) is ProcessStartEvent:
             self._create_node(event)
         elif type(event) is ProcessExitEvent:

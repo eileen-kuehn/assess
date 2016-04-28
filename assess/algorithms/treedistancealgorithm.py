@@ -1,6 +1,8 @@
 from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache, SignatureCache
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
+from assess.exceptions.exceptions import EventNotSupportedException
 
 from gnmutils.objectcache import ObjectCache
 
@@ -19,6 +21,8 @@ class TreeDistanceAlgorithm(object):
         self._signature = signature
         self._prototypes = []
         self._signature_prototypes = PrototypeSignatureCache()
+        self._event_counter = 0
+        self._supported = {ProcessStartEvent: False, ProcessExitEvent: False, TrafficEvent: False}
 
         self._tree = Tree()
         self._signature_tree = SignatureCache()
@@ -95,6 +99,7 @@ class TreeDistanceAlgorithm(object):
         self._tree = Tree()
         self._tree_dict = ObjectCache()
         self._signature_tree = SignatureCache()
+        self._event_counter = 0
         # TODO: write warning if maxlen is bigger then count of prototypes
         self._maxlen = maxlen
 
@@ -125,7 +130,23 @@ class TreeDistanceAlgorithm(object):
         :param kwargs:
         :return: Returns the current distances after the event has been applied.
         """
-        return self._add_event(event, **kwargs)
+        self._event_counter += 1
+        if type(event) is ProcessStartEvent and self._supported.get(ProcessStartEvent, False):
+            # create node
+            node, parent = self.create_node(event, **kwargs)
+            signature = self.create_signature(node, parent)
+            self._signature_tree.add_signature(signature=signature)
+        elif type(event) is ProcessExitEvent and self._supported.get(ProcessExitEvent, False):
+            # finish node
+            node, parent = self.finish_node(event, **kwargs)
+            signature = self.create_signature(node, parent)
+            self.update_distance(event, signature, **kwargs)
+        elif type(event) is TrafficEvent and self._supported.get(TrafficEvent, False):
+            # add traffic
+            raise EventNotSupportedException(event)
+        else:
+            raise EventNotSupportedException(event)
+        return self.update_distance(event, signature, **kwargs)
 
     def _event_count(self):
         raise NotImplementedError
@@ -133,12 +154,8 @@ class TreeDistanceAlgorithm(object):
     def _prototype_event_counts(self):
         raise NotImplementedError
 
-    def _add_event(self, event, **kwargs):
-        raise NotImplementedError
-
-    def _create_node(self, event, **kwargs):
+    def create_node(self, event, **kwargs):
         parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
-        # TODO: I might directly add this to node, but therefore I need to ensure to use pid, ppid
         node = self._tree.add_node(
             event.name,
             parent=parent,
@@ -146,18 +163,21 @@ class TreeDistanceAlgorithm(object):
             pid=event.pid,
             ppid=event.ppid
         )
-        signature = self._signature.get_signature(node, parent)
         self._tree_dict.addObject(node, pid=event.pid, tme=event.tme)
-        self._signature_tree.add_signature(signature=signature)
-        return signature
+        return node, parent
 
-    def _finish_node(self, event, **kwargs):
+    def finish_node(self, event, **kwargs):
         parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
         node = self._tree_dict.getObject(tme=event.tme, pid=event.pid)
-        signature = self._signature.get_signature(node, parent)
-        return signature
+        return node, parent
 
-    def _update_distances(self, **kwargs):
+    def create_signature(self, node, parent):
+        return self._signature.get_signature(node, parent)
+
+    def update_distance(self, event, signature, **kwargs):
+        return self._update_distances(event, signature, **kwargs)
+
+    def _update_distances(self, event, signature, **kwargs):
         raise NotImplementedError
 
     def __repr__(self):

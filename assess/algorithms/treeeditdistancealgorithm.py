@@ -1,8 +1,7 @@
 import zss
 
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
-from assess.events.events import ProcessStartEvent, ProcessExitEvent
-from assess.exceptions.exceptions import EventNotSupportedException
+from assess.events.events import ProcessStartEvent
 
 
 class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
@@ -10,11 +9,11 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
         self._event_counter = 0
+        self._supported = {ProcessStartEvent: True}
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
         self._monitoring_results = []
-        self._event_counter = 0
 
     def add_events(self, eventgenerator, **kwargs):
         events = list(eventgenerator)
@@ -25,30 +24,17 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         self._create_node(events.pop(0))
         return [value for value in self._monitoring_results[-1].values()]
 
-    def _add_event(self, event, **kwargs):
-        # just adding, but not removing nodes
-        self._event_counter += 1
-        if type(event) is ProcessStartEvent:
-            self._create_node(event)
-        elif type(event) is ProcessExitEvent:
-            pass
-        else:
-            raise EventNotSupportedException(event)
-        return [value for value in self._monitoring_results[-1].values()]
+    def _update_distances(self, event, signature, **kwargs):
+        prototypes = self._prototypes
+        tree = self._tree
 
-    def _create_node(self, event):
-        signature = TreeDistanceAlgorithm._create_node(self, event)
-        self._update_distances(self._prototypes, self._tree)
-        return signature
-
-    def _update_distances(self, prototypes, tree):
         result_dict = dict(zip(self._prototypes, [0] * len(self._prototypes)))
-
         for prototype in prototypes:
             result_dict[prototype] = self._calculate_distance(prototype.root(), tree.root())
 
         # add local node distance to global tree distance
         self._add_result_dicts(result_dict)
+        return [value for value in self._monitoring_results[-1].values()]
 
     def _calculate_distance(self, prototype, tree):
         return zss.simple_distance(
