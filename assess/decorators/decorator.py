@@ -19,6 +19,11 @@ class Decorator(object):
         self._algorithm_updated()
 
     def wrap_algorithm(self, algorithm):
+        """
+        Wrap an algorithm, and replace its methods with our own
+
+        Recurses through all linked ``decorator`` elements.
+        """
         if self.decorator is not None:
             self.decorator.wrap_algorithm(algorithm)
         self._algorithm = algorithm
