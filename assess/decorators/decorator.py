@@ -29,13 +29,16 @@ class Decorator(object):
         self._algorithm = algorithm
         self._algorithm_updated()
         # replace all methods with our own ones
-        for name, value in vars(algorithm).items():
+        for name in dir(algorithm):
+            if name.startswith("__"):
+                continue
             try:
                 my_value = getattr(self, name)
             except AttributeError:
                 continue
-            if isinstance(my_value, (types.MethodType, types.FunctionType)):
-                setattr(algorithm, name, my_value)
+            else:
+                if isinstance(my_value, (types.MethodType, types.FunctionType)):
+                    setattr(algorithm, name, my_value)
 
     def _algorithm_updated(self):
         pass
@@ -50,14 +53,14 @@ class Decorator(object):
         if self.decorator:
             self.decorator.start_tree(**kwargs)
         else:
-            self._algorithm.start_tree(**kwargs)
+            self._algorithm.__class__.start_tree(self._algorithm, **kwargs)
         self._tree_started()
 
     def finish_tree(self):
         if self.decorator:
             result = self.decorator.finish_tree()
         else:
-            result = self._algorithm.finish_tree()
+            result = self._algorithm.__class__.finish_tree(self._algorithm)
         self._tree_finished(result[:] if result is not None else None)
         return result
 
@@ -66,7 +69,7 @@ class Decorator(object):
         if self.decorator:
             result = self.decorator.add_event(event, **kwargs)
         else:
-            result = self._algorithm.add_event(event, **kwargs)
+            result = self._algorithm.__class__.add_event(self._algorithm, event, **kwargs)
         self._event_added(event, result[:])
         return result
 
