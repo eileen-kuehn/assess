@@ -112,16 +112,16 @@ def check_algorithms(paths=[], configurations=[]):
                 alg.prototypes = prototypes
                 # TODO: what if there is no decorator at all? Is it possible?
                 decorator = configuration["decorator"]
-                decorator.algorithm = alg
+                decorator.wrap_algorithm(alg)
                 for index, path in enumerate(paths):
                     if options.no_upper:
                         # TODO: is it ok to ignore no_diagonal when no_upper is not given?
-                        decorator.start_tree(maxlen=index + (0 if options.no_diagonal else 1))
+                        alg.start_tree(maxlen=index + (0 if options.no_diagonal else 1))
                     else:
-                        decorator.start_tree()
+                        alg.start_tree()
                     for event in CSVEventStreamer(csv_path=path):
-                        decorator.add_event(event=event)
-                    decorator.finish_tree()
+                        alg.add_event(event=event)
+                    alg.finish_tree()
                 results["results"].append({
                     "algorithm": "%s" % alg,
                     "signature": "%s" % signature_object,
@@ -141,9 +141,9 @@ def calculate_distance_matrix(paths=[], algorithm=None, signature=Signature):
     for path in paths:
         alg = algorithm(signature=signature())
         alg.prototypes = prototypes
-        decorator.algorithm = alg
+        decorator.wrap_algorithm(alg)
         for event in CSVEventStreamer(csv_path=path):
-            decorator.add_event(event=event)
+            alg.add_event(event=event)
     print("%s" % ", ".join("%.2f" % value for value in compression.compression_factors()))
     print("----------------------")
     for values in decorator.distance_matrix:

@@ -1,3 +1,6 @@
+import types
+
+
 class Decorator(object):
     def __init__(self):
         self._algorithm = None
@@ -14,6 +17,20 @@ class Decorator(object):
             self.decorator.algorithm = value
         self._algorithm = value
         self._algorithm_updated()
+
+    def wrap_algorithm(self, algorithm):
+        if self.decorator is not None:
+            self.decorator.wrap_algorithm(algorithm)
+        self._algorithm = algorithm
+        self._algorithm_updated()
+        # replace all methods with our own ones
+        for name, value in vars(algorithm).items():
+            try:
+                my_value = getattr(self, name)
+            except AttributeError:
+                continue
+            if isinstance(my_value, (types.MethodType, types.FunctionType)):
+                setattr(algorithm, name, my_value)
 
     def _algorithm_updated(self):
         pass
