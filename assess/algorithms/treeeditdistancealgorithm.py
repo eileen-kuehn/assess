@@ -15,15 +15,6 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
         self._monitoring_results = []
 
-    def add_events(self, eventgenerator, **kwargs):
-        events = list(eventgenerator)
-        while len(events) > 1:
-            event = events.pop(0)
-            if type(event) is ProcessStartEvent:
-                TreeDistanceAlgorithm._create_node(self, event)
-        self._create_node(events.pop(0))
-        return [value for value in self._monitoring_results[-1].values()]
-
     def _update_distances(self, event, signature, **kwargs):
         prototypes = self._prototypes
         tree = self._tree

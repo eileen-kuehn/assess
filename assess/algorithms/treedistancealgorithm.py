@@ -131,28 +131,30 @@ class TreeDistanceAlgorithm(object):
         :return: Returns the current distances after the event has been applied.
         """
         self._event_counter += 1
-        if type(event) is ProcessStartEvent and self._supported.get(ProcessStartEvent, False):
-            # create node
-            node, parent = self.create_node(event, **kwargs)
-            signature = self.create_signature(node, parent)
-            self._signature_tree.add_signature(signature=signature)
-        elif type(event) is ProcessExitEvent and self._supported.get(ProcessExitEvent, False):
-            # finish node
-            node, parent = self.finish_node(event, **kwargs)
-            signature = self.create_signature(node, parent)
-            self.update_distance(event, signature, **kwargs)
+        if type(event) is ProcessStartEvent:
+            if self._supported.get(ProcessStartEvent, False):
+                # create node
+                node, parent = self.create_node(event, **kwargs)
+                signature = self.create_signature(node, parent)
+                self._signature_tree.add_signature(signature=signature)
+                return self.update_distance(event, signature, **kwargs)
+        elif type(event) is ProcessExitEvent:
+            if self._supported.get(ProcessExitEvent, False):
+                # finish node
+                node, parent = self.finish_node(event, **kwargs)
+                signature = self.create_signature(node, parent)
+                return self.update_distance(event, signature, **kwargs)
         elif type(event) is TrafficEvent and self._supported.get(TrafficEvent, False):
             # add traffic
             raise EventNotSupportedException(event)
         else:
             raise EventNotSupportedException(event)
-        return self.update_distance(event, signature, **kwargs)
 
     def _event_count(self):
-        raise NotImplementedError
+        return self._tree.node_count()
 
     def _prototype_event_counts(self):
-        raise NotImplementedError
+        return [prototype.node_count() for prototype in self._prototypes]
 
     def create_node(self, event, **kwargs):
         parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)

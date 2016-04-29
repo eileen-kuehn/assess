@@ -70,7 +70,8 @@ class Decorator(object):
             result = self.decorator.add_event(event, **kwargs)
         else:
             result = self._algorithm.__class__.add_event(self._algorithm, event, **kwargs)
-        self._event_added(event, result[:])
+        if result is not None:
+            self._event_added(event, result[:])
         return result
 
     def _event_will_be_added(self):
