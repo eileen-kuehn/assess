@@ -9,22 +9,22 @@ from assess.events.events import Event
 class TestTreeEditDistanceFunctionalities(unittest.TestCase):
     def setUp(self):
         self.prototype = Prototype()
-        root = self.prototype.add_node("root", tme=0, pid=1, ppid=0)
-        root.add_node("test", tme=0, pid=2, ppid=1)
-        root.add_node("muh", tme=0, pid=3, ppid=1)
-        list(root.children())[0].add_node("yes", tme=0, pid=4, ppid=2)
+        root = self.prototype.add_node("root", tme=0, exit_tme=0, pid=1, ppid=0)
+        root.add_node("test", tme=0, exit_tme=0, pid=2, ppid=1)
+        root.add_node("muh", tme=0, exit_tme=0, pid=3, ppid=1)
+        list(root.children())[0].add_node("yes", tme=0, exit_tme=0, pid=4, ppid=2)
 
         self.modified_position = Prototype()
-        root = self.modified_position.add_node("root", pid=1, ppid=0, tme=0)
-        root.add_node("test", tme=0, pid=2, ppid=1)
-        root.add_node("muh", tme=0, pid=3, ppid=1)
-        list(root.children())[1].add_node("yes", tme=0, pid=4, ppid=3)
+        root = self.modified_position.add_node("root", pid=1, ppid=0, tme=0, exit_tme=0)
+        root.add_node("test", tme=0, pid=2, ppid=1, exit_tme=0)
+        root.add_node("muh", tme=0, pid=3, ppid=1, exit_tme=0)
+        list(root.children())[1].add_node("yes", tme=0, pid=4, ppid=3, exit_tme=0)
 
         self.modified_name = Prototype()
-        root = self.modified_name.add_node("root", pid=1, ppid=0, tme=0)
-        root.add_node("test", tme=0, pid=2, ppid=1)
-        root.add_node("muh", tme=0, pid=3, ppid=1)
-        list(root.children())[0].add_node("no", tme=0, pid=4, ppid=2)
+        root = self.modified_name.add_node("root", pid=1, ppid=0, tme=0, exit_tme=0)
+        root.add_node("test", tme=0, pid=2, ppid=1, exit_tme=0)
+        root.add_node("muh", tme=0, pid=3, ppid=1, exit_tme=0)
+        list(root.children())[0].add_node("no", tme=0, pid=4, ppid=2, exit_tme=0)
 
     def _test_algorithm(self, prototype=None, tree=None):
         signature = Signature()
