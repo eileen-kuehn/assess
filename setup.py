@@ -17,4 +17,5 @@ setup(
         os.path.expanduser("~/Development/libs/python/gnmutils"),
         os.path.expanduser("~/Development/libs/python/utility")
     ],
+    install_requires=["cachemap", "gnmutils", "utility"],
 )
