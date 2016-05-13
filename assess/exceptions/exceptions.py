@@ -1,4 +1,7 @@
-from utility.exceptions import *
+"""
+Module impements different Exceptions being used within ASSESS.
+"""
+from utility.exceptions import BasicException
 
 
 class EventNotSupportedException(BasicException):
