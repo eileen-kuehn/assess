@@ -174,7 +174,7 @@ class TreeDistanceAlgorithm(object):
         """
         Method to add an event. For each event the actual distance from the stream object to
         different prototypes are calculated. The calculated distance is returned.
-        
+
         :param event: The event to be added to the current distance measurement.
         :param kwargs:
         :return: Returns the current distances after the event has been applied.
