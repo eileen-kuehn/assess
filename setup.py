@@ -14,6 +14,7 @@ setup(
     packages=setuptools.find_packages(),
     dependency_links=[
         os.path.expanduser("~/Development/libs/cachemap"),
-        os.path.expanduser("~/Development/libs/gnmutils")
+        os.path.expanduser("~/Development/libs/gnmutils"),
+        os.path.expanduser("~/Development/libs/uitility")
     ],
 )
