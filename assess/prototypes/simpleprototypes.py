@@ -1,7 +1,14 @@
+"""
+Module describes a general tree as well as a more specialised prototype. Also the definition for
+the single nodes is defined.
+"""
 from assess.exceptions.exceptions import TreeInvalidatedException
 
 
 class OrderedTreeNode(object):
+    """
+    Class describes a node of a tree that ensures the correct order of nodes within the tree.
+    """
     def __init__(self, node_id, name=None, parent=None, position=0, tree=None, **kwargs):
         self.node_id = node_id
         self.name = name
@@ -13,6 +20,12 @@ class OrderedTreeNode(object):
             setattr(self, key, value)
 
     def depth(self):
+        """
+        Method returns the depth of the current node within the tree. If the node is the root, then
+        0 is returned. So depth equals the number of parents.
+
+        :return: Depth of the node within the tree
+        """
         count = 0
         node = self
         while node.parent():
@@ -21,53 +34,117 @@ class OrderedTreeNode(object):
         return count
 
     def children(self):
+        """
+        Generator that yields children of the node.
+
+        :return: Generator for children
+        """
+        # TODO: look, that's no generator
         return self._children
 
     def children_list(self):
+        """
+        List of children of the node.
+
+        :return: List of children
+        """
         return self._children
 
     def child_count(self):
+        """
+        Method returns the current count of children of the node.
+
+        :return: Count of children
+        """
         return len(self._children)
 
     def node_count(self):
+        """
+        Method returns the count of nodes within the subtree of the node.
+
+        :return: Count of nodes in subtree
+        """
         count = 1
         for child in self._children:
             count += child.node_count()
         return count
 
     def node_number(self):
+        """
+        Method returns the position of the node regarding its siblings. If the node is the first
+        element, 0 is returned.
+
+        :return: Node position
+        """
         return self.position
 
     def parent(self):
+        """
+        Method returns the parent of the node, if it does not have a parent, it returns None.
+
+        :return: Parent, None otherwise
+        """
         return self._parent
 
     def add_node(self, name=None, **kwargs):
+        """
+        Method to add a new node to the list of children of the node. It is appended to the end
+        of the children's list.
+
+        :param name: Name of the new node to add
+        :param kwargs: Params to be added to the node
+        :return: Reference to new created node
+        """
         return self._prototype.add_node(name=name, parent=self, **kwargs)
 
     #def __repr__(self):
-    #    return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg)) for arg in vars(self)) + ")"
+    #    return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg))
+    #                                                      for arg in vars(self)) + ")"
 
 
 class OrderedTree(object):
+    """
+    Class that builds up a tree that takes care of the order of nodes, so it does implement an
+    ordered tree.
+    """
     def __init__(self):
         self.root = None
         self._node_counter = 0
 
     def _unique_node_id(self):
+        """
+        Method returns a unique id.
+
+        :return: Unique id
+        """
         # nx.utils.generate_unique_node()
         return str(self.node_count())
 
     def node_count(self):
+        """
+        Returns the current count of nodes within the tree.
+
+        :return: Current count of nodes
+        """
         return self._node_counter
 
     def add_node(self, name=None, parent=None, **kwargs):
+        """
+        Method adds a new node to the actual tree. If parent is not given, the node gets the root
+        ndoe of the tree.
+
+        :param name: Name of the node to create
+        :param parent: Parent of the node to attach to
+        :param kwargs: Additional parameters of the node
+        :return: Reference to the created node
+        """
         node = OrderedTreeNode(
-                node_id=self._unique_node_id(),
-                name=name,
-                parent=parent,
-                tree=self,
-                position=parent.child_count() if parent is not None else 0,
-                **kwargs
+            node_id=self._unique_node_id(),
+            name=name,
+            parent=parent,
+            tree=self,
+            position=parent.child_count() if parent is not None else 0,
+            **kwargs
         )
         if self.root is None:
             self.root = node
@@ -85,6 +162,7 @@ class Process(object):
     def __init__(self, prototype, node_id, **kwargs):
         self._prototype = prototype
         self.node_id = node_id
+        self.pid = 0
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
@@ -143,19 +221,37 @@ class Process(object):
         return self._prototype.child_count(self)
 
     def __repr__(self):
-        return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg)) for arg in vars(self)) + ")"
+        return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg))
+                                                          for arg in vars(self)) + ")"
 
 
 class Tree(object):
+    """
+    Class that represents a tree with no ensured ordering of nodes.
+    """
     def __init__(self):
         self._graph = OrderedTree()
 
     def add_node(self, name, parent=None, **kwargs):
+        """
+        Method to add a new node to the tree. If given parent is None, and there is currently no
+        root, then the node becomes the root of the tree.
+
+        :param name: Name of the node to be created
+        :param parent: Parent where to attach the node
+        :param kwargs: Additional attribute of the node
+        :return: Reference to the newly created node
+        """
         if parent is None and self.root() is not None:
             raise TreeInvalidatedException
         return self._graph.add_node(name=name, parent=parent, **kwargs)
 
     def node_count(self):
+        """
+        Method returns the current count of nodes within the tree.
+
+        :return: Count of nodes
+        """
         return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
@@ -167,6 +263,13 @@ class Tree(object):
         :return: Generator for tree nodes.
         """
         def dfs(root):
+            """
+            Method recursively implements a depth first generator for nodes of the tree.
+            The given node defines which subtree is used for traversal.
+
+            :param root: Where to start node traversal
+            :return: Depth first node generator
+            """
             yield root
             try:
                 for child in root.children():
@@ -178,6 +281,13 @@ class Tree(object):
                 pass
 
         def wfs(root):
+            """
+            Method recursively implements a width first gneerator for nodes of the tree.
+            The given node defines which subtree is used for traversal.
+
+            :param root: Where to start node traversal
+            :return: Width first node generator
+            """
             to_visit = [root]
             while to_visit:
                 root = to_visit.pop(0)
@@ -216,13 +326,19 @@ class Tree(object):
     def children(self, node):
         """
         Generator that yields children of given node.
-        :param node: A node inside the tree.
+        :param node: A node inside the tree
         :return: A generator for children of node.
         """
         for child in node.children():
             yield child
 
     def children_list(self, node):
+        """
+        Returns list of children for given node.
+
+        :param node: A node inside the tree
+        :return: A list of children of node
+        """
         return node.children()
 
     def child_count(self, node):
@@ -249,6 +365,13 @@ class Tree(object):
         return count
 
     def tree_repr(self, node_repr=lambda node: node.name, sequence_fmt="[%s]"):
+        """
+        Method offers custom implementation for tree representation.
+
+        :param node_repr: Lambda for node representation
+        :param sequence_fmt: Formatter
+        :return: String describing the tree
+        """
         def subtree_repr(root):
             children = list(self.children(root))
             if children:
@@ -261,4 +384,7 @@ class Tree(object):
 
 
 class Prototype(Tree):
+    """
+    Subclass of a tree that represents a prototype (class for convenience only).
+    """
     pass
