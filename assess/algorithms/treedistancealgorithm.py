@@ -1,3 +1,7 @@
+"""
+Module implement the general TreeDistanceAlgorithm that is the base for working with dynamic trees
+whilst calculating distances.
+"""
 from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache, SignatureCache
@@ -9,8 +13,9 @@ from gnmutils.objectcache import ObjectCache
 
 class TreeDistanceAlgorithm(object):
     """
-    The class TreeDistanceAlgorithm creates the API for different algorithms calculating the distance between trees.
-    The most important methods to consider for implementation of a new distance algorithm are
+    The class TreeDistanceAlgorithm creates the API for different algorithms calculating the
+    distance between trees. The most important methods to consider for implementation of a new
+    distance algorithm are
     * node_count_for_prototype,
     * prototypes_converted_for_algorithm,
     * start_tree and finish_tree,
@@ -31,14 +36,29 @@ class TreeDistanceAlgorithm(object):
 
     @property
     def tree(self):
+        """
+        Property to access the tree that is cached within the TreeDistanceAlgorithm.
+
+        :return: Current tree
+        """
         return self._tree
 
     @property
     def prototypes(self):
+        """
+        Property that gives access to the prototypes being used for distance calculations.
+
+        :return: List of prototoypes
+        """
         return self._prototypes[:self._maxlen]
 
     @prototypes.setter
     def prototypes(self, value=None):
+        """
+        Setter method to set the current list of prototypes to be used for distance measurements.
+
+        :param value: List of prototypes
+        """
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():
@@ -52,10 +72,21 @@ class TreeDistanceAlgorithm(object):
 
     @property
     def signature_prototypes(self):
+        """
+        Method that returns the signatures of the current prototypes being used for distance
+        measurements.
+
+        :return: Signatures for all protototypes
+        """
         return self._signature_prototypes
 
     @property
     def signature_tree(self):
+        """
+        Method that returns the signatures of the current monitoring tree.
+
+        :return: Signatures of monitoring tree
+        """
         return self._signature_tree
 
     def tree_node_counts(self, signature=False):
@@ -84,9 +115,20 @@ class TreeDistanceAlgorithm(object):
         return [prototype.node_count() for prototype in self._prototypes]
 
     def prototype_event_counts(self):
+        """
+        Method returns a list containing the events per prototype.
+
+        :return: List of event counts per prototype
+        """
         return self._prototype_event_counts()
 
     def event_counts(self):
+        """
+        Method returns a list containing the current events considered from the monitoring tree by
+        prototype.
+
+        :return: List of monitoring tree event counts per prototype
+        """
         count = self._event_count()
         return [count for _ in range(len(self._prototypes))]
 
@@ -151,12 +193,29 @@ class TreeDistanceAlgorithm(object):
             raise EventNotSupportedException(event)
 
     def _event_count(self):
+        """
+        Method returns the current event count of the monitoring tree.
+
+        :return: Event count of monitoring tree
+        """
         return self._tree.node_count()
 
     def _prototype_event_counts(self):
+        """
+        Method returns the current event count per prototype.
+
+        :return: List of event counts per prototoype
+        """
         return [prototype.node_count() for prototype in self._prototypes]
 
     def create_node(self, event, **kwargs):
+        """
+        Method to create a new node in the monitoring tree based on event data that was received.
+
+        :param event: Event that was received
+        :param kwargs: Additional parameters
+        :return: Tuple of created node and its parent
+        """
         parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
         node = self._tree.add_node(
             event.name,
@@ -169,17 +228,48 @@ class TreeDistanceAlgorithm(object):
         return node, parent
 
     def finish_node(self, event, **kwargs):
+        """
+        Method that finishs a node based on exit event.
+
+        :param event: Event that was received
+        :param kwargs: Additional parameters
+        :return: Tuple of finished node and its parent
+        """
         parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
         node = self._tree_dict.getObject(tme=event.tme, pid=event.pid)
         return node, parent
 
     def create_signature(self, node, parent):
+        """
+        Method to create the signature of a node whilst considering its parent.
+
+        :param node: The node to create the signature for
+        :param parent: The nodes parent
+        :return: Calculated signature
+        """
         return self._signature.get_signature(node, parent)
 
     def update_distance(self, event, signature, **kwargs):
+        """
+        Method to update the current distance based on the received event and the associated
+        signature.
+
+        :param event: Event that was received
+        :param signature: Associated signature
+        :param kwargs: Additional parameters
+        :return: Updated distances
+        """
         return self._update_distances(event, signature, **kwargs)
 
     def _update_distances(self, event, signature, **kwargs):
+        """
+        Method to be overwritten to update distances.
+
+        :param event: Event that was received
+        :param signature: Associated signature
+        :param kwargs: Additional parameters
+        :return: Updated distances
+        """
         raise NotImplementedError
 
     def __repr__(self):
