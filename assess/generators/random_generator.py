@@ -57,7 +57,7 @@ class RandomGenerator(object):
                 node_name = id_generator()
                 pid = i+2
             yield Event.start(tme=0, pid=pid, ppid=1, name=node_name)
-            exit_event_queue.append(Event.exit(tme=0, pid=i+2, ppid=1, name=node_name, start_tme=0))
+            exit_event_queue.append(Event.exit(tme=0, pid=pid, ppid=1, name=node_name, start_tme=0))
         print(picked)
         while exit_event_queue:
             yield exit_event_queue.pop()
