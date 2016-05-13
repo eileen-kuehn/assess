@@ -15,6 +15,6 @@ setup(
     dependency_links=[
         os.path.expanduser("~/Development/libs/cachemap"),
         os.path.expanduser("~/Development/libs/gnmutils"),
-        os.path.expanduser("~/Development/libs/uitility")
+        os.path.expanduser("~/Development/libs/utility")
     ],
 )
