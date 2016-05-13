@@ -13,8 +13,8 @@ setup(
     url="https://bitbucket.org/teamkseta/assess",
     packages=setuptools.find_packages(),
     dependency_links=[
-        os.path.expanduser("~/Development/libs/cachemap"),
-        os.path.expanduser("~/Development/libs/gnmutils"),
-        os.path.expanduser("~/Development/libs/utility")
+        os.path.expanduser("~/Development/libs/python/cachemap"),
+        os.path.expanduser("~/Development/libs/python/gnmutils"),
+        os.path.expanduser("~/Development/libs/python/utility")
     ],
 )
