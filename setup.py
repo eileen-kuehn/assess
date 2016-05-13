@@ -5,7 +5,7 @@ import setuptools
 from distutils.core import setup
 
 setup(
-    name="ASSESS",
+    name="assess",
     version="0.1",
     description="Comparison of different distance algorithms for dynamic trees",
     author="Eileen Kuehn",
@@ -13,9 +13,9 @@ setup(
     url="https://bitbucket.org/teamkseta/assess",
     packages=setuptools.find_packages(),
     dependency_links=[
-        os.path.expanduser("~/Development/libs/python/cachemap"),
-        os.path.expanduser("~/Development/libs/python/gnmutils"),
-        os.path.expanduser("~/Development/libs/python/utility")
+        os.path.expanduser("~/Development/python/cachemap"),
+        os.path.expanduser("~/Development/python/gnmutils"),
+        os.path.expanduser("~/Development/python/utility")
     ],
     install_requires=["cachemap", "gnmutils", "utility"],
 )
