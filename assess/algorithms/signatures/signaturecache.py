@@ -1,3 +1,7 @@
+"""
+Module contains a general SignatureCache as well as a specialised for prototypes. Currently it
+also defines the statistics being available for PrototypeSignatureCache.
+"""
 import math
 
 from cachemap.frequencycachemap import FrequencyCacheMap
@@ -5,16 +9,16 @@ from cachemap.frequencycachemap import FrequencyCacheMap
 
 class SignatureCache(object):
     """
-    The SignatureCache takes care of managing statistics for based on the signature. Different statistics,
-    e.g. MeanVariance can be supported.
+    The SignatureCache takes care of managing statistics for based on the signature. Different
+    statistics, e.g. MeanVariance can be supported.
     """
     def __init__(self):
         self._prototype_dict = FrequencyCacheMap()
 
     def add_signature(self, signature=None):
         """
-        Adding another occurence of a signature to the current cache. If signature is not in the Cache so far,
-        its count is set to 1, otherwise it is incremented.
+        Adding another occurence of a signature to the current cache. If signature is not in the
+        Cache so far, its count is set to 1, otherwise it is incremented.
 
         :param signature: The signature to be added
         """
@@ -25,7 +29,8 @@ class SignatureCache(object):
 
     def get(self, signature=None, **kwargs):
         """
-        Get the current count for a given signature. If signature does not exist in cache, a count of 0 is returned.
+        Get the current count for a given signature. If signature does not exist in cache, a count
+        of 0 is returned.
 
         :param signature: Signature to get the count for
         :param kwargs:
@@ -64,7 +69,8 @@ class SignatureCache(object):
 class MeanVariance(object):
     """
     Supported kind of statistic that can be utilised in SignatureCache to store signatures.
-    The MeanVariance class offers a running mean and variance for inserted signatures and their assigned values.
+    The MeanVariance class offers a running mean and variance for inserted signatures and their
+    assigned values.
     """
     def __init__(self, value=0.0):
         self._count = 1 if value != 0 else 0
@@ -90,10 +96,10 @@ class MeanVariance(object):
     def _get_first_part(self):
         """
         Internal method that allows caching for first part of probability distribution function.
-        Currently the value is just a static one to directly map to a distance. 1 means, it is equal, 0 means it has
-        a very far distance.
+        Currently the value is just a static one to directly map to a distance. 1 means, it is
+        equal, 0 means it has a very far distance.
         curve(a*exp(-b*x*x), -3, 3)
-        :return:
+        :return: First part of pdf
         """
         return 1
         # if self._first_part is None:
@@ -106,8 +112,8 @@ class MeanVariance(object):
     def _get_second_part(self):
         """
         Internal method that allows caching for second part of probability distribution function.
-        If the value has already been calculated before, the cached value is returned, otherwise the value is
-        initialised first.
+        If the value has already been calculated before, the cached value is returned, otherwise
+        the value is initialised first.
         :return: Second part of pdf
         """
         if self._second_part is None:
@@ -119,9 +125,9 @@ class MeanVariance(object):
 
     def distance(self, value=None):
         """
-        Check the current distance for a given value. The distance is not a distance in this way but more a similarity.
-        If the value equals the mean, 1 is returned. For convenience, value being None or 0 get a distance of None,
-        meaning, that the handling can be done externally.
+        Check the current distance for a given value. The distance is not a distance in this way but
+        more a similarity. If the value equals the mean, 1 is returned. For convenience, value being
+        None or 0 get a distance of None, meaning, that the handling can be done externally.
 
         :param value: The value to check the distance for
         :return: Distance (interpreted in the sense of similarity)
@@ -142,8 +148,9 @@ class MeanVariance(object):
 
 class PrototypeSignatureCache(SignatureCache):
     """
-    The PrototypeSignatureCache offers a specialised SignatureCache for Prototypes. It does not only do a count on
-    signatures but also introduces a MeanVariance statistic on a given value for signatures.
+    The PrototypeSignatureCache offers a specialised SignatureCache for Prototypes. It does not only
+    do a count on signatures but also introduces a MeanVariance statistic on a given value for
+    signatures.
     """
     def add_signature(self, signature=None, prototype=None, value=0.0):
         """
@@ -178,8 +185,8 @@ class PrototypeSignatureCache(SignatureCache):
 
     def get(self, signature=None, **kwargs):
         """
-        Returns a dictionary of prototypes with their statistics for a given signature. If the signature does not
-        exist, an empty dictionary is returned.
+        Returns a dictionary of prototypes with their statistics for a given signature. If the
+        signature does not exist, an empty dictionary is returned.
 
         :param signature: Signature to return the statistics for
         :param kwargs:
