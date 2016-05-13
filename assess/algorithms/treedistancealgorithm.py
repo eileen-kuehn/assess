@@ -91,8 +91,9 @@ class TreeDistanceAlgorithm(object):
 
     def tree_node_counts(self, signature=False):
         """
-        Returns the list of count of nodes for monitoring tree per prototype. If signature is True, the count of
-        nodes based on signature is used. Signature defaults to False.
+        Returns the list of count of nodes for monitoring tree per prototype. If signature is True,
+        the count of nodes based on signature is used. Signature defaults to False.
+
         :param signature: Determines if node count depends on signature, defaults to False
         :return: List of counts for monitoring tree per prototype
         """
@@ -104,14 +105,15 @@ class TreeDistanceAlgorithm(object):
 
     def prototype_node_counts(self, signature=False):
         """
-        Returns the count of nodes per prototype tree. If signature is True, the count for converted prototypes
-        based on given signature is returned. Signature defaults to False.
+        Returns the count of nodes per prototype tree. If signature is True, the count for converted
+        prototypes based on given signature is returned. Signature defaults to False.
 
         :param signature: Determines if node count depends on signature, defaults to False
         :return: List of counts for prototypes
         """
         if signature:
-            return [self._signature_prototypes.node_count(prototype=prototype) for prototype in self._prototypes]
+            return [self._signature_prototypes.node_count(prototype=prototype)
+                    for prototype in self._prototypes]
         return [prototype.node_count() for prototype in self._prototypes]
 
     def prototype_event_counts(self):
@@ -134,7 +136,8 @@ class TreeDistanceAlgorithm(object):
 
     def start_tree(self, maxlen=None, **kwargs):
         """
-        Method that should be called before a new event stream is started. It takes care on initialising things.
+        Method that should be called before a new event stream is started. It takes care on
+        initialising things.
 
         :param maxlen: How many prototypes are considered for distance measurement.
         """
@@ -147,15 +150,18 @@ class TreeDistanceAlgorithm(object):
 
     def finish_tree(self):
         """
-        Method that should be called after the event stream has been finished. Some of the algorithms might rely on
-        this method to be called.
+        Method that should be called after the event stream has been finished. Some of the
+        algorithms might rely on this method to be called.
+
         :return: Returns final distance after all events have been applied.
         """
         return None
 
     def add_events(self, eventgenerator, **kwargs):
         """
-        Convenience method that takes an event generator and calls method add_event for each event that is yielded.
+        Convenience method that takes an event generator and calls method add_event for each event
+        that is yielded.
+
         :param eventgenerator: Event generator yielding events.
         :param kwargs:
         :return: Returns final distances after all events have been applied.
@@ -166,8 +172,9 @@ class TreeDistanceAlgorithm(object):
 
     def add_event(self, event, **kwargs):
         """
-        Method to add an event. For each event the actual distance from the stream object to different prototypes
-        are calculated. The calculated distance is returned.
+        Method to add an event. For each event the actual distance from the stream object to
+        different prototypes are calculated. The calculated distance is returned.
+        
         :param event: The event to be added to the current distance measurement.
         :param kwargs:
         :return: Returns the current distances after the event has been applied.
