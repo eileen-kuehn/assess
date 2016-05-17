@@ -96,7 +96,10 @@ class AdditionalMissingDistance(Distance):
         return 0.9 * self._prototype_node_count(prototype, original=False) - \
                self._missing_nodes_dict[prototype] - (len(self._measured_nodes) -
                                                       self._additional_nodes_dict[prototype])
-        # return min(self.node_count_for_prototype(prototype, original=False), len(self._measured_nodes))
+        # return min(self.node_count_for_prototype(
+        #     prototype, original=False),
+        #     len(self._measured_nodes)
+        # )
         # return min(
         #     self.node_count_for_prototype(prototype, original=False),
         #     (len(self._measured_nodes)-self._additional_nodes_dict[prototype])

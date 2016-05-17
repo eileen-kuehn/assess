@@ -1,27 +1,32 @@
+"""
+This module provides a decorator implementation for getting the overall performance regarding
+the distance measurement process as well as the signature creation process.
+"""
+
 import os
 
 from assess.decorators.decorator import Decorator
 
 
 class PerformanceDecorator(Decorator):
+    """
+    The PerformanceDecorator measures the time from start to end of processing of a single event.
+    """
     def __init__(self, accumulated=True):
-        Decorator.__init__(self)
+        if accumulated:
+            Decorator.__init__(self, name="accumulated_performance")
+        else:
+            Decorator.__init__(self, name="performance")
         self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
         self._performances = []
         self._start = None
         self._accumulated = accumulated
-        if self._accumulated:
-            self._name = "accumulated_performance"
-        else:
-            self._name = "performance"
 
     def _algorithm_updated(self):
         self._performances = []
         self._start = None
 
     def _tree_started(self):
-        # TODO: algorithm description should be given by another decorator
-        # TODO: there should be another decorator describing the data itself
         self._performances.append({})
 
     def _event_will_be_added(self):

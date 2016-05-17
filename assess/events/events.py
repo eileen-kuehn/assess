@@ -157,6 +157,6 @@ class TrafficEvent(Event):
         """
         Setter to set the amount of traffic for the event.
 
-        :param value: Traffic amount to be set 
+        :param value: Traffic amount to be set
         """
         self._value = value

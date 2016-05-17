@@ -1,5 +1,5 @@
 """
-Module impements different Exceptions being used within ASSESS.
+Module implements different Exceptions being used within ASSESS.
 """
 from utility.exceptions import BasicException
 
@@ -37,5 +37,5 @@ class MatrixDoesNotMatchBounds(BasicException):
         BasicException.__init__(
             self,
             "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
-            %(expected, expected, width, height)
+            % (expected, expected, width, height)
         )

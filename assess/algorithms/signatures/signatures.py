@@ -1,3 +1,9 @@
+"""
+Module supports different signature implementations that can be used to compress trees based
+on different characteristics of workflows.
+"""
+
+
 class Signature(object):
     """
     Signatures are a concept to create IDs based on processes inside the trees.
@@ -9,6 +15,7 @@ class Signature(object):
         Methods takes a node and prepares its signature. The signature is directly
         attached to the node.
         :param node: The node whose signature needs to be calculated.
+        :param parent: Parent of the node
         """
         self._prepare_signature(node, node.name)
 
@@ -33,6 +40,14 @@ class Signature(object):
 
 
 class ParentChildByNameTopologySignature(Signature):
+    """
+    ParentChildByNameTopologySignature mainly uses the names of single nodes as well as the actual
+    hierarchy of the node by considering next to the name also the signature of its parent.
+    As nodes inside a list of children with an equal name are accumulated, this signature is very
+    good for compression when nodes are used repeatedly.
+
+    Attention: The signature does not take care on the ordering of nodes.
+    """
     def prepare_signature(self, node, parent):
         algorithm_id = "%s_%s" % (
             node.name,
@@ -42,6 +57,12 @@ class ParentChildByNameTopologySignature(Signature):
 
 
 class ParentChildOrderTopologySignature(Signature):
+    """
+    ParentChildOrderTopologySignature just looks at the order and count of nodes. No names or other
+    attributes are considered. Therefore only topology is key.
+    You cannot expect any compression from this signature except the skipping of attributes and
+    their values.
+    """
     def prepare_signature(self, node, parent):
         count = node.node_number()
         parent_signature = self.get_signature(parent, None) if parent is not None else None
@@ -52,14 +73,15 @@ class ParentChildOrderTopologySignature(Signature):
         )
         self._prepare_signature(node, algorithm_id)
 
-    def _first_part_algorithm_id(self, algorithm_id):
+    @staticmethod
+    def _first_part_algorithm_id(algorithm_id):
         return algorithm_id.split("_")[0]
 
 
 class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature):
     """
-    For this method order for processes matters. If you do have several processes with the
-    same name after each other, they get the same name. If they appear again after another
+    For this method order for processes matters. If you do have several processes with the same
+    name after each other, they get the same resulting signature. If they appear again after another
     process it differs.
     """
     def prepare_signature(self, node, parent):
@@ -94,8 +116,8 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
 
     def prepare_signature(self, node, parent):
         position = node.node_number()
-        neighbors = parent.children_list()[-((len(parent.children_list())-position) + self._count):position] \
-            if parent is not None else []
+        neighbors = parent.children_list()[-((len(parent.children_list())-position) +
+                                             self._count):position] if parent is not None else []
         algorithm_id = "%s_%s_%s" %(
             "_".join(str(node.name) for node in neighbors),
             node.name,

@@ -1,15 +1,23 @@
+"""
+This module offers an implementation to output the different distances for dynamic trees based
+on the single events that are processed. The actual output is in form of a vector.
+"""
+
 from assess.decorators.decorator import Decorator
 
 
 class DistanceDecorator(Decorator):
+    """
+    The DistanceDecorator takes care to initialize a vector of distances. For each event the current
+    distance is given. The class also differentiates between normalized and not normalized results.
+    """
     def __init__(self, normalized=False):
-        Decorator.__init__(self)
+        if normalized:
+            Decorator.__init__(self, name="normalized_distances")
+        else:
+            Decorator.__init__(self, name="distances")
         self._distances = []
         self._normalized = normalized
-        if self._normalized:
-            self._name = "normalized_distances"
-        else:
-            self._name = "distances"
         self._tmp_prototype_counts = None
 
     def data(self):
@@ -28,6 +36,7 @@ class DistanceDecorator(Decorator):
         event_counts = self._algorithm.event_counts()
         for i in range(len(result)):
             if self._normalized:
-                self._distances[-1][i].append(result[i] / float(event_counts[i]+self._tmp_prototype_counts[i]))
+                self._distances[-1][i].append(result[i] /
+                                              float(event_counts[i]+self._tmp_prototype_counts[i]))
             else:
                 self._distances[-1][i].append(result[i])

@@ -1,18 +1,24 @@
+"""
+This module offers an implementation to generate the distance matrix for given dynamic trees.
+"""
+
 from assess.decorators.decorator import Decorator
-from assess.events.events import ProcessStartEvent
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
 
 
 class DistanceMatrixDecorator(Decorator):
+    """
+    The DistanceMatrixDecorator takes care on outputting distance results formatted like a
+    distance matrix. It differentiates between normalized and not normalized distance results.
+    """
     def __init__(self, normalized=False):
-        Decorator.__init__(self)
+        if normalized:
+            Decorator.__init__(self, name="normalized_matrix")
+        else:
+            Decorator.__init__(self, name="matrix")
         self._distance_matrix = None
         self._tmp_prototype_counts = None
         self._normalized = normalized
-        if self._normalized:
-            self._name = "normalized_matrix"
-        else:
-            self._name = "matrix"
 
     def data(self):
         results = []

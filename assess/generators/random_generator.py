@@ -1,3 +1,6 @@
+"""
+Generator for random tree events.
+"""
 import string
 import random
 from assess.prototypes.simpleprototypes import Prototype
@@ -5,11 +8,26 @@ from assess.events.events import Event
 
 
 def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
+    """
+    Generation of unique IDs based on given chars and a specified size.
+
+    :param size: Length of string
+    :param chars: Chars contained in string
+    :return: Unique ID
+    """
     return ''.join(random.choice(chars) for _ in range(size))
 
 
 class RandomGenerator(object):
-    def __init__(self, prototype_node_count=100, tree_node_count=100, relative_repetition=0, relative_matching=0.5, seed=None):
+    """
+    The RandomGenerator initializes a prototypes and generates random events based on the generated
+    prototype. It can be differently parameterised to test for different things.
+
+    Attention: The RandomGenerator currently should not be used for stuff build on tree topology.
+    Currently only the depth of 1 is created. So all nodes are below a single root node.
+    """
+    def __init__(self, prototype_node_count=100, tree_node_count=100, relative_repetition=0,
+                 relative_matching=0.5, seed=None):
         self._prototype_node_count = prototype_node_count
         self._tree_node_count = tree_node_count
         self._relative_repetition = relative_repetition

@@ -11,6 +11,9 @@ from assess.prototypes.simpleprototypes import Prototype
 
 
 class GNMImporter(object):
+    """
+    The GNMImporter defines the default key types for GNM application.
+    """
     default_key_type = {
         'tme': float,
         'exit_tme': float,
@@ -30,13 +33,20 @@ class GNMImporter(object):
 
 
 class CSVTreeBuilder(GNMImporter):
-    def build(self, csv_path):
+    """
+    The CSVTreeBuilder builds a monitoring tree from actual GNM log files.
+    """
+    @staticmethod
+    def build(csv_path):
         process_cache = ObjectCache()
         result = Prototype()
 
         with open(csv_path) as csv_file:
             for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
-                parent = process_cache.getObject(tme=process.get("tme", 0), pid=process.get("ppid", 0))
+                parent = process_cache.getObject(
+                    tme=process.get("tme", 0),
+                    pid=process.get("ppid", 0)
+                )
                 node = result.add_node(
                     process.get("name", "."),
                     parent=parent,
@@ -45,7 +55,11 @@ class CSVTreeBuilder(GNMImporter):
                     pid=process.get("pid", 0),
                     ppid=process.get("ppid", 0)
                 )
-                process_cache.addObject(object=node, pid=process.get("pid", 0), tme=process.get("tme", 0))
+                process_cache.addObject(
+                    object=node,
+                    pid=process.get("pid", 0),
+                    tme=process.get("tme", 0)
+                )
         return result
 
 

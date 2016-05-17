@@ -2,10 +2,10 @@ import types
 
 
 class Decorator(object):
-    def __init__(self):
+    def __init__(self, name="decorator"):
         self._algorithm = None
         self.decorator = None
-        self._name = "decorator"
+        self._name = name
 
     @property
     def algorithm(self):

@@ -27,13 +27,12 @@ class SignatureCache(object):
         else:
             self._prototype_dict[signature] += 1
 
-    def get(self, signature=None, **kwargs):
+    def get(self, signature=None):
         """
         Get the current count for a given signature. If signature does not exist in cache, a count
         of 0 is returned.
 
         :param signature: Signature to get the count for
-        :param kwargs:
         :return: Current count for signature, otherwise 0
         """
         return self._prototype_dict.get(signature, 0)
@@ -47,11 +46,10 @@ class SignatureCache(object):
         """
         return len(self._prototype_dict.keys())
 
-    def frequency(self, **kwargs):
+    def frequency(self):
         """
         Method returns the overall frequency of all signatures inside the cache.
 
-        :param kwargs:
         :return: Accumulated count for all signatures
         """
         return sum(self._prototype_dict.values())
@@ -93,7 +91,8 @@ class MeanVariance(object):
             self._variance += (value - self._mean) * (value - new_mean)
             self._mean = new_mean
 
-    def _get_first_part(self):
+    @staticmethod
+    def _get_first_part():
         """
         Internal method that allows caching for first part of probability distribution function.
         Currently the value is just a static one to directly map to a distance. 1 means, it is
@@ -183,13 +182,12 @@ class PrototypeSignatureCache(SignatureCache):
                     count += 1
         return count
 
-    def get(self, signature=None, **kwargs):
+    def get(self, signature=None):
         """
         Returns a dictionary of prototypes with their statistics for a given signature. If the
         signature does not exist, an empty dictionary is returned.
 
         :param signature: Signature to return the statistics for
-        :param kwargs:
         :return: Dictionary of prototypes with statistics as value
         """
         return self._prototype_dict.get(signature, dict())

@@ -1,18 +1,25 @@
+"""
+This module provides a decorator that takes care to measure performance of signature generation.
+"""
+
 import os
 from assess.decorators.decorator import Decorator
 
 
 class SignaturePerformanceDecorator(Decorator):
+    """
+    The SignaturePerformanceDecorator measures performance for calculation of signatures.
+    It differs between accumulated performance as well as single performance measurements.
+    """
     def __init__(self, accumulated=True):
-        Decorator.__init__(self)
+        if accumulated:
+            Decorator.__init__(self, name="accumulated_signature_performance")
+        else:
+            Decorator.__init__(self, name="signature_performance")
         self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
         self._performances = []
         self._start = None
         self._accumulated = accumulated
-        if self._accumulated:
-            self._name = "accumulated_signature_performance"
-        else:
-            self._name = "signature_performance"
 
     def _algorithm_updated(self):
         self._performances = []
@@ -22,6 +29,14 @@ class SignaturePerformanceDecorator(Decorator):
         self._performances.append({})
 
     def create_signature(self, node, parent):
+        """
+        This method encapsulates the signature creation process. It measures time from start to
+        finish of the process.
+
+        :param node: Node for which the signature is calculated
+        :param parent: Parent of node
+        :return: Resulting signature
+        """
         start = os.times()
         result = self._algorithm.__class__.create_signature(self._algorithm, node, parent)
         end = os.times()

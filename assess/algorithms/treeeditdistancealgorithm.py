@@ -1,3 +1,8 @@
+"""
+Module offers functionality to perform the well-known tree edit distance based on the current
+framework for dynamic trees.
+"""
+
 import zss
 
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
@@ -5,6 +10,11 @@ from assess.events.events import ProcessStartEvent
 
 
 class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
+    """
+    Implementation of tree edit distance based on dynamic trees by waiting until the whole tree
+    is generated. The algorithm itself is just based on process start events and ignores actual
+    exit events.
+    """
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
@@ -29,11 +39,11 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
 
     def _calculate_distance(self, prototype, tree):
         return zss.simple_distance(
-                prototype,
-                tree,
-                lambda node: list(node.children()),
-                lambda node: self._signature.get_signature(node, node.parent()),
-                lambda prototype_label, tree_label: prototype_label != tree_label
+            prototype,
+            tree,
+            lambda node: list(node.children()),
+            lambda node: self._signature.get_signature(node, node.parent()),
+            lambda prototype_label, tree_label: prototype_label != tree_label
         )
 
     def _add_result_dicts(self, results):

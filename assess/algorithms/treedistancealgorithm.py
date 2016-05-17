@@ -180,20 +180,20 @@ class TreeDistanceAlgorithm(object):
         :return: Returns the current distances after the event has been applied.
         """
         self._event_counter += 1
-        if isinstance(event) is ProcessStartEvent:
+        if isinstance(event, ProcessStartEvent):
             if self._supported.get(ProcessStartEvent, False):
                 # create node
                 node, parent = self.create_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 self._signature_tree.add_signature(signature=signature)
                 return self.update_distance(event, signature, **kwargs)
-        elif isinstance(event) is ProcessExitEvent:
+        elif isinstance(event, ProcessExitEvent):
             if self._supported.get(ProcessExitEvent, False):
                 # finish node
                 node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 return self.update_distance(event, signature, **kwargs)
-        elif isinstance(event) is TrafficEvent and self._supported.get(TrafficEvent, False):
+        elif isinstance(event, TrafficEvent) and self._supported.get(TrafficEvent, False):
             # add traffic
             raise EventNotSupportedException(event)
         else:
