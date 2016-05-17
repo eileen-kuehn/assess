@@ -81,7 +81,7 @@ class AdditionalMissingDistance(Distance):
             result_dict[prototype_node] = 0
         for key in result_dict.keys():
             if result_dict[key] > 0:
-                if self._prototype_weight(key) <= 0:
+                if self._prototype_weight(key, signature_prototypes) <= 0:
                     result_dict[key] = 0
         self._monitoring_results_dict = self._add_result_dicts(
             result_dict,
@@ -92,8 +92,8 @@ class AdditionalMissingDistance(Distance):
             self._missing_nodes_dict
         )
 
-    def _prototype_weight(self, prototype):
-        return 0.9 * self._prototype_node_count(prototype, original=False) - \
+    def _prototype_weight(self, prototype, signature_prototypes):
+        return 0.9 * signature_prototypes.node_count(prototype=prototype) - \
                self._missing_nodes_dict[prototype] - (len(self._measured_nodes) -
                                                       self._additional_nodes_dict[prototype])
         # return min(self.node_count_for_prototype(

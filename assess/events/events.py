@@ -37,7 +37,6 @@ class Event(object):
         :param kwargs: Additional parameters
         :return: Created start event
         """
-        # TODO: handle different parameters from process
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
 
     @staticmethod
@@ -52,7 +51,6 @@ class Event(object):
         :param kwargs: Additional parameters
         :return: Created exit event
         """
-        # TODO: handle different parameters from process
         return ProcessExitEvent(tme, pid, ppid, start_tme, **kwargs)
 
     @property

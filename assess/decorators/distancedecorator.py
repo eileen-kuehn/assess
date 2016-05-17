@@ -28,13 +28,13 @@ class DistanceDecorator(Decorator):
         self._tmp_prototype_counts = None
 
     def _tree_started(self):
-        self._distances.append([[] for value in range(len(self._algorithm.prototypes))])
+        self._distances.append([[] for _ in self._algorithm.prototypes])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
 
     def _event_added(self, event, result):
         event_counts = self._algorithm.event_counts()
-        for i in range(len(result)):
+        for i, _ in enumerate(result):
             if self._normalized:
                 self._distances[-1][i].append(result[i] /
                                               float(event_counts[i]+self._tmp_prototype_counts[i]))

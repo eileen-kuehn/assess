@@ -39,6 +39,11 @@ class RandomGenerator(object):
 
     @property
     def prototype(self):
+        """
+        Getter property for prototype that is used to generate a random monitoring event stream.
+
+        :return: Prototype where random tree is based on
+        """
         if self._prototype is None:
             prototype = Prototype()
             root = prototype.add_node(name=id_generator(size=6), tme=0, exit_tme=0, pid=1, ppid=0)
@@ -46,7 +51,6 @@ class RandomGenerator(object):
                 # TODO: check if this is < or <=
                 if root.child_count() > 0 and random.random() <= self._relative_repetition:
                     node_name = random.choice(root.children_list())
-                    print("picked name")
                 else:
                     node_name = id_generator()
                 prototype.add_node(name=node_name, parent=root, tme=0, exit_tme=0, pid=i+2, ppid=1)
@@ -76,6 +80,5 @@ class RandomGenerator(object):
                 pid = i+2
             yield Event.start(tme=0, pid=pid, ppid=1, name=node_name)
             exit_event_queue.append(Event.exit(tme=0, pid=pid, ppid=1, name=node_name, start_tme=0))
-        print(picked)
         while exit_event_queue:
             yield exit_event_queue.pop()

@@ -6,7 +6,7 @@ import bisect
 
 from gnmutils.objectcache import ObjectCache
 
-from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent
+from assess.events.events import Event
 from assess.prototypes.simpleprototypes import Prototype
 
 
@@ -38,6 +38,12 @@ class CSVTreeBuilder(GNMImporter):
     """
     @staticmethod
     def build(csv_path):
+        """
+        Method build the actual prototype tree from a log file.
+
+        :param csv_path: Path to GNM log file
+        :return: Prototype tree
+        """
         process_cache = ObjectCache()
         result = Prototype()
 

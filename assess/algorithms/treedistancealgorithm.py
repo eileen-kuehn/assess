@@ -145,7 +145,7 @@ class TreeDistanceAlgorithm(object):
         self._tree_dict = ObjectCache()
         self._signature_tree = SignatureCache()
         self._event_counter = 0
-        assert(maxlen is None or maxlen <= len(self._prototypes))
+        assert maxlen is None or maxlen <= len(self._prototypes)
         self._maxlen = maxlen
 
     def finish_tree(self):

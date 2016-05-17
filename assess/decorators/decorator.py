@@ -1,7 +1,14 @@
+"""
+This module implements a base decorator for ASSESS. It ensures the correct encapsulation of
+decorators and wraps the actual algorithm being used.
+"""
 import types
 
 
 class Decorator(object):
+    """
+    Base decorator for ASSESS to measure different statistics based on methods of algorithm class.
+    """
     def __init__(self, name="decorator"):
         self._algorithm = None
         self.decorator = None
@@ -9,10 +16,20 @@ class Decorator(object):
 
     @property
     def algorithm(self):
+        """
+        Getter property to receive the currently wrapped algorithm.
+
+        :return: Algorithm being wrapped
+        """
         return self._algorithm
 
     @algorithm.setter
     def algorithm(self, value):
+        """
+        Setter property to set the algorithm to be wrapped.
+
+        :param value: Algorithm to be wrapped
+        """
         if self.decorator:
             self.decorator.algorithm = value
         self._algorithm = value
@@ -50,6 +67,11 @@ class Decorator(object):
         pass
 
     def start_tree(self, **kwargs):
+        """
+        Method start_tree that wraps actual method of algorithm.
+
+        :param kwargs: Additional parameters
+        """
         if self.decorator:
             self.decorator.start_tree(**kwargs)
         else:
@@ -57,6 +79,11 @@ class Decorator(object):
         self._tree_started()
 
     def finish_tree(self):
+        """
+        Method finish_tree that wraps actual method of algorithm.
+
+        :return: Updated distance
+        """
         if self.decorator:
             result = self.decorator.finish_tree()
         else:
@@ -65,6 +92,13 @@ class Decorator(object):
         return result
 
     def add_event(self, event, **kwargs):
+        """
+        Method add_event that wraps actual method of algorithm.
+
+        :param event: Event to be processed
+        :param kwargs: Additional parameters
+        :return: Updated distance
+        """
         self._event_will_be_added()
         if self.decorator:
             result = self.decorator.add_event(event, **kwargs)
@@ -81,9 +115,20 @@ class Decorator(object):
         pass
 
     def data(self):
+        """
+        Method to receive the data that was collected by the decorator.
+
+        :return: Data that was collected
+        """
         raise NotImplementedError()
 
     def descriptive_data(self):
+        """
+        Method to receive the data that was collected by the decorator. It also includes a
+        description about the decorator itself to be self-explanatory in e.g. json output.
+
+        :return: Descriptive string containing the data
+        """
         result = {self._name: self.data()}
         if self.decorator:
             result.update(self.decorator.descriptive_data())

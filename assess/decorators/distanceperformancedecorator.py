@@ -18,7 +18,8 @@ class DistancePerformanceDecorator(Decorator):
             Decorator.__init__(self, name="accumulated_distance_performance")
         else:
             Decorator.__init__(self, name="distance_performance")
-        self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
+        self._items = ["user time", "system time", "children's user time", "children's system time",
+                       "elapsed real time"]
         self._performances = []
         self._start = None
         self._accumulated = accumulated
@@ -40,7 +41,12 @@ class DistancePerformanceDecorator(Decorator):
         :return: Updated distance
         """
         start = os.times()
-        result = self._algorithm.__class__.update_distance(self._algorithm, event, signature, **kwargs)
+        result = self._algorithm.__class__.update_distance(
+            self._algorithm,
+            event,
+            signature,
+            **kwargs
+        )
         end = os.times()
         result_dict = zip(self._items, [end[i] - start[i] for i in range(len(start))])
         for key, value in result_dict:

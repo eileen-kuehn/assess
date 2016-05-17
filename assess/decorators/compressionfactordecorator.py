@@ -45,7 +45,7 @@ class CompressionFactorDecorator(Decorator):
         converted = self._algorithm.signature_prototypes
         try:
             compressed = converted.node_count()
-        except Exception:  # pylint: disable=broad-except
+        except AttributeError:
             compressed = sum(self._compressed_size())
         return 1.0 - compressed / float(original)
 

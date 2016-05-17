@@ -313,7 +313,8 @@ class Tree(object):
             for node in dfs(base_node) if depth_first else wfs(base_node):
                 yield node
 
-    def parent(self, node):
+    @staticmethod
+    def parent(node):
         """
         Method that returns the parent node of given node.
         :param node: A node inside the tree.
@@ -321,7 +322,8 @@ class Tree(object):
         """
         return node.parent()
 
-    def node_number(self, node):
+    @staticmethod
+    def node_number(node):
         """
         The node number of node with respect to its neighbouring nodes.
         :param node: A node inside the tree.
@@ -336,7 +338,8 @@ class Tree(object):
         """
         return self._graph.root
 
-    def children(self, node):
+    @staticmethod
+    def children(node):
         """
         Generator that yields children of given node.
         :param node: A node inside the tree
@@ -344,7 +347,8 @@ class Tree(object):
         """
         return node.children()
 
-    def children_list(self, node):
+    @staticmethod
+    def children_list(node):
         """
         Returns list of children for given node.
 
@@ -353,7 +357,8 @@ class Tree(object):
         """
         return node.children_list()
 
-    def child_count(self, node):
+    @staticmethod
+    def child_count(node):
         """
         Method that returns the number of children for the specified node.
 

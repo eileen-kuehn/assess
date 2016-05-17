@@ -16,7 +16,8 @@ class SignaturePerformanceDecorator(Decorator):
             Decorator.__init__(self, name="accumulated_signature_performance")
         else:
             Decorator.__init__(self, name="signature_performance")
-        self._items = ["user time", "system time", "children's user time", "children's system time", "elapsed real time"]
+        self._items = ["user time", "system time", "children's user time", "children's system time",
+                       "elapsed real time"]
         self._performances = []
         self._start = None
         self._accumulated = accumulated
