@@ -145,7 +145,7 @@ class TreeDistanceAlgorithm(object):
         self._tree_dict = ObjectCache()
         self._signature_tree = SignatureCache()
         self._event_counter = 0
-        # TODO: write warning if maxlen is bigger then count of prototypes
+        assert(maxlen is None or maxlen <= len(self._prototypes))
         self._maxlen = maxlen
 
     def finish_tree(self):
@@ -180,20 +180,20 @@ class TreeDistanceAlgorithm(object):
         :return: Returns the current distances after the event has been applied.
         """
         self._event_counter += 1
-        if type(event) is ProcessStartEvent:
+        if isinstance(event) is ProcessStartEvent:
             if self._supported.get(ProcessStartEvent, False):
                 # create node
                 node, parent = self.create_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 self._signature_tree.add_signature(signature=signature)
                 return self.update_distance(event, signature, **kwargs)
-        elif type(event) is ProcessExitEvent:
+        elif isinstance(event) is ProcessExitEvent:
             if self._supported.get(ProcessExitEvent, False):
                 # finish node
                 node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 return self.update_distance(event, signature, **kwargs)
-        elif type(event) is TrafficEvent and self._supported.get(TrafficEvent, False):
+        elif isinstance(event) is TrafficEvent and self._supported.get(TrafficEvent, False):
             # add traffic
             raise EventNotSupportedException(event)
         else:
