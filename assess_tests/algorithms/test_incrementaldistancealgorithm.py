@@ -4,7 +4,8 @@ from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAl
 from assess.algorithms.signatures.signatures import *
 from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.prototypes.simpleprototypes import Prototype
-from assess.events.events import Event
+from assess.events.events import Event, TrafficEvent
+from assess.exceptions.exceptions import EventNotSupportedException
 
 
 class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
@@ -198,6 +199,23 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm = algorithm(signature=signature)
         algorithm.prototypes = [self.prototype]
         return algorithm.prototype_node_counts(signature=True)
+
+    def test_prototype_count_no_signature(self):
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature)
+        algorithm.prototypes = [self.prototype]
+        self.assertEqual(algorithm.prototype_node_counts(signature=False)[0], 56)
+
+    def test_node_count_no_signature(self):
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature)
+        algorithm.prototypes = [self.prototype]
+
+        algorithm.start_tree()
+        for event in Event.from_tree(self.prototype):
+            algorithm.add_event(event)
+        self.assertEqual(algorithm.tree_node_counts(signature=False)[0], 56)
+        algorithm.finish_tree()
 
     def test_distance_zero(self):
         self.assertEqual(self._test_signature(
@@ -1086,3 +1104,25 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [self.prototype]
         algorithm.start_tree()
         self.assertEqual(algorithm.__repr__(), "IncrementalDistanceAlgorithm (SimpleDistance)")
+
+    def test_traffic_event(self):
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        algorithm.prototypes = [self.prototype]
+
+        algorithm.start_tree()
+        self.assertRaises(
+            EventNotSupportedException,
+            algorithm.add_event,
+            TrafficEvent(tme=0, pid=2, ppid=1, value=0.5)
+        )
+        algorithm.finish_tree()
+
+    def test_none_event(self):
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        algorithm.prototypes = [self.prototype]
+
+        algorithm.start_tree()
+        self.assertRaises(EventNotSupportedException, algorithm.add_event, None)
+        algorithm.finish_tree()
