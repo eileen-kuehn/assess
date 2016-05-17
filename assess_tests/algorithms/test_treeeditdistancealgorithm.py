@@ -31,7 +31,9 @@ class TestTreeEditDistanceFunctionalities(unittest.TestCase):
         algorithm = TreeEditDistanceAlgorithm(signature=signature)
         algorithm.prototypes = [prototype]
 
+        algorithm.start_tree()
         result = algorithm.add_events(Event.from_tree(tree))
+        algorithm.finish_tree()
         return result
 
     def test_zero_distance(self):
