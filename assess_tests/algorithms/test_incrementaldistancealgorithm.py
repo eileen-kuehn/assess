@@ -2,6 +2,7 @@ import unittest
 
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.signatures import *
+from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.prototypes.simpleprototypes import Prototype
 from assess.events.events import Event
 
@@ -1078,3 +1079,10 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100)
         )[0], 56)
+
+    def test_representation(self):
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        algorithm.prototypes = [self.prototype]
+        algorithm.start_tree()
+        self.assertEqual(algorithm.__repr__(), "IncrementalDistanceAlgorithm (SimpleDistance)")
