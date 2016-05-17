@@ -65,7 +65,7 @@ class SimpleDistance2(Distance):
             prototypes=prototypes,
             signature_prototypes=signature_prototypes
         )
-        for prototype in self.prototypes:
+        for prototype in prototypes:
             self._monitoring_results_dict[prototype] = 0
 
     def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
