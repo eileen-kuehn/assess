@@ -8,6 +8,13 @@ from assess.exceptions.exceptions import TreeInvalidatedException
 class OrderedTreeNode(object):
     """
     Class describes a node of a tree that ensures the correct order of nodes within the tree.
+
+    :param node_id: ID of node
+    :param name: Name of node
+    :param parent: Parent node of node
+    :param position: Position of node within siblings
+    :param tree: Tree where node belongs to
+    :param kwargs: Additional arguments
     """
     def __init__(self, node_id, name=None, parent=None, position=0, tree=None, **kwargs):
         self.node_id = node_id
@@ -39,8 +46,8 @@ class OrderedTreeNode(object):
 
         :return: Generator for children
         """
-        # TODO: look, that's no generator
-        return self._children
+        for child in self._children:
+            yield child
 
     def children_list(self):
         """
@@ -61,11 +68,12 @@ class OrderedTreeNode(object):
     def node_count(self):
         """
         Method returns the count of nodes within the subtree of the node.
+        The actual count is calculated recursively.
 
         :return: Count of nodes in subtree
         """
         count = 1
-        for child in self._children:
+        for child in self.children():
             count += child.node_count()
         return count
 
@@ -149,7 +157,7 @@ class OrderedTree(object):
         if self.root is None:
             self.root = node
         else:
-            parent._children.append(node)
+            parent.children_list().append(node)
         self._node_counter += 1
         return node
 
@@ -158,6 +166,10 @@ class Process(object):
     # TODO: can this be exchanged by process from gnmutils? or extended?
     """
     A process represents the actual node inside the process tree.
+
+    :param prototype: Prototype the process belongs to
+    :param node_id: ID of process
+    :param kwargs: Additional parameters
     """
     def __init__(self, prototype, node_id, **kwargs):
         self._prototype = prototype
@@ -169,6 +181,7 @@ class Process(object):
     def add_child(self, name, **kwargs):
         """
         Method to add a child node to the current node.
+
         :param name: The name of the new process.
         :param kwargs: Additional parameters.
         :return: The newly created node.
@@ -295,9 +308,9 @@ class Tree(object):
                 for child in root.children():
                     to_visit.append(child)
 
-        root = self._graph.root
-        if root is not None:
-            for node in (dfs(root) if depth_first else wfs(root)):
+        base_node = self._graph.root
+        if base_node is not None:
+            for node in dfs(base_node) if depth_first else wfs(base_node):
                 yield node
 
     def parent(self, node):
@@ -329,8 +342,7 @@ class Tree(object):
         :param node: A node inside the tree
         :return: A generator for children of node.
         """
-        for child in node.children():
-            yield child
+        return node.children()
 
     def children_list(self, node):
         """
@@ -339,16 +351,16 @@ class Tree(object):
         :param node: A node inside the tree
         :return: A list of children of node
         """
-        return node.children()
+        return node.children_list()
 
     def child_count(self, node):
         """
         Method that returns the number of children for the specified node.
+
         :param node: A node inside the tree.
         :return: The number of children of node.
         """
-        # TODO: can be refactored by counting number of edges
-        return len(node.children())
+        return node.child_count()
 
     def subtree_node_count(self, node):
         """
@@ -373,9 +385,17 @@ class Tree(object):
         :return: String describing the tree
         """
         def subtree_repr(root):
-            children = list(self.children(root))
+            """
+            Implementation to deal with subtree of a tree for output.
+
+            :param root: Root to start subtree output
+            :return: Representation of a node
+            """
+            children = self.children_list(root)
             if children:
-                return node_repr(root) + ": " + sequence_fmt % ", ".join(subtree_repr(child) for child in children)
+                return node_repr(root) + ": " + sequence_fmt % ", ".join(
+                    subtree_repr(child) for child in children
+                )
             return node_repr(root)
         return sequence_fmt % (subtree_repr(self.root()))
 
