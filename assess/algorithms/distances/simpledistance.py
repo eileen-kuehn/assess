@@ -20,7 +20,8 @@ class SimpleDistance(Distance):
     """
     def init_distance(self, prototypes=None, signature_prototypes=None):
         Distance.init_distance(
-            self, prototypes=prototypes,
+            self,
+            prototypes=prototypes,
             signature_prototypes=signature_prototypes
         )
         for prototype in prototypes:
