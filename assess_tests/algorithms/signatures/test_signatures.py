@@ -116,3 +116,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
     def _initialize_signature(self, signature):
         for node in self.prototype.nodes():
             self.assertIsNotNone(signature.get_signature(node, node.parent()))
+
+    def test_representation(self):
+        signature = ParentCountedChildrenByNameTopologySignature(count=5)
+        self.assertEqual(signature.__repr__(), "ParentCountedChildrenByNameTopologySignature (count: 5)")
