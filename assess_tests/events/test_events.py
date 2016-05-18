@@ -35,4 +35,5 @@ class TestEventFunctionality(unittest.TestCase):
         traffic.ppid = 1
         traffic.tme = 1
         traffic.value = 5
+        self.assertEqual(traffic.value, 5)
         self.assertEqual(traffic, Event.add(1, 2, 1, 5))
