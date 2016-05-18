@@ -10,9 +10,11 @@ class TestEventFunctionality(unittest.TestCase):
 
         event_2 = Event.exit(1, 0, 1, 0)
         self.assertEqual(type(event_2), ProcessExitEvent)
+        self.assertEqual(event_2.start_tme, 0)
 
         event_3 = Event.add(1, 0, 1, .5)
         self.assertEqual(type(event_3), TrafficEvent)
+        self.assertEqual(event_3.value, .5)
 
     def test_manual_creation(self):
         start = ProcessStartEvent(0, 0, 0)
