@@ -53,6 +53,20 @@ class Event(object):
         """
         return ProcessExitEvent(tme, pid, ppid, start_tme, **kwargs)
 
+    @staticmethod
+    def add(tme, pid, ppid, value, **kwargs):
+        """
+        Method that returns a ProcessTrafficEvent by given parameters.
+
+        :param tme: The tme when the traffic was created
+        :param pid: Pid of the process
+        :param ppid: Pid of the parent process
+        :param value: Traffic value
+        :param kwargs: Additional parameters
+        :return: Created traffic event
+        """
+        return TrafficEvent(tme, pid, ppid, value, **kwargs)
+
     @property
     def tme(self):
         """
@@ -107,12 +121,20 @@ class Event(object):
         """
         self._ppid = value
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.__dict__ == other.__dict__
+        return False
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
     def __repr__(self):
         return "%s(tme=%.1f, pid=%d, ppid=%d, %s)" % (
             self.__class__.__name__,
             self.tme,
             self.pid,
-            self.pid,
+            self.ppid,
             ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self))
         )
 
@@ -131,6 +153,25 @@ class ProcessExitEvent(Event):
     """
     def __init__(self, tme, pid, ppid, start_tme, **kwargs):
         Event.__init__(self, tme, pid, ppid, start_tme=start_tme, **kwargs)
+        self._start_tme = start_tme
+
+    @property
+    def start_tme(self):
+        """
+        Method to get the start tme related to the process.
+
+        :return: Start tme
+        """
+        return self._start_tme
+
+    @start_tme.setter
+    def start_tme(self, value=None):
+        """
+        Setter to set the start tme for the process.
+
+        :param value: Start tme to be set
+        """
+        self._start_tme = value
 
 
 class TrafficEvent(Event):
