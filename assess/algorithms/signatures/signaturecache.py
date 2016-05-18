@@ -87,9 +87,10 @@ class MeanVariance(object):
         self._overall_count += 1
         if value != 0:
             self._count += 1
-            new_mean = self._mean + (value - self._mean) / self._count
+            new_mean = self._mean + (value - self._mean) / float(self._count)
             self._variance += (value - self._mean) * (value - new_mean)
             self._mean = new_mean
+            self._second_part = None
 
     @staticmethod
     def _get_first_part():
@@ -191,3 +192,24 @@ class PrototypeSignatureCache(SignatureCache):
         :return: Dictionary of prototypes with statistics as value
         """
         return self._prototype_dict.get(signature, dict())
+
+    def frequency(self, prototype=None):
+        """
+        Returns the frequency of added objects. If no prototype is given, it considers the frequency
+        of all elements. Otherwise only the frequency per prototype is given.
+
+        :param prototype: Prototype to determine frequency from
+        :return: Frequency of signatures
+        """
+        result = 0
+        if prototype is not None:
+            for value in self._prototype_dict.values():
+                try:
+                    result += value.get(prototype, None).count
+                except AttributeError:
+                    pass
+        else:
+            for value in self._prototype_dict.values():
+                for statistics in value.values():
+                    result += statistics.count
+        return result
