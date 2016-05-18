@@ -193,9 +193,10 @@ class TreeDistanceAlgorithm(object):
                 node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 return self.update_distance(event, signature, **kwargs)
-        elif isinstance(event, TrafficEvent) and self._supported.get(TrafficEvent, False):
-            # add traffic
-            raise EventNotSupportedException(event)
+        elif isinstance(event, TrafficEvent):
+            if self._supported.get(TrafficEvent, False) or True:
+                # add traffic
+                raise EventNotSupportedException(event)
         else:
             raise EventNotSupportedException(event)
 
