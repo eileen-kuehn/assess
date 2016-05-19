@@ -5,6 +5,7 @@ from assess.algorithms.distances.distance import Distance
 
 class TestDistance(unittest.TestCase):
     def test_creation(self):
+        self.assertRaises(TypeError, Distance)
         distance = Distance(prototypes=["1", "2", "3"])
         for index, dist in enumerate(distance):
             self.assertEqual(dist, 0)
@@ -13,12 +14,12 @@ class TestDistance(unittest.TestCase):
         self.assertFalse(distance.is_prototype_based_on_original())
 
     def test_raises(self):
-        distance = Distance()
+        distance = Distance(None)
         self.assertRaises(NotImplementedError, distance.update_distance)
         self.assertRaises(NotImplementedError, distance.finish_distance)
 
     def test_adding_of_results(self):
-        distance = Distance()
+        distance = Distance(None)
         self.assertEqual(
             distance._add_result_dicts({"1": 0, "2": 0}, {"1": 1, "2": 1}),
             {"1": 1, "2": 1}

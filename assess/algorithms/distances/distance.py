@@ -15,7 +15,7 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances it currently
     stores.
     """
-    def __init__(self, prototypes=None):
+    def __init__(self, prototypes):
         self._monitoring_results_dict = {}
         self._prototypes = prototypes
         self._measured_nodes = set()

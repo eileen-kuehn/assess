@@ -6,25 +6,46 @@ from assess.algorithms.signatures.signatures import ParentChildByNameTopologySig
 from assess.prototypes.simpleprototypes import Prototype, Tree
 
 
+def prototype():
+    prototype_tree = Prototype()
+    root = prototype_tree.add_node("root", tme=0, exit_tme=3)
+    root.add_node("test", tme=0, exit_tme=1)
+    root.add_node("muh", tme=0, exit_tme=2)
+    root.add_node("test", tme=1, exit_tme=2)
+    root.add_node("muh", tme=1, exit_tme=3)
+    return prototype_tree
+
+
+def monitoring_tree():
+    test_tree = Tree()
+    tree_root = test_tree.add_node("root", tme=0, exit_tme=3)
+    tree_root.add_node("test", tme=0, exit_tme=1)
+    tree_root.add_node("test", tme=1, exit_tme=2)
+    tree_root.add_node("muh", tme=1, exit_tme=3)
+    return test_tree
+
+
+def prototype_signature(prototype=None, signature=None):
+    signature_prototype = PrototypeSignatureCache()
+    for node in prototype.nodes():
+        node_signature = signature.get_signature(node, node.parent())
+        signature_prototype.add_signature(
+            signature=node_signature,
+            prototype=prototype,
+            value=(float(node.exit_tme)-float(node.tme))
+        )
+    return signature_prototype
+
+
 class TestSimpleDistance(unittest.TestCase):
     def setUp(self):
-        self.prototype = Prototype()
-        root = self.prototype.add_node("root", tme=0, exit_tme=3)
-        root.add_node("test", tme=0, exit_tme=1)
-        root.add_node("muh", tme=0, exit_tme=2)
-        root.add_node("test", tme=1, exit_tme=2)
-        root.add_node("muh", tme=1, exit_tme=3)
-
-        self.test_tree = Tree()
-        tree_root = self.test_tree.add_node("root", tme=0, exit_tme=3)
-        tree_root.add_node("test", tme=0, exit_tme=1)
-        tree_root.add_node("test", tme=1, exit_tme=2)
-        tree_root.add_node("muh", tme=1, exit_tme=3)
+        self.prototype = prototype()
+        self.test_tree = monitoring_tree()
 
     def test_creation2(self):
         signature = ParentChildByNameTopologySignature()
         distance = SimpleDistance2(prototypes=[self.prototype])
-        signature_cache = self._create_signature_cache(
+        signature_cache = prototype_signature(
             self.prototype,
             signature
         )
@@ -51,7 +72,7 @@ class TestSimpleDistance(unittest.TestCase):
     def test_creation(self):
         signature = ParentChildByNameTopologySignature()
         distance = SimpleDistance(prototypes=[self.prototype])
-        signature_cache = self._create_signature_cache(
+        signature_cache = prototype_signature(
             self.prototype,
             signature
         )
@@ -75,14 +96,3 @@ class TestSimpleDistance(unittest.TestCase):
         result = distance._monitoring_results_dict
         distance.finish_distance()
         self.assertEqual(result, distance._monitoring_results_dict)
-
-    def _create_signature_cache(self, prototype, signature):
-        signature_prototype = PrototypeSignatureCache()
-        for node in self.prototype.nodes():
-            node_signature = signature.get_signature(node, node.parent())
-            signature_prototype.add_signature(
-                signature=node_signature,
-                prototype=prototype,
-                value=(float(node.exit_tme)-float(node.tme))
-            )
-        return signature_prototype
