@@ -1,12 +1,63 @@
 import unittest
 
 from assess.algorithms.distances.distance import Distance
+from assess.prototypes.simpleprototypes import Prototype, Tree
+from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
+from assess.algorithms.signatures.signatures import *
+
+
+def prototype():
+    prototype_tree = Prototype()
+    root = prototype_tree.add_node("root", tme=0, exit_tme=3)
+    root.add_node("test", tme=0, exit_tme=1)
+    root.add_node("muh", tme=0, exit_tme=2)
+    root.add_node("test", tme=1, exit_tme=2)
+    root.add_node("muh", tme=1, exit_tme=3)
+    return prototype_tree
+
+
+def monitoring_tree():
+    test_tree = Tree()
+    tree_root = test_tree.add_node("root", tme=0, exit_tme=3)
+    tree_root.add_node("test", tme=0, exit_tme=1)
+    tree_root.add_node("test", tme=1, exit_tme=2)
+    tree_root.add_node("muh", tme=1, exit_tme=3)
+    return test_tree
+
+
+def prototype_signature(prototype=None, signature=None):
+    signature_prototype = PrototypeSignatureCache()
+    for node in prototype.nodes():
+        node_signature = signature.get_signature(node, node.parent())
+        signature_prototype.add_signature(
+            signature=node_signature,
+            prototype=prototype,
+            value=(float(node.exit_tme)-float(node.tme))
+        )
+    return signature_prototype
+
+
+class TestAlgorithm(object):
+    pass
+
+
+def algorithm(signature):
+    test = TestAlgorithm()
+    test.prototypes = [prototype()]
+    test.signature_prototypes = prototype_signature(
+        prototype=test.prototypes[0],
+        signature=signature
+    )
+    test.signature=signature
+    return test
 
 
 class TestDistance(unittest.TestCase):
     def test_creation(self):
         self.assertRaises(TypeError, Distance)
-        distance = Distance(prototypes=["1", "2", "3"])
+        test_algorithm = algorithm(ParentChildByNameTopologySignature())
+        test_algorithm.prototypes = ["1", "2", "3"]
+        distance = Distance(algorithm=test_algorithm)
         for index, dist in enumerate(distance):
             self.assertEqual(dist, 0)
         self.assertEqual(index, 2)

@@ -18,36 +18,29 @@ class StartExitDistance(Distance):
         self._based_on_original = True
         self._signature_cache = SignatureCache()
 
-    def init_distance(self, prototypes=None, signature_prototypes=None):
-        Distance.init_distance(
-            self,
-            prototypes=prototypes,
-            signature_prototypes=signature_prototypes
-        )
+    def init_distance(self):
+        Distance.init_distance(self)
         self._signature_cache = SignatureCache()
-        for prototype in prototypes:
+        for prototype in self._algorithm.prototypes:
             self._monitoring_results_dict[prototype] = prototype.node_count()
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None, value=None,
-                        signature_prototypes=None, **kwargs):
+    def update_distance(self, signature=None, matching_prototypes=None, value=None, **kwargs):
         self._update_distances(
             prototype_nodes=matching_prototypes,
             node_signature=signature,
-            prototypes=prototypes,
-            value=value,
-            signature_prototypes=signature_prototypes
+            value=value
         )
         self._signature_cache.add_signature(signature=signature)
         return signature
 
-    def finish_distance(self, prototypes=None, signature_prototypes=None):
+    def finish_distance(self):
         pass
 
     def node_count(self):
         return self._signature_cache.frequency()/2.0
 
-    def _update_distances(self, prototype_nodes=None, node_signature=None, prototypes=None,
-                          value=None, signature_prototypes=None):
+    def _update_distances(self, prototype_nodes=None, node_signature=None, value=None):
+        prototypes = self._algorithm.prototypes
         result_dict = dict(zip(prototypes, [.5] * len(prototypes)))
         for prototype_node in prototype_nodes:
             if self._signature_cache.get(signature=node_signature) < \

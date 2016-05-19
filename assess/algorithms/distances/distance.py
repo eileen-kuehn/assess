@@ -15,45 +15,39 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances it currently
     stores.
     """
-    def __init__(self, prototypes):
+    def __init__(self, algorithm):
+        self._algorithm = algorithm
+
         self._monitoring_results_dict = {}
-        self._prototypes = prototypes
         self._measured_nodes = set()
         self._based_on_original = False
 
     def __iter__(self):
-        for prototype in self._prototypes:
+        for prototype in self._algorithm.prototypes:
             yield self._monitoring_results_dict.setdefault(prototype, 0)
 
-    def init_distance(self, prototypes=None, signature_prototypes=None):
+    def init_distance(self):
         """
         This method is just for initialisation purposes. Internal states are reset.
-
-        :param prototypes: The prototypes whose distances are measured.
         """
         self._monitoring_results_dict = {}
         self._measured_nodes = set()
 
-    def update_distance(self, signature=None, matching_prototypes=None, prototypes=None,
-                        signature_prototypes=None, **kwargs):
+    def update_distance(self, signature=None, matching_prototypes=None, **kwargs):
         """
         This method is called whenever a new event has been received.
 
         :param signature: Signature of the node the event belongs to.
         :param matching_prototypes: The prototypes that actually contain the signature.
-        :param prototypes: Reference to the actual prototypes.
-        :param signature_prototypes:
         :return: signature
         """
         raise NotImplementedError
 
-    def finish_distance(self, prototypes=None, signature_prototypes=None):
+    def finish_distance(self):
         """
         This method is usually called, when the tree has been finished. It can be used to make
         adaptions/corrections to the calculated distance.
 
-        :param prototypes: Reference to the actual prototypes.
-        :param signature_prototypes:
         :return: Array of distances in prototype order.
         """
         raise NotImplementedError

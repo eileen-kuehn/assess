@@ -22,19 +22,13 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     def prototypes(self, value=None):
         # initialize default distance to prototypes
         if self._distance is None:
-            self._distance = self._distance_builder(prototypes=value)
-        self._distance.init_distance(
-            prototypes=self.prototypes,
-            signature_prototypes=self.signature_prototypes
-        )
+            self._distance = self._distance_builder(algorithm=self)
+        self._distance.init_distance()
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
-        self._distance.init_distance(
-            prototypes=self.prototypes,
-            signature_prototypes=self.signature_prototypes
-        )
+        self._distance.init_distance()
         self._measured_nodes = set()
 
     def _prototype_event_counts(self):
@@ -51,24 +45,17 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             self._distance.update_distance(
                 signature=signature,
                 value=float(event.tme)-float(event.start_tme),
-                matching_prototypes=self._signature_prototypes.get(signature=signature),
-                prototypes=self.prototypes,
-                signature_prototypes=self.signature_prototypes
+                matching_prototypes=self._signature_prototypes.get(signature=signature)
             )
         except AttributeError:
             self._distance.update_distance(
                 signature=signature,
-                matching_prototypes=self._signature_prototypes.get(signature=signature),
-                prototypes=self.prototypes,
-                signature_prototypes=self.signature_prototypes
+                matching_prototypes=self._signature_prototypes.get(signature=signature)
             )
         return [value for value in self._distance]
 
     def finish_tree(self):
-        return self._distance.finish_distance(
-            prototypes=self._prototypes,
-            signature_prototypes=self.signature_prototypes
-        )
+        return self._distance.finish_distance()
 
     def __repr__(self):
         return "%s (%s)" %(self.__class__.__name__, self._distance.__class__.__name__)
