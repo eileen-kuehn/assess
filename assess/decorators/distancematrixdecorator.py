@@ -21,11 +21,13 @@ class DistanceMatrixDecorator(Decorator):
         self._normalized = normalized
 
     def data(self):
-        results = []
-        for result in self._distance_matrix:
-            adapted = [value if value >= 0 else 0 for value in result]
-            results.append(adapted)
-        return results
+        if self._distance_matrix is not None:
+            results = []
+            for result in self._distance_matrix:
+                adapted = [value if value >= 0 else 0 for value in result]
+                results.append(adapted)
+            return results
+        return None
 
     def _algorithm_updated(self):
         self._distance_matrix = None
