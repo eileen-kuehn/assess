@@ -17,3 +17,16 @@ class TestDecorator(unittest.TestCase):
         self.assertIsNone(decorator.decorator)
         decorator.start_tree()
         decorator.finish_tree()
+
+    def test_chaining(self):
+        decorator = Decorator()
+        decorator2 = Decorator()
+        decorator.decorator = decorator2
+        self.assertIsNotNone(decorator.decorator)
+        self.assertIsNone(decorator2.decorator)
+
+        algorithm = IncrementalDistanceAlgorithm()
+        decorator.wrap_algorithm(algorithm=algorithm)
+        self.assertEqual(decorator2.algorithm, algorithm)
+        decorator.start_tree()
+        decorator.finish_tree()
