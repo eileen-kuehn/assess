@@ -26,6 +26,9 @@ class TestDecorator(unittest.TestCase):
         self.assertIsNone(decorator2.decorator)
 
         algorithm = IncrementalDistanceAlgorithm()
+        decorator.algorithm = algorithm
+        self.assertEqual(decorator2.algorithm, algorithm)
+        decorator.algorithm = None
         decorator.wrap_algorithm(algorithm=algorithm)
         self.assertEqual(decorator2.algorithm, algorithm)
         decorator.start_tree()
