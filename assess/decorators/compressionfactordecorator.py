@@ -32,8 +32,11 @@ class CompressionFactorDecorator(Decorator):
         self._compressions["monitoring"][-1] = self._monitoring_compression_factor()
 
     def _monitoring_compression_factor(self):
+        original = self._algorithm.tree.node_count()
+        if original == 0:
+            return 0
         return 1.0 - (self._algorithm.signature_tree.node_count() /
-                      float(self._algorithm.tree.node_count()))
+                      float(original))
 
     def _compression_factor(self):
         original = self._original_sizes()
@@ -42,6 +45,8 @@ class CompressionFactorDecorator(Decorator):
 
     def _accumulated_compression_factor(self):
         original = sum(self._original_sizes())
+        if original == 0:
+            return 0
         converted = self._algorithm.signature_prototypes
         try:
             compressed = converted.node_count()
