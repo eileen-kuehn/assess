@@ -25,6 +25,17 @@ def monitoring_tree():
     return test_tree
 
 
+def additional_monitoring_tree():
+    test_tree = Tree()
+    tree_root = test_tree.add_node("root", tme=0, exit_tme=3)
+    tree_root.add_node("hello", tme=0, exit_tme=2)
+    tree_root.add_node("yes", tme=0, exit_tme=1)
+    tree_root.add_node("test", tme=0, exit_tme=1)
+    tree_root.add_node("muh", tme=0, exit_tme=2)
+    tree_root.add_node("test", tme=1, exit_tme=3)
+    return test_tree
+
+
 def prototype_signature(prototype=None, signature=None):
     signature_prototype = PrototypeSignatureCache()
     for node in prototype.nodes():
