@@ -18,16 +18,19 @@ class SignaturePerformanceDecorator(Decorator):
             Decorator.__init__(self, name="signature_performance")
         self._items = ["user time", "system time", "children's user time", "children's system time",
                        "elapsed real time"]
-        self._performances = []
+        self._performances = None
         self._start = None
         self._accumulated = accumulated
 
     def _algorithm_updated(self):
-        self._performances = []
+        self._performances = None
         self._start = None
 
     def _tree_started(self):
-        self._performances.append({})
+        if self._performances is None:
+            self._performances = [{}]
+        else:
+            self._performances.append({})
 
     def create_signature(self, node, parent):
         """
@@ -47,15 +50,17 @@ class SignaturePerformanceDecorator(Decorator):
         return result
 
     def data(self):
-        if self._accumulated:
-            result = []
-            for performance in self._performances:
-                result.append({})
-                for key in performance:
-                    try:
-                        result[-1][key] = sum(performance[key])
-                    except TypeError:
-                        result[-1][key] = performance[key]
-            return result
-        else:
-            return self._performances
+        if self._performances is not None:
+            if self._accumulated:
+                result = []
+                for performance in self._performances:
+                    result.append({})
+                    for key in performance:
+                        try:
+                            result[-1][key] = sum(performance[key])
+                        except TypeError:
+                            result[-1][key] = performance[key]
+                return result
+            else:
+                return self._performances
+        return None
