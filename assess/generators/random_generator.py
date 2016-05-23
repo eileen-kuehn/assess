@@ -61,7 +61,7 @@ class RandomGenerator(object):
     def __iter__(self):
         exit_event_queue = []
         root = self._prototype.root()
-        picking_list = root.children_list()
+        picking_list = root.children_list()[:]
         yield Event.start(tme=0, pid=1, ppid=0, name=self._prototype.root().name)
         exit_event_queue.append(Event.exit(tme=0, pid=1, ppid=0, start_tme=0, name=root.name))
         picked = 0
@@ -70,7 +70,7 @@ class RandomGenerator(object):
                 try:
                     node = random.choice(picking_list)
                     picking_list.remove(node)
-                except ValueError:
+                except IndexError:
                     node = random.choice(root.children_list())
                 node_name = node.name
                 pid = node.pid

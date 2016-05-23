@@ -67,3 +67,24 @@ class TestRandomGenerator(unittest.TestCase):
             distance = decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.data()[-1][-1][-1], 0)
+
+    def test_bigger_tree(self):
+        rg = RandomGenerator(
+            prototype_node_count=100,
+            tree_node_count=200,
+            relative_matching=.9,
+            relative_repetition=.5,
+            seed=1234
+        )
+        signature = ParentChildByNameTopologySignature()
+        alg = IncrementalDistanceAlgorithm(signature=signature)
+        alg.prototypes = [rg.prototype]
+
+        decorator = DistanceDecorator(normalized=True)
+        decorator.wrap_algorithm(alg)
+
+        decorator.start_tree()
+        for event in rg:
+            decorator.add_event(event)
+        decorator.finish_tree()
+        self.assertAlmostEqual(decorator.data()[-1][-1][-1], 0.11, 2)
