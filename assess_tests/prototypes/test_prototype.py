@@ -2,6 +2,7 @@ import unittest
 
 from assess.prototypes.simpleprototypes import Prototype, Tree, Process
 from assess.exceptions.exceptions import TreeInvalidatedException
+from assess_tests.basedata import simple_prototype
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -156,3 +157,40 @@ class TestPrototypeFunctions(unittest.TestCase):
             one_child.add_node("node")
 
         self.assertEqual(prototype.node_count(), 41)
+
+    def test_parent(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=1, ppid=0)
+        sub_root = root.add_node("sub_root", pid=2, ppid=1)
+        sub_sub_root = sub_root.add_node("sub_sub_root", pid=3, ppid=2)
+
+        self.assertEqual(root.parent(), None)
+        self.assertEqual(prototype.parent(root), None)
+        self.assertEqual(sub_root.parent(), root)
+        self.assertEqual(prototype.parent(sub_root), root)
+        self.assertEqual(sub_sub_root.parent(), sub_root)
+        self.assertEqual(prototype.parent(sub_sub_root), sub_root)
+
+    def test_children(self):
+        prototype = simple_prototype()
+        children = prototype.children_list(prototype.root())
+        self.assertEqual(len(children), 4)
+        self.assertEqual(len(prototype.children_list(children[0])), 0)
+
+    def test_subtree_node_count(self):
+        prototype = simple_prototype()
+        self.assertEqual(prototype.subtree_node_count(), prototype.node_count())
+        self.assertEqual(
+            prototype.subtree_node_count(prototype.children_list(prototype.root())[0]),
+            1
+        )
+
+    def test_representation(self):
+        prototype = simple_prototype()
+        self.assertEqual(prototype.tree_repr(), "[root: [test, muh, test, muh]]")
+        self.assertEqual(prototype.tree_repr(node_repr=lambda node: str(node.pid)), "[1: [2, 3, 4, 5]]")
+        self.assertEqual(
+            prototype.tree_repr(node_repr=lambda node: "%d (%d)" % (node.pid, node.ppid), sequence_fmt="(%s)"),
+            "(1 (0): (2 (1), 3 (1), 4 (1), 5 (1)))"
+        )
+

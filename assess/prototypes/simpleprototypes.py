@@ -367,7 +367,7 @@ class Tree(object):
         """
         return node.child_count()
 
-    def subtree_node_count(self, node):
+    def subtree_node_count(self, node=None):
         """
         Method that gives the number of nodes in subtree rooted at node. If node is not given,
         the node count of the complete tree is returned.
