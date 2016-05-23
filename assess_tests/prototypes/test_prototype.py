@@ -1,6 +1,6 @@
 import unittest
 
-from assess.prototypes.simpleprototypes import Prototype, Tree, Process
+from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.exceptions.exceptions import TreeInvalidatedException
 from assess_tests.basedata import simple_prototype
 
@@ -180,6 +180,7 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_subtree_node_count(self):
         prototype = simple_prototype()
         self.assertEqual(prototype.subtree_node_count(), prototype.node_count())
+        self.assertEqual(prototype.root().node_count(), prototype.node_count())
         self.assertEqual(
             prototype.subtree_node_count(prototype.children_list(prototype.root())[0]),
             1
