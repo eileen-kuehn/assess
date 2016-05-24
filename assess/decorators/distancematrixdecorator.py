@@ -59,3 +59,6 @@ class DistanceMatrixDecorator(Decorator):
         if len(self._distance_matrix) > 0:
             return len(self._distance_matrix[0])
         return 0
+
+    def _update(self, decorator):
+        self._distance_matrix.extend(decorator.data())

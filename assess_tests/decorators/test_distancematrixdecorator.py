@@ -89,3 +89,18 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[0, .25], [.25, 0]]})
         self.assertRaises(MatrixDoesNotMatchBounds, decorator.start_tree)
+
+    def test_update(self):
+        decorator = DistanceMatrixDecorator(normalized=True)
+        decorator._distance_matrix = [[1, 2, 3, 4, 5]]
+        second_decorator = DistanceMatrixDecorator(normalized=True)
+        second_decorator._distance_matrix = [[6, 7, 8, 9, 10]]
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])
+
+        decorator = DistanceMatrixDecorator(normalized=False)
+        decorator._distance_matrix = [[1, 2, 3, 4, 5]]
+        second_decorator = DistanceMatrixDecorator(normalized=False)
+        second_decorator._distance_matrix = [[6, 7, 8, 9, 10]]
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), [[1, 2, 3, 4, 5], [6, 7, 8, 9, 10]])

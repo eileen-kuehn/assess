@@ -61,3 +61,6 @@ class PerformanceDecorator(Decorator):
                 return self._performances
         return None
 
+    def _update(self, decorator):
+        self._performances.extend(decorator.data())
+

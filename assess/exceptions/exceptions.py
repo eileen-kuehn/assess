@@ -39,3 +39,12 @@ class MatrixDoesNotMatchBounds(BasicException):
             "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
             % (expected, expected, width, height)
         )
+
+
+class DecoratorNotFoundException(BasicException):
+    """Thrown when updating decorators and a matching decorator is not found"""
+    def __init__(self, decorator=None):
+        BasicException.__init__(
+            self,
+            "No matching decorator has been found for %s" % decorator
+        )

@@ -40,3 +40,6 @@ class DistanceDecorator(Decorator):
                                               float(event_counts[i]+self._tmp_prototype_counts[i]))
             else:
                 self._distances[-1][i].append(result[i])
+
+    def _update(self, decorator):
+        self._distances.extend(decorator.data())

@@ -1,7 +1,9 @@
 import unittest
 
 from assess.decorators.decorator import Decorator
+from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
+from assess.exceptions.exceptions import DecoratorNotFoundException
 
 
 class TestDecorator(unittest.TestCase):
@@ -33,3 +35,12 @@ class TestDecorator(unittest.TestCase):
         self.assertEqual(decorator2.algorithm, algorithm)
         decorator.start_tree()
         decorator.finish_tree()
+
+    def test_update(self):
+        decorator = Decorator()
+        second_decorator = Decorator()
+        decorator.update(second_decorator)
+
+        decorator = Decorator()
+        second_decorator.decorator = CompressionFactorDecorator()
+        self.assertRaises(DecoratorNotFoundException, decorator.update, second_decorator)

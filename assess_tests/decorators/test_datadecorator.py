@@ -88,3 +88,41 @@ class TestDataDecorator(unittest.TestCase):
                 }]
             }}
         )
+
+    def test_update(self):
+        decorator = DataDecorator()
+        decorator._data = {
+            "prototypes": {
+                "original": [10, 20, 100],
+                "converted": [5, 10, 10]
+            },
+            "monitoring": [{
+                "original": 80,
+                "converted": 10
+            }]
+        }
+        second_decorator = DataDecorator()
+        second_decorator._data = {
+            "prototypes": {
+                "original": [10, 20, 100],
+                "converted": [5, 10, 10]
+            },
+            "monitoring": [{
+                "original": 100,
+                "converted": 20
+            }]
+        }
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), {
+            "prototypes": {
+                "original": [10, 20, 100],
+                "converted": [5, 10, 10]
+            },
+            "monitoring": [{
+                "original": 80,
+                "converted": 10
+            }, {
+                "original": 100,
+                "converted": 20
+            }]
+        })

@@ -70,3 +70,23 @@ class TestCompressionFactorDecorator(unittest.TestCase):
                 "accumulated": .7
             }}
         )
+
+    def test_update(self):
+        decorator = CompressionFactorDecorator()
+        decorator._compressions = {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.2],
+            "accumulated": .3
+        }
+        second_decorator = CompressionFactorDecorator()
+        second_decorator._compressions = {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.3],
+            "accumulated": .3
+        }
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.2, .3],
+            "accumulated": .3
+        })

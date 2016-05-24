@@ -62,3 +62,6 @@ class CompressionFactorDecorator(Decorator):
 
     def _compressed_size(self):
         return self._algorithm.prototype_node_counts(signature=True)
+
+    def _update(self, decorator):
+        self._compressions["monitoring"].extend(decorator.data()["monitoring"])

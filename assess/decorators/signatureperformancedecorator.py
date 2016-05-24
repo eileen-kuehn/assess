@@ -64,3 +64,6 @@ class SignaturePerformanceDecorator(Decorator):
             else:
                 return self._performances
         return None
+
+    def _update(self, decorator):
+        self._performances.extend(decorator.data())

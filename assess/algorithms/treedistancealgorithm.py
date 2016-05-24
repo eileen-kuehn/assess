@@ -35,6 +35,15 @@ class TreeDistanceAlgorithm(object):
         self._maxlen = None
 
     @property
+    def signature(self):
+        """
+        Property to access the signature that is used by TreeDistanceAlgorithm.
+
+        :return: Current signature
+        """
+        return self._signature
+
+    @property
     def tree(self):
         """
         Property to access the tree that is cached within the TreeDistanceAlgorithm.
@@ -282,3 +291,12 @@ class TreeDistanceAlgorithm(object):
 
     def __repr__(self):
         return self.__class__.__name__
+
+    def __getstate__(self):
+        obj_dict = self.__dict__.copy()
+        obj_dict["_prototypes"] = []
+        obj_dict["_signature_prototypes"] = PrototypeSignatureCache()
+        obj_dict["_tree"] = Tree()
+        obj_dict["_signature_tree"] = SignatureCache()
+        obj_dict["_tree_dict"] = ObjectCache()
+        return obj_dict

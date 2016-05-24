@@ -86,3 +86,66 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         self.assertEqual(type(description["accumulated_distance_performance"][1]["children's user time"]), float)
         self.assertEqual(type(description["accumulated_distance_performance"][1]["children's system time"]), float)
         self.assertEqual(type(description["accumulated_distance_performance"][1]["elapsed real time"]), float)
+
+    def test_update(self):
+        decorator = DistancePerformanceDecorator()
+        decorator._performances = [{
+            "children's system time": [0.0, 0.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [6.919999837875366, 3.8499999046325684],
+            'system time': [0.029999999999972715, 0.009999999999990905],
+            'user time': [0.05999999999949068, 0.03999999999996362]
+        }]
+        second_decorator = DistancePerformanceDecorator()
+        second_decorator._performances = [{
+            "children's system time": [1.0, 1.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [7.9, 3.8],
+            'system time': [0.03, 0.01],
+            'user time': [0.06, 0.04]
+        }]
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), [{
+            "children's system time": 0.0,
+            "children's user time": 0.0,
+            'elapsed real time': 10.769999742507935,
+            'system time': 0.03999999999996362,
+            'user time': 0.0999999999994543
+        }, {
+            "children's system time": 2.0,
+            "children's user time": 0.0,
+            'elapsed real time': 11.7,
+            'system time': 0.04,
+            'user time': 0.1
+        }])
+
+        decorator = DistancePerformanceDecorator(accumulated=False)
+        decorator._performances = [{
+            "children's system time": [0.0, 0.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [6.919999837875366, 3.8499999046325684],
+            'system time': [0.029999999999972715, 0.009999999999990905],
+            'user time': [0.05999999999949068, 0.03999999999996362]
+        }]
+        second_decorator = DistancePerformanceDecorator(accumulated=False)
+        second_decorator._performances = [{
+            "children's system time": [1.0, 1.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [7.9, 3.8],
+            'system time': [0.03, 0.01],
+            'user time': [0.06, 0.04]
+        }]
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), [{
+            "children's system time": [0.0, 0.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [6.919999837875366, 3.8499999046325684],
+            'system time': [0.029999999999972715, 0.009999999999990905],
+            'user time': [0.05999999999949068, 0.03999999999996362]
+        }, {
+            "children's system time": [1.0, 1.0],
+            "children's user time": [0.0, 0.0],
+            'elapsed real time': [7.9, 3.8],
+            'system time': [0.03, 0.01],
+            'user time': [0.06, 0.04]
+        }])

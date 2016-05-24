@@ -37,3 +37,6 @@ class DataDecorator(Decorator):
 
     def data(self):
         return self._data
+
+    def _update(self, decorator):
+        self._data["monitoring"].extend(decorator.data()["monitoring"])

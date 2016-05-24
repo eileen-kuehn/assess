@@ -75,3 +75,8 @@ class Distance(object):
         result = dict((key, first.setdefault(key, 0) + second.setdefault(key, 0))
                       for key in set(first.keys() + second.keys()))
         return result
+
+    def __getstate__(self):
+        obj_dict = self.__dict__.copy()
+        obj_dict["_measured_nodes"] = set()
+        return obj_dict

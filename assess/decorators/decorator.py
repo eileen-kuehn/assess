@@ -4,6 +4,8 @@ decorators and wraps the actual algorithm being used.
 """
 import types
 
+from assess.exceptions.exceptions import DecoratorNotFoundException
+
 
 class Decorator(object):
     """
@@ -107,6 +109,27 @@ class Decorator(object):
         if result is not None:
             self._event_added(event, result[:])
         return result
+
+    def update(self, decorator):
+        """
+        This method is intended to update a specific decorator with another part. This is especially
+        useful when using multiprocessing. Then it might happen, that a single run is splitted into
+        several parts that should afterwards be recombined.
+
+        :param decorator: A decorator to add to current values
+        """
+        while decorator is not None:
+            if type(decorator) == type(self):
+                self._update(decorator)
+            else:
+                try:
+                    self.decorator.update(decorator)
+                except AttributeError:
+                    raise DecoratorNotFoundException(decorator=decorator)
+            decorator = decorator.decorator
+
+    def _update(self, decorator):
+        pass
 
     def _event_will_be_added(self):
         pass
