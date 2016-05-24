@@ -21,6 +21,11 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
 
     @property
     def distance(self):
+        """
+        Property to retrieve the currently used distance method.
+
+        :return: Distance in use
+        """
         if self._distance is None:
             self._distance = self._distance_builder(algorithm=self)
         return self._distance
