@@ -131,7 +131,7 @@ def main():
                 log_single_calculation(
                     tree=tree_path,
                     prototype=prototype_path,
-                    name="%d_%d.json" % (tree_index, prototype_index)
+                    name="%d_%d" % (tree_index, prototype_index)
                 )
     else:
         results = check_algorithms(
