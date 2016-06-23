@@ -12,5 +12,6 @@ setup(
     author_email="eileen.kuehn@kit.edu",
     url="https://bitbucket.org/teamkseta/assess",
     packages=setuptools.find_packages(),
-    install_requires=["zss"],
+    dependendy_links = ['git+ssh://git@bitbucket.org/eileenkuehn/gnmutils.git@develop#egg=gnmutils-0.1']
+    install_requires=["zss", 'gnmutils'],
 )
