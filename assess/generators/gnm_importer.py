@@ -5,6 +5,8 @@ import csv
 import bisect
 
 from gnmutils.objectcache import ObjectCache
+from gnmutils.sources.filedatasource import FileDataSource
+from gnmutils.exceptions import DataNotInCacheException
 
 from assess.events.events import Event
 from assess.prototypes.simpleprototypes import Prototype
@@ -49,10 +51,13 @@ class CSVTreeBuilder(GNMImporter):
 
         with open(csv_path) as csv_file:
             for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
-                parent = process_cache.getObject(
-                    tme=process.get("tme", 0),
-                    pid=process.get("ppid", 0)
-                )
+                try:
+                    parent = process_cache.get_data(
+                        value=process.get("tme", 0),
+                        key=process.get("ppid", 0)
+                    )
+                except DataNotInCacheException:
+                    parent = None
                 node = result.add_node(
                     process.get("name", "."),
                     parent=parent,
@@ -61,10 +66,10 @@ class CSVTreeBuilder(GNMImporter):
                     pid=process.get("pid", 0),
                     ppid=process.get("ppid", 0)
                 )
-                process_cache.addObject(
-                    object=node,
-                    pid=process.get("pid", 0),
-                    tme=process.get("tme", 0)
+                process_cache.add_data(
+                    data=node,
+                    key=process.get("pid", 0),
+                    value=process.get("tme", 0)
                 )
         return result
 
@@ -82,23 +87,24 @@ class CSVEventStreamer(GNMImporter):
     def __iter__(self):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
-        with open(self.path) as csv_file:
-            for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
-                now = float(process['tme'])
+
+        data_source = FileDataSource()
+        for job in data_source.jobs(path=self.path):
+            job.prepare_traffic()
+            for process in job.processes_in_order():
+                now = process.tme
                 events += 1
+
                 # yield any exit events that should have happened so far
-                while exit_event_queue and exit_event_queue[-1][0] > -now:
+                while exit_event_queue and exit_event_queue[-1][0] >= -now:
                     yield exit_event_queue.pop()[2]
                 # create the events for the current process
-                process = self._convert_types(process)
-                start_event = Event.start(**process)
-                #start_event = ProcessStartEvent(**process)
-                process['tme'], process['start_tme'] = process['exit_tme'], process['tme']
-                exit_event = Event.exit(**process)
-                #exit_event = ProcessExitEvent(**process)
-                # process starts NOW, exists LATER
+                start_event, exit_event, traffic_events = Event.events_from_process(process)
+                # process starts NOW, exits LATER
                 yield start_event
                 bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
+                for traffic in traffic_events:
+                    bisect.insort_right(exit_event_queue, (-(traffic.tme + 20), events, traffic))
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 

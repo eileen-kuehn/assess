@@ -7,6 +7,7 @@ class Event(object):
     """
     Base event class that offers convenience methods to create single events.
     """
+
     def __init__(self, tme, pid, ppid, **kwargs):
         self._tme = tme
         self._pid = pid
@@ -38,6 +39,29 @@ class Event(object):
         :return: Created start event
         """
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
+
+    @staticmethod
+    def events_from_process(process):
+        """
+        Method that returns a available events for a given process.
+
+        :param process: The process to create the events
+        :return: tuple of ProcessStartEvent and ProcessExitEvent
+        """
+        process_dict = vars(process).copy()
+        process_exit_dict = vars(process).copy()
+        process_exit_dict["start_tme"] = process_exit_dict["tme"]
+        process_exit_dict["tme"] = process_exit_dict["exit_tme"]
+
+        # prepare traffic events
+        traffic_list = []
+        for traffic in process.traffic:
+            traffic_dict = vars(traffic).copy()
+            # FIXME: here should happen something else... not that specific!
+            traffic_dict["value"] = traffic_dict["out_rate"]
+            traffic_list.append(TrafficEvent(**traffic_dict))
+        return ProcessStartEvent(**process_dict), ProcessExitEvent(**process_exit_dict), \
+            traffic_list
 
     @staticmethod
     def exit(tme, pid, ppid, start_tme, **kwargs):
@@ -143,6 +167,7 @@ class ProcessStartEvent(Event):
     """
     Class that represents a start event.
     """
+
     def __init__(self, tme, pid, ppid, **kwargs):
         Event.__init__(self, tme, pid, ppid, **kwargs)
 
@@ -151,6 +176,7 @@ class ProcessExitEvent(Event):
     """
     Class that represents an exit event.
     """
+
     def __init__(self, tme, pid, ppid, start_tme, **kwargs):
         Event.__init__(self, tme, pid, ppid, start_tme=start_tme, **kwargs)
         self._start_tme = start_tme
@@ -178,6 +204,7 @@ class TrafficEvent(Event):
     """
     Class that represents a traffic event.
     """
+
     def __init__(self, tme, pid, ppid, value, **kwargs):
         Event.__init__(self, tme, pid, ppid, **kwargs)
         self._value = value
