@@ -11,6 +11,7 @@ class MeanVariance(object):
     The MeanVariance class offers a running mean and variance for inserted signatures and their
     assigned values.
     """
+    # TODO: I still need to exclude 0 from current statistics stuff
     def __init__(self, value=None):
         self._count = 0
         self._mean = 0.0
@@ -76,6 +77,7 @@ class MeanVariance(object):
     @property
     def all_valid_variance(self):
         variance = self.variance
+        # TODO: I maybe shouldn't check for bigger 0 here...
         return variance if variance is not None and variance > 0 else math.sqrt(self.count)
 
     def distance(self, value=None):
@@ -103,8 +105,11 @@ class MeanVariance(object):
         :param other: Other MeanVariance object to check
         :return: distance
         """
-        return abs(self.mean - other.mean) / \
-               (self.all_valid_variance / 2 + (other.all_valid_variance / 2))
+        try:
+            return abs(self.mean - other.mean) / \
+                   ((self.all_valid_variance + other.all_valid_variance) / 2)
+        except ZeroDivisionError:
+            return float("inf")
 
     @property
     def count(self):
