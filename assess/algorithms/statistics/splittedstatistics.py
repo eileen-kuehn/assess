@@ -22,7 +22,7 @@ class SplittedStatistics(object):
     """
     def __init__(self, statistics_type=MeanVariance, threshold=.5, attraction_factor=None):
         self._statistics_type = statistics_type
-        self._statistics = [statistics_type(value=0)]
+        self._statistics = []
         self._threshold = threshold
         self._attraction_factor = attraction_factor
 
@@ -33,15 +33,13 @@ class SplittedStatistics(object):
 
         :param value: New value to add
         """
-        # look for closest statistics_type dataset
-        if value == 0:
-            self._statistics[0].add(value=value)
-        else:
+        if len(self._statistics) > 0:
+            # look for closest statistics_type dataset
             distance, index = self._closest_value_and_index(value=value)
             if distance > self._threshold:
                 # check where to insert value
-                if (self._statistics[index - 1]._mean if index > 0 else -float("inf")) < value < \
-                        (self._statistics[index]._mean):
+                if (self._statistics[index - 1].mean if index > 0 else -float("inf")) < value < \
+                        (self._statistics[index].mean):
                     self._statistics.insert(index, self._statistics_type(value=value))
                 else:
                     self._statistics.insert(index + 1, self._statistics_type(value=value))
@@ -62,6 +60,9 @@ class SplittedStatistics(object):
                         index -= 1
                 except IndexError:
                     pass
+        else:
+            # just create a statistics object
+            self._statistics.append(self._statistics_type(value=value))
 
     @property
     def count(self):
@@ -96,16 +97,10 @@ class SplittedStatistics(object):
         :param value: reference value to look for
         :return: tuple from distance and index of closest value
         """
-        if len(self._statistics) > 1:
-            index = bisect.bisect_left(
-                [statistic._mean for statistic in self._statistics],
-                value,
-                lo=1
-            )
-            left_distance = self._statistics[index - 1].distance(value=value) \
-                if index > 1 else float("inf")
-            right_distance = self._statistics[index].distance(value=value) \
-                if index < len(self._statistics) else float("inf")
-            return min(left_distance, right_distance), index \
-                if right_distance < left_distance else index - 1
-        return 1.0, 0
+        index = bisect.bisect_left([statistic.mean for statistic in self._statistics], value)
+        left_distance = self._statistics[index - 1].distance(value=value) \
+            if index > 1 else float("inf")
+        right_distance = self._statistics[index].distance(value=value) \
+            if index < len(self._statistics) else float("inf")
+        return min(left_distance, right_distance), index \
+            if right_distance < left_distance else index - 1
