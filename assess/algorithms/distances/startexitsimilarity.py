@@ -47,7 +47,7 @@ class StartExitSimilarity(Distance):
                 if distance is None:
                     result_dict[prototype_node] = 1
                 else:
-                    result_dict[prototype_node] = distance
+                    result_dict[prototype_node] = 1 - distance
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
             result_dict,

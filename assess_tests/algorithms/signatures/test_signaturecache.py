@@ -82,27 +82,27 @@ class TestPrototypeSignatureCache(unittest.TestCase):
 
     def test_distance(self):
         statistic = MeanVariance()
-        self.assertEqual(statistic.count, 1)
-        self.assertEqual(statistic.distance(value=0), None)
-        self.assertEqual(statistic.distance(value=1), 1)
-        self.assertEqual(statistic.distance(value=5), 1)
+        self.assertEqual(statistic.count, 0)
+        self.assertEqual(statistic.distance(value=0), float("inf"))
+        self.assertEqual(statistic.distance(value=1), float("inf"))
+        self.assertEqual(statistic.distance(value=5), float("inf"))
 
         statistic = MeanVariance(value=5)
         self.assertEqual(statistic.count, 1)
         self.assertEqual(statistic._mean, 5)
         self.assertEqual(statistic._count, 1)
         self.assertEqual(statistic._variance, 0)
-        self.assertEqual(statistic.distance(value=5), 1)
-        self.assertEqual(statistic.distance(value=3), 1)  # no sufficient statistics available
+        self.assertEqual(statistic.distance(value=5), 0)
+        self.assertAlmostEqual(statistic.distance(value=3), .86, 2)
         statistic.add(value=5)
         self.assertEqual(statistic._mean, 5)
         self.assertEqual(statistic._count, 2)
         self.assertEqual(statistic._variance, 0)
-        self.assertEqual(statistic.distance(value=5), 1)
-        self.assertEqual(statistic.distance(value=3), 1)  # still no variance
+        self.assertEqual(statistic.distance(value=5), 0)
+        self.assertAlmostEqual(statistic.distance(value=3), .76, 2)  # improvement because of count
         statistic.add(value=4)
         self.assertEqual(statistic._count, 3)
         self.assertAlmostEqual(statistic._mean, 4.667, 2)
         self.assertAlmostEqual(statistic._variance, 0.667, 2)
-        self.assertAlmostEqual(statistic.distance(value=5), 0.92, 2)
-        self.assertAlmostEqual(statistic.distance(value=3), 0.12, 2)
+        self.assertAlmostEqual(statistic.distance(value=5), 0.08, 2)
+        self.assertAlmostEqual(statistic.distance(value=3), 0.88, 2)

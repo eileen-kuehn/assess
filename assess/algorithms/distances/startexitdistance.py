@@ -48,10 +48,11 @@ class StartExitDistance(Distance):
                 distance = prototype_nodes[prototype_node].distance(value=value)
                 if distance is None:
                     result_dict[prototype_node] = -.5
-                elif distance > .5:
-                    result_dict[prototype_node] = .5 - distance
                 else:
-                    result_dict[prototype_node] = distance
+                    # start element is first considered matching, so -.5
+                    # if end element is also matching, [-.5, 0] is added
+                    # else ]0, .5] is added to correct the former matching behaviour
+                    result_dict[prototype_node] = -.5 + distance
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
             result_dict,
