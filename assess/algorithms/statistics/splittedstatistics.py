@@ -46,23 +46,27 @@ class SplittedStatistics(object):
             else:
                 self._statistics[index].add(value=value)
                 # perform merging
-                try:
-                    while self._statistics[index].object_distance(self._statistics[index + 1]) <= 1:
+                merged = True
+                while merged:
+                    merged = False
+                    if self._distribution_distance(index, index + 1) <= 1:
                         self._statistics[index].update(statistics=self._statistics[index + 1])
                         del self._statistics[index + 1]
-                except IndexError:
-                    pass
-                try:
-                    while not (not (index > 0) or not (
-                        self._statistics[index].object_distance(self._statistics[index - 1]) <= 1)):
+                        merged = True
+                    if self._distribution_distance(index - 1, index) <= 1:
                         self._statistics[index - 1].update(statistics=self._statistics[index])
                         del self._statistics[index]
                         index -= 1
-                except IndexError:
-                    pass
+                        merged = True
         else:
             # just create a statistics object
             self._statistics.append(self._statistics_type(value=value))
+
+    def _distribution_distance(self, lower, upper):
+        assert lower < upper
+        if lower > 0 and upper < len(self._statistics):
+            return self._statistics[lower].object_distance(self._statistics[upper])
+        return float("inf")
 
     @property
     def count(self):

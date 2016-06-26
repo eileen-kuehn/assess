@@ -52,4 +52,5 @@ class TestSplittedStatistics(unittest.TestCase):
         for statistic in statistics._statistics:
             self.assertTrue(statistic.mean > last)
             last = statistic.mean
+        self.assertEqual(len(statistics._statistics), 872)  # number of clusters wo attraction
 
