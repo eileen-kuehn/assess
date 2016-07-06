@@ -4,6 +4,9 @@ the single nodes is defined.
 """
 from assess.exceptions.exceptions import TreeInvalidatedException
 
+from gnmutils.objectcache import ObjectCache
+from gnmutils.exceptions import DataNotInCacheException
+
 
 class OrderedTreeNode(object):
     """
@@ -336,4 +339,18 @@ class Prototype(Tree):
     """
     Subclass of a tree that represents a prototype (class for convenience only).
     """
-    pass
+    @staticmethod
+    def from_tree(tree):
+        result = Prototype()
+        object_cache = ObjectCache()
+        for node, depth in tree.walkDFS():
+            try:
+                parent = object_cache.get_data(
+                    value=node.value.tme,
+                    key=node.value.ppid
+                )
+            except DataNotInCacheException:
+                parent = None
+            process = result.add_node(parent=parent, **vars(node.value).copy())
+            object_cache.add_data(process, key=process.pid, value=process.tme)
+        return result
