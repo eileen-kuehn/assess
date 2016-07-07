@@ -1,7 +1,10 @@
 import unittest
+import os
+import json
 
-from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache,\
-    MeanVariance
+import assess_tests
+from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
+from assess.algorithms.statistics.statistics import MeanVariance
 
 
 class TestSignatureCache(unittest.TestCase):
@@ -107,3 +110,24 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         self.assertAlmostEqual(statistic.variance, 0.33, 2)
         self.assertAlmostEqual(statistic.distance(value=5), 0.05, 2)
         self.assertAlmostEqual(statistic.distance(value=3), 0.75, 2)
+
+    def test_cluster_representatives(self):
+        with open(self.cluster_representatives_path(), "r") as json_file:
+            cluster_representative = json.load(json_file)
+        signature_cache = PrototypeSignatureCache.from_cluster_representatives(
+            cluster_representatives=cluster_representative["data"]
+        )
+        clusters = []
+        for cluster in cluster_representative["data"].keys():
+            clusters.append(cluster)
+        for i in xrange(4):
+            self.assertTrue(str(i+1) in clusters)
+        self.assertIsNotNone(signature_cache)
+        self.assertEqual(356, signature_cache.node_count())
+        # TODO: is there more to be checked?
+
+    def cluster_representatives_path(self):
+        return os.path.join(
+            os.path.dirname(assess_tests.__file__),
+            "data/cluster.json"
+        )

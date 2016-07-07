@@ -90,6 +90,16 @@ class TreeDistanceAlgorithm(object):
         """
         return self._signature_prototypes
 
+    def cluster_representatives(self, signature_prototypes=None, prototypes=None):
+        """
+        Method that sets the signatures and cluster names for cluster represenatives to check.
+
+        :param signature_prototypes: Signature for all cluster representatives
+        :param prototypes: Cluster name per cluster representative
+        """
+        self._signature_prototypes = signature_prototypes
+        self._prototypes = prototypes
+
     @property
     def signature_tree(self):
         """
@@ -124,7 +134,13 @@ class TreeDistanceAlgorithm(object):
         if signature:
             return [self._signature_prototypes.node_count(prototype=prototype)
                     for prototype in self._prototypes]
-        return [prototype.node_count() for prototype in self._prototypes]
+        try:
+            return [prototype.node_count() for prototype in self._prototypes]
+        except AttributeError:
+            # working a Cluster Representative
+            # TODO: clean this up a bit...
+            pass
+        return None
 
     def prototype_event_counts(self):
         """

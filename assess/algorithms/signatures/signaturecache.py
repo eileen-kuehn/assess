@@ -70,6 +70,29 @@ class PrototypeSignatureCache(SignatureCache):
     do a count on signatures but also introduces a MeanVariance statistic on a given value for
     signatures.
     """
+    @staticmethod
+    def from_cluster_representatives(cluster_representatives):
+        """
+        Method builds a PrototypeSignatureCache by a given dict describing Cluster Representatives
+        that are currently calculated from R.
+        The current format follows the given convention:
+            {"cluster_name":
+                [
+                    {"name": <name>, "p": <probability>},
+                    ...
+                ], ...
+            }
+
+        :param cluster_representatives: dict of cluster representatives
+        :return: valid PrototypeSignatureCache object
+        """
+        signature_cache = PrototypeSignatureCache()
+        for cluster in cluster_representatives.keys():
+            for element in cluster_representatives[cluster]:
+                # TODO: what about given probabilities? Can they be integrated?
+                signature_cache.add_signature(signature=element["name"], prototype=cluster)
+        return signature_cache
+
     def add_signature(self, signature=None, prototype=None, value=0.0):
         """
         Add a signature and its current value for a given prototype.

@@ -12,6 +12,7 @@ from utility.report import update_parser, argparse_init, LVL
 from utility.exceptions import mainExceptionFrame
 
 from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
+from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
 
 
 CLI = argparse.ArgumentParser()
@@ -19,6 +20,11 @@ CLI.add_argument(
     "--json",
     action="store_true",
     help="Provide JSON output formatting"
+)
+CLI.add_argument(
+    "--cluster_representatives",
+    help="File to read cluster representatives from",
+    type=str
 )
 CLI.add_argument(
     "--prototypes",
@@ -110,17 +116,6 @@ def main():
     # if matrix option is set, trees are leading to generate lists
     if options.matrix:
         prototype_paths = tree_paths[:]
-    else:
-        # also read given prototypes
-        if options.prototype_file is not None:
-            # read paths from input file
-            prototype_paths = read_paths(options.prototype_file)
-        else:
-            prototype_paths = options.prototypes
-    assert len(tree_paths) > 0
-    assert len(prototype_paths) > 0
-
-    if options.matrix:
         for tree_index, tree_path in enumerate(tree_paths):
             for prototype_index, prototype_path in enumerate(prototype_paths):
                 if options.no_upper and tree_index < prototype_index:
@@ -134,9 +129,18 @@ def main():
                     name="%d_%d" % (tree_index, prototype_index)
                 )
     else:
+        # otherwise try to read given prototypes
+        if options.prototype_file is not None:
+            # read paths from input file
+            prototype_paths = read_paths(options.prototype_file)
+        else:
+            prototype_paths = options.prototypes
+
         results = check_algorithms(
             tree_paths=tree_paths,
-            prototype_paths=prototype_paths,
+            prototype_paths=prototype_paths if prototype_paths is not None else [],
+            cluster_representatives_paths=([options.cluster_representatives] if
+                                           options.cluster_representatives is not None else []),
             configurations=configdict["configurations"]
         )
 
@@ -168,6 +172,7 @@ def check_single_algorithm(args):
     * decorator - functor containing the decorator to be created
     * tree - path to the tree to be processed
     * prototypes - List of prototypes
+    * prototype_signature - Converted signatures of prototypes for cluster representatives
 
     :param args: Arguments to be passed to the method containing signature, algorithm, decorator,
                  tree, and prototypes
@@ -175,7 +180,15 @@ def check_single_algorithm(args):
     """
     signature = args.get("signature", None)()
     algorithm = args.get("algorithm", None)(signature=signature)
-    algorithm.prototypes = args.get("prototypes", None)
+    prototype_signature = args.get("prototype_signature", None)
+    if prototype_signature is not None:
+        # the list of prototypes is somewhat abused for cluster names when loading CRs
+        algorithm.cluster_representatives(
+            signature_prototypes=prototype_signature,
+            prototypes=args.get("prototypes", [])
+        )
+    else:
+        algorithm.prototypes = args.get("prototypes", None)
     decorator = args.get("decorator", None)()
     decorator.wrap_algorithm(algorithm=algorithm)
     algorithm.start_tree()
@@ -202,7 +215,8 @@ def log_single_calculation(tree=None, prototype=None, name=None):
     process_list.append(subprocess.Popen(shlex.split(command), stdout=open(filename, "w")))
 
 
-def check_algorithms(tree_paths=[], prototype_paths=[], configurations=[]):
+def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_paths=[],
+                     configurations=[]):
     results = {
         "files": tree_paths[:],
         "prototypes": prototype_paths[:],
@@ -211,8 +225,18 @@ def check_algorithms(tree_paths=[], prototype_paths=[], configurations=[]):
     }
     tree_builder = CSVTreeBuilder()
     prototypes = []
-    for path in prototype_paths:
-        prototypes.append(tree_builder.build(path))
+    prototype_signature = None
+    if len(cluster_representatives_paths) > 0:
+        with open(cluster_representatives_paths[0], "r") as json_file:
+            cluster_representatives = json.load(json_file)
+        prototype_signature = PrototypeSignatureCache.from_cluster_representatives(
+            cluster_representatives["data"]
+        )
+        for cluster in cluster_representatives["data"].keys():
+            prototypes.append(cluster)
+    else:
+        for path in prototype_paths:
+            prototypes.append(tree_builder.build(path))
 
     if options.pcount > 1:
         for configuration in configurations:
@@ -221,11 +245,12 @@ def check_algorithms(tree_paths=[], prototype_paths=[], configurations=[]):
                 for signature in configuration["signatures"]:
                     for path in tree_paths:
                         data.append({
-                            "algorithm": algorithm,
-                            "signature": signature,
+                            "algorithm": algorithm,  # TODO: CR contains algorithm
+                            "signature": signature,  # TODO: CR contains signature
                             "decorator": configuration["decorator"],
                             "tree": path,
-                            "prototypes": prototypes
+                            "prototypes": prototypes,
+                            "prototype_signature": prototype_signature
                         })
             result_list = do_multicore(
                 count=options.pcount,
@@ -259,7 +284,13 @@ def check_algorithms(tree_paths=[], prototype_paths=[], configurations=[]):
                 for signature in configuration["signatures"]:
                     signature_object = signature()
                     alg = algorithm(signature=signature_object)
-                    alg.prototypes = prototypes
+                    if prototype_signature is not None:
+                        alg.cluster_representatives(
+                            signature_prototypes=prototype_signature,
+                            prototypes=prototypes
+                        )
+                    else:
+                        alg.prototypes = prototypes
                     decorator = configuration["decorator"]()
                     decorator.wrap_algorithm(alg)
                     for index, path in enumerate(tree_paths):
