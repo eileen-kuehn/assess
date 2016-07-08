@@ -10,6 +10,19 @@ class Signature(object):
     By using signatures, similar nodes might be grouped for example. This improves
     the compression factor but might decrease the precision of the algorithm.
     """
+    def __new__(cls, *args, **kwargs):
+        for arg in args:
+            if "ParentChildByNameTopologySignature" in arg:
+                return ParentChildByNameTopologySignature.__new__(ParentChildByNameTopologySignature)
+            elif "ParentChildOrderTopologySignature" in arg:
+                return ParentChildOrderTopologySignature()
+            elif "ParentChildOrderByNameTopologySignature" in arg:
+                return ParentChildOrderByNameTopologySignature()
+        #     elif "ParentCountedChildrenByNameTopologySignature" in arg:
+        #         # TODO: can kwargs be edited? Than to splitting to get the actual count
+        #         return ParentCountedChildrenByNameTopologySignature()
+        return super(Signature, cls).__new__(cls)
+
     def prepare_signature(self, node, parent):
         """
         Methods takes a node and prepares its signature. The signature is directly

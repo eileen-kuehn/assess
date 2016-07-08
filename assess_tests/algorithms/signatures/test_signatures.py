@@ -120,3 +120,13 @@ class TestSignatureFunctionalities(unittest.TestCase):
     def test_representation(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=5)
         self.assertEqual(signature.__repr__(), "ParentCountedChildrenByNameTopologySignature (count: 5)")
+
+    def test_custom_creation(self):
+        signature = Signature()
+        self.assertEqual(Signature, signature.__class__)
+        signature = Signature("ParentChildByNameTopologySignature")
+        self.assertEqual(ParentChildByNameTopologySignature, signature.__class__)
+        signature = Signature("ParentChildOrderTopologySignature")
+        self.assertEqual(ParentChildOrderTopologySignature, signature.__class__)
+        signature = Signature("ParentChildOrderByNameTopologySignature")
+        self.assertEqual(ParentChildOrderByNameTopologySignature, signature.__class__)
