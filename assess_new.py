@@ -108,12 +108,14 @@ max_count = 0
 current_count = 0
 
 
-def read_paths(path, minimum=None, maximum=None):
+def read_paths(path, minimum=0, maximum=None):
     paths = []
     with open(path) as input_file:
         for index, line in enumerate(input_file):
             if maximum is not None and index >= maximum:
                 break
+            if index < minimum:
+                continue
             paths.append(line.strip())
     return paths
 
@@ -136,8 +138,15 @@ def main():
     if options.matrix:
         prototype_paths = tree_paths[:]
         if options.hosts:
+            # FIXME: that is a hack to overwrite shortening of tree list...
+            if options.tree_file is not None and options.maximum_number_of_trees < float("inf"):
+                prototype_paths = read_paths(options.tree_file)
             for prototype_index, prototype_path in enumerate(prototype_paths):
                 current_index = 0
+                if options.no_upper:
+                    current_index += prototype_index
+                    if options.no_diagonal:
+                        current_index += 1
                 while current_index < len(tree_paths):
                     log_host_calculation(
                         start_index=current_index,
@@ -251,7 +260,7 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
               "--prototypes %s --configuration %s --pcount %d --json" % (
                 os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
                 prototype, options.configuration, options.pcount)
-    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s'" % (
+    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s' 2> error.log" % (
         port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
     host_dictionary[ssh_host] = subprocess.Popen(
