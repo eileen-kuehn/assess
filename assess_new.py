@@ -7,6 +7,7 @@ import multiprocessing
 import time
 import shlex
 import os
+import random
 
 from utility.report import update_parser, argparse_init, LVL
 from utility.exceptions import mainExceptionFrame
@@ -49,9 +50,16 @@ CLI.add_argument(
     type=str
 )
 CLI.add_argument(
+    "--start_index_of_trees",
+    help="First tree to consider from given file",
+    type=int,
+    default=0
+)
+CLI.add_argument(
     "--maximum_number_of_trees",
     help="Maximum number of trees considered from given file",
-    type=int
+    type=int,
+    default=float("inf")
 )
 CLI.add_argument(
     "--configuration",
@@ -64,6 +72,12 @@ CLI.add_argument(
     help="Maximum amount of processes to start",
     type=int,
     default=4
+)
+CLI.add_argument(
+    "--hosts",
+    action="store_true",
+    help="Perform parallelisation on different hosts\n"
+         "Attention: configuration for hosts needs to be included in config"
 )
 # Enter matrix mode
 # There are also some options you might consider like skipping diagonal or upper part
@@ -89,11 +103,12 @@ CLI.add_argument(
 )
 
 process_list = []
+host_dictionary = {}
 max_count = 0
 current_count = 0
 
 
-def read_paths(path, maximum=None):
+def read_paths(path, minimum=None, maximum=None):
     paths = []
     with open(path) as input_file:
         for index, line in enumerate(input_file):
@@ -110,24 +125,44 @@ def main():
 
     if options.tree_file is not None:
         # read paths from input file
-        tree_paths = read_paths(options.tree_file, options.maximum_number_of_trees)
+        tree_paths = read_paths(
+            options.tree_file,
+            minimum=options.start_index_of_trees,
+            maximum=options.start_index_of_trees+options.maximum_number_of_trees
+        )
     else:
         tree_paths = options.trees
     # if matrix option is set, trees are leading to generate lists
     if options.matrix:
         prototype_paths = tree_paths[:]
-        for tree_index, tree_path in enumerate(tree_paths):
+        if options.hosts:
             for prototype_index, prototype_path in enumerate(prototype_paths):
-                if options.no_upper and tree_index < prototype_index:
-                    break
-                if options.no_diagonal and tree_index == prototype_index:
-                    continue
-                global max_count
-                log_single_calculation(
-                    tree=tree_path,
-                    prototype=prototype_path,
-                    name="%d_%d" % (tree_index, prototype_index)
-                )
+                current_index = 0
+                while current_index < len(tree_paths):
+                    log_host_calculation(
+                        start_index=current_index,
+                        maximum_count=options.maximum_number_of_trees,
+                        prototype=prototype_path,
+                        name="%d_%d" % (
+                            prototype_index, current_index / options.maximum_number_of_trees),
+                        hosts=configdict["configurations"]["environment"]["hosts"],
+                        assess_path=configdict["configurations"]["environment"]["assess_path"]
+                    )
+                    current_index += options.maximum_number_of_trees
+        else:
+            global max_count
+            max_count = ((len(prototype_paths)**2)-len(prototype_paths))/2
+            for tree_index, tree_path in enumerate(tree_paths):
+                for prototype_index, prototype_path in enumerate(prototype_paths):
+                    if options.no_upper and tree_index < prototype_index:
+                        break
+                    if options.no_diagonal and tree_index == prototype_index:
+                        continue
+                    log_single_calculation(
+                        tree=tree_path,
+                        prototype=prototype_path,
+                        name="%d_%d" % (tree_index, prototype_index)
+                    )
     else:
         # otherwise try to read given prototypes
         if options.prototype_file is not None:
@@ -196,6 +231,30 @@ def check_single_algorithm(args):
         algorithm.add_event(event=event)
     algorithm.finish_tree()
     return decorator
+
+
+def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None, hosts=[],
+                         assess_path=None):
+    while len(host_dictionary) >= len(hosts):
+        for host in host_dictionary:
+            if host_dictionary[host].poll() is not None:
+                process = host_dictionary.pop(host, None)
+                print("Finished some calculation on host '%s'" % host)
+        time.sleep(1)
+
+    # start on an idle host
+    idle_hosts = [host for host in hosts if host not in host_dictionary]
+    ssh_host = random.choice(idle_hosts)
+    filename = "%s/%s.json" % (options.output_path, name)
+    command = "python %s --tree_file %s --start_index_of_trees %d --maximum_number_of_trees %d " \
+              "--prototypes %s --configuration %s --pcount %d --json" % (
+                os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
+                prototype, options.configuration, options.pcount)
+    ssh_command = "ssh %s 'cd %s; source .pyenv/bin/activate; %s'" % (
+        ssh_host, assess_path, command)
+    # TODO: I maybe shouldn't write the result from the master but worker
+    host_dictionary[ssh_host] = subprocess.Popen(
+        shlex.split(ssh_command), stdout=open(filename, "w"))
 
 
 def log_single_calculation(tree=None, prototype=None, name=None):
