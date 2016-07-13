@@ -146,7 +146,8 @@ def main():
                         name="%d_%d" % (
                             prototype_index, current_index / options.maximum_number_of_trees),
                         hosts=configdict["configurations"][0]["environment"]["hosts"],
-                        assess_path=configdict["configurations"][0]["environment"]["assess_path"]
+                        assess_path=configdict["configurations"][0]["environment"]["assess_path"],
+                        port=configdict["configurations"][0]["environment"].get("port", 22)
                     )
                     current_index += options.maximum_number_of_trees
         else:
@@ -234,9 +235,9 @@ def check_single_algorithm(args):
 
 
 def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None, hosts=[],
-                         assess_path=None):
+                         assess_path=None, port=22):
     while len(host_dictionary) >= len(hosts):
-        for host in host_dictionary:
+        for host in host_dictionary.keys():
             if host_dictionary[host].poll() is not None:
                 process = host_dictionary.pop(host, None)
                 print("Finished some calculation on host '%s'" % host)
@@ -250,8 +251,8 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
               "--prototypes %s --configuration %s --pcount %d --json" % (
                 os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
                 prototype, options.configuration, options.pcount)
-    ssh_command = "ssh %s 'cd %s; source .pyenv/bin/activate; %s'" % (
-        ssh_host, assess_path, command)
+    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s'" % (
+        port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
     host_dictionary[ssh_host] = subprocess.Popen(
         shlex.split(ssh_command), stdout=open(filename, "w"))
