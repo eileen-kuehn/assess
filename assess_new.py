@@ -146,7 +146,7 @@ def main():
                         name="%d_%d" % (
                             prototype_index, current_index / options.maximum_number_of_trees),
                         hosts=configdict["configurations"]["environment"]["hosts"],
-                        assess_path=configdict["configurations"]["environment"]["assess_path"]
+                        assess_path=configdict["configurations"][0]["environment"]["assess_path"]
                     )
                     current_index += options.maximum_number_of_trees
         else:
