@@ -260,7 +260,7 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
               "--prototypes %s --configuration %s --pcount %d --json" % (
                 os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
                 prototype, options.configuration, options.pcount)
-    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s' 2> error.log" % (
+    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s' 2>> error.log" % (
         port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
     host_dictionary[ssh_host] = subprocess.Popen(
