@@ -43,3 +43,6 @@ class DistanceDecorator(Decorator):
 
     def _update(self, decorator):
         self._distances.extend(decorator.data())
+
+    def _compatible(self, decorator):
+        return type(decorator) == type(self) and self._normalized == decorator._normalized

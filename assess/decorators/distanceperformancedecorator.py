@@ -74,3 +74,6 @@ class DistancePerformanceDecorator(Decorator):
 
     def _update(self, decorator):
         self._performances.extend(decorator.data())
+
+    def _compatible(self, decorator):
+        return type(decorator) == type(self) and self._accumulated == decorator._accumulated

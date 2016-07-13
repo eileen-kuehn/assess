@@ -119,7 +119,7 @@ class Decorator(object):
         :param decorator: A decorator to add to current values
         """
         while decorator is not None:
-            if type(decorator) == type(self):
+            if self._compatible(decorator):
                 self._update(decorator)
             else:
                 try:
@@ -127,6 +127,9 @@ class Decorator(object):
                 except AttributeError:
                     raise DecoratorNotFoundException(decorator=decorator)
             decorator = decorator.decorator
+
+    def _compatible(self, decorator):
+        return type(decorator) == type(self)
 
     def _update(self, decorator):
         pass
