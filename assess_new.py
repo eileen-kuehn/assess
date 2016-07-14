@@ -147,7 +147,7 @@ def main():
                     current_index += prototype_index
                     if options.no_diagonal:
                         current_index += 1
-                while current_index < len(tree_paths):
+                while current_index < len(prototype_paths):
                     log_host_calculation(
                         start_index=current_index,
                         maximum_count=options.maximum_number_of_trees,
