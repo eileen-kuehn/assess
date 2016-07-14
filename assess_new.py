@@ -156,6 +156,8 @@ def main():
                             prototype_index, current_index / options.maximum_number_of_trees),
                         hosts=configdict["configurations"][0]["environment"]["hosts"],
                         assess_path=configdict["configurations"][0]["environment"]["assess_path"],
+                        config_name=configdict["configurations"][0]["environment"]["config_name"],
+                        base_path=configdict["configurations"][0]["environment"]["base_path"],
                         port=configdict["configurations"][0]["environment"].get("port", 22)
                     )
                     current_index += options.maximum_number_of_trees
@@ -244,7 +246,7 @@ def check_single_algorithm(args):
 
 
 def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None, hosts=[],
-                         assess_path=None, port=22):
+                         assess_path=None, config_name=None, base_path=None, port=22):
     while len(host_dictionary) >= len(hosts):
         for host in host_dictionary.keys():
             if host_dictionary[host].poll() is not None:
@@ -257,8 +259,8 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
     filename = "%s/%s.json" % (options.output_path, name)
     command = "python %s --tree_file %s --start_index_of_trees %d --maximum_number_of_trees %d " \
               "--prototypes %s --configuration %s --pcount %d --json" % (
-                __file__, options.tree_file, start_index, maximum_count,
-                prototype, options.configuration, options.pcount)
+                __file__, os.path.join(base_path, os.path.basename(options.tree_file)), start_index,
+                maximum_count, prototype, os.path.join(base_path, config_name), options.pcount)
     ssh_command = "ssh -p %d %s 'cd %s && source .pyenv/bin/activate && %s'" % (
         port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
