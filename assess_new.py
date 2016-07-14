@@ -10,7 +10,7 @@ import os
 import random
 
 from utility.report import update_parser, argparse_init, LVL
-from utility.exceptions import mainExceptionFrame
+from utility.exceptions import mainExceptionFrame, ExceptionFrame
 
 from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
@@ -225,24 +225,25 @@ def check_single_algorithm(args):
                  tree, and prototypes
     :return: Decorator containing resulting data
     """
-    signature = args.get("signature", None)()
-    algorithm = args.get("algorithm", None)(signature=signature)
-    prototype_signature = args.get("prototype_signature", None)
-    if prototype_signature is not None:
-        # the list of prototypes is somewhat abused for cluster names when loading CRs
-        algorithm.cluster_representatives(
-            signature_prototypes=prototype_signature,
-            prototypes=args.get("prototypes", [])
-        )
-    else:
-        algorithm.prototypes = args.get("prototypes", None)
-    decorator = args.get("decorator", None)()
-    decorator.wrap_algorithm(algorithm=algorithm)
-    algorithm.start_tree()
-    for event in CSVEventStreamer(args.get("tree", None)):
-        algorithm.add_event(event=event)
-    algorithm.finish_tree()
-    return decorator
+    with ExceptionFrame():
+        signature = args.get("signature", None)()
+        algorithm = args.get("algorithm", None)(signature=signature)
+        prototype_signature = args.get("prototype_signature", None)
+        if prototype_signature is not None:
+            # the list of prototypes is somewhat abused for cluster names when loading CRs
+            algorithm.cluster_representatives(
+                signature_prototypes=prototype_signature,
+                prototypes=args.get("prototypes", [])
+            )
+        else:
+            algorithm.prototypes = args.get("prototypes", None)
+        decorator = args.get("decorator", None)()
+        decorator.wrap_algorithm(algorithm=algorithm)
+        algorithm.start_tree()
+        for event in CSVEventStreamer(args.get("tree", None)):
+            algorithm.add_event(event=event)
+        algorithm.finish_tree()
+        return decorator
 
 
 def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None, hosts=[],
@@ -386,5 +387,5 @@ if __name__ == '__main__':
 
     logging.getLogger().setLevel(LVL.WARNING)
     logging.getLogger("EXCEPTION").setLevel(LVL.INFO)
-
-    mainExceptionFrame(main)
+    with ExceptionFrame():
+        main()
