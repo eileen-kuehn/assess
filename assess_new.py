@@ -249,7 +249,6 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
         for host in host_dictionary.keys():
             if host_dictionary[host].poll() is not None:
                 process = host_dictionary.pop(host, None)
-                print("Finished some calculation on host '%s'" % host)
         time.sleep(1)
 
     # start on an idle host
@@ -260,11 +259,13 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
               "--prototypes %s --configuration %s --pcount %d --json" % (
                 os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
                 prototype, options.configuration, options.pcount)
-    ssh_command = "ssh -p %d %s 'cd %s; source .pyenv/bin/activate; %s' 2>> error.log" % (
+    ssh_command = "ssh -p %d %s 'cd %s && source .pyenv/bin/activate && %s'" % (
         port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
     host_dictionary[ssh_host] = subprocess.Popen(
-        shlex.split(ssh_command), stdout=open(filename, "w"))
+        shlex.split(ssh_command),
+        stdout=open(filename, "w"),
+        stderr=open("%s.error.log" % ssh_host, "a"))
 
 
 def log_single_calculation(tree=None, prototype=None, name=None):
