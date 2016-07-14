@@ -257,7 +257,7 @@ def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name
     filename = "%s/%s.json" % (options.output_path, name)
     command = "python %s --tree_file %s --start_index_of_trees %d --maximum_number_of_trees %d " \
               "--prototypes %s --configuration %s --pcount %d --json" % (
-                os.path.realpath(__file__), options.tree_file, start_index, maximum_count,
+                __file__, options.tree_file, start_index, maximum_count,
                 prototype, options.configuration, options.pcount)
     ssh_command = "ssh -p %d %s 'cd %s && source .pyenv/bin/activate && %s'" % (
         port, ssh_host, assess_path, command)
