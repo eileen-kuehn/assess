@@ -9,9 +9,9 @@ class Event(object):
     """
 
     def __init__(self, tme, pid, ppid, **kwargs):
-        self._tme = tme
-        self._pid = pid
-        self._ppid = ppid
+        self.tme = tme
+        self.pid = pid
+        self.ppid = ppid
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
@@ -90,60 +90,6 @@ class Event(object):
         :return: Created traffic event
         """
         return TrafficEvent(tme, pid, ppid, value, **kwargs)
-
-    @property
-    def tme(self):
-        """
-        Property method to access the tme of the event.
-
-        :return: Timestamp of the event
-        """
-        return self._tme
-
-    @tme.setter
-    def tme(self, value=None):
-        """
-        Setter method to set the tme of the event.
-
-        :param value: Value to be set for tme
-        """
-        self._tme = value
-
-    @property
-    def pid(self):
-        """
-        Parameter to get the pid of the event.
-
-        :return: Events pid
-        """
-        return self._pid
-
-    @pid.setter
-    def pid(self, value=None):
-        """
-        Setter method to set the pid of the event.
-
-        :param value: Value to be set for pid
-        """
-        self._pid = value
-
-    @property
-    def ppid(self):
-        """
-        Parameter to get the ppid of the event.
-
-        :return: Events ppid
-        """
-        return self._ppid
-
-    @ppid.setter
-    def ppid(self, value=None):
-        """
-        Setter method to set the ppid of the event.
-
-        :param value: Value to be set for ppid
-        """
-        self._ppid = value
 
     def __eq__(self, other):
         if type(other) is type(self):
