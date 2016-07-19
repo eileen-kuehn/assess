@@ -54,9 +54,15 @@ class CSVTreeBuilder(GNMImporter):
                 try:
                     parent = process_cache.get_data(
                         value=process.get("tme", 0),
-                        key=process.get("ppid", 0)
+                        key=process.get("ppid", 0),
+                        validate_range=True
                     )
                 except DataNotInCacheException:
+                    if result.root() is not None and \
+                            (int(process.get("tme")) < int(result.root().tme) or
+                                int(process.get("exit_tme")) > int(result.root().exit_tme)):
+                    #if int(process.get("uid", 0)) == 0 and result.root() is not None:
+                        continue
                     parent = None
                 node = result.add_node(
                     process.get("name", "."),

@@ -183,6 +183,7 @@ class Tree(object):
         :return: Reference to the newly created node
         """
         if parent is None and self.root() is not None:
+            print kwargs
             raise TreeInvalidatedException
         return self._graph.add_node(name=name, parent=parent, **kwargs)
 
@@ -347,7 +348,8 @@ class Prototype(Tree):
             try:
                 parent = object_cache.get_data(
                     value=node.value.tme,
-                    key=node.value.ppid
+                    key=node.value.ppid,
+                    validate_range=True
                 )
             except DataNotInCacheException:
                 parent = None
