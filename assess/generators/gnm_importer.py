@@ -1,12 +1,13 @@
 """
 Generators for event streams for GNM monitoring files
 """
+import random
 import csv
 import bisect
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.sources.filedatasource import FileDataSource
-from gnmutils.exceptions import DataNotInCacheException
+from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
 
 from assess.events.events import Event
 from assess.prototypes.simpleprototypes import Prototype
@@ -98,6 +99,8 @@ class CSVEventStreamer(GNMImporter):
         for job in data_source.jobs(path=self.path):
             job.prepare_traffic()
             for process in job.processes_in_order():
+                if not self._validate_process(process=process, job=job):
+                    continue
                 now = process.tme
                 events += 1
 
@@ -127,3 +130,47 @@ class CSVEventStreamer(GNMImporter):
             except KeyError:
                 pass
         return row
+
+    def _validate_process(self, process, job):
+        """Test if process is appropriate to pass on"""
+        return True
+
+
+class CSVEventStreamPruner(CSVEventStreamer):
+    def __init__(self, csv_path, signature, prune_chance=0.0):
+        CSVEventStreamer.__init__(self, csv_path)
+        self.signature = signature
+        self.prune_chance = prune_chance
+        self._kept = {}  # signature => pruned: bool
+
+    def _validate_process(self, process, job):
+        try:
+            parent = job.parent(process)
+        except ObjectIsRootException:
+            parent = None
+        process_signature = self.signature.get_signature(process, parent)
+        # always repeat per-signature decissions
+        try:
+            return self._kept[process_signature]
+        # no decission yet, do it now
+        except KeyError:
+            self._kept[process_signature] = (random.random() > self.prune_chance)
+            return self._kept[process_signature]
+
+
+class CSVEventStreamBranchPruner(CSVEventStreamPruner):
+    def _validate_process(self, process, job):
+        try:
+            parent = job.parent(process)
+        except ObjectIsRootException:
+            parent = None
+        process_signature = self.signature.get_signature(process, parent)
+        # check if *this* node has been pruned
+        try:
+            return self._kept[process_signature]
+        except KeyError:
+            # see if *parent/branch* has been pruned already
+            keep_this = self._validate_process(parent, job)
+            # if parent/branch is kept, this child *may* be pruned, otherwise it *must* be pruned
+            self._kept[process_signature] = False if not keep_this else (random.random() > self.prune_chance)
+            return self._kept[process_signature]
