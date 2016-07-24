@@ -240,8 +240,9 @@ def check_single_algorithm(args):
         decorator = args.get("decorator", None)()
         decorator.wrap_algorithm(algorithm=algorithm)
         algorithm.start_tree()
-        for event in CSVEventStreamer(args.get("tree", None)):
-            algorithm.add_event(event=event)
+        for event_streamer in args.get("event_streamers", [CSVEventStreamer]):
+            for event in event_streamer(args.get("tree", None)):
+                algorithm.add_event(event=event)
         algorithm.finish_tree()
         return decorator
 
@@ -314,6 +315,10 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
     if options.pcount > 1:
         for configuration in configurations:
             data = []
+            try:
+                event_streamers = configuration["event_streamer"]
+            except KeyError:
+                event_streamers = [CSVEventStreamer]
             for algorithm in configuration["algorithms"]:
                 for signature in configuration["signatures"]:
                     for path in tree_paths:
@@ -323,7 +328,8 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
                             "decorator": configuration["decorator"],
                             "tree": path,
                             "prototypes": prototypes,
-                            "prototype_signature": prototype_signature
+                            "prototype_signature": prototype_signature,
+                            "event_streamers": event_streamers
                         })
             result_list = do_multicore(
                 count=options.pcount,
@@ -353,29 +359,35 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
                 })
     else:
         for configuration in configurations:
-            for algorithm in configuration["algorithms"]:
-                for signature in configuration["signatures"]:
-                    signature_object = signature()
-                    alg = algorithm(signature=signature_object)
-                    if prototype_signature is not None:
-                        alg.cluster_representatives(
-                            signature_prototypes=prototype_signature,
-                            prototypes=prototypes
-                        )
-                    else:
-                        alg.prototypes = prototypes
-                    decorator = configuration["decorator"]()
-                    decorator.wrap_algorithm(alg)
-                    for index, path in enumerate(tree_paths):
-                        alg.start_tree()
-                        for event in CSVEventStreamer(csv_path=path):
-                            alg.add_event(event=event)
-                        alg.finish_tree()
-                    results["results"].append({
-                        "algorithm": "%s" % alg,
-                        "signature": "%s" % signature_object,
-                        "decorator": decorator.descriptive_data()
-                    })
+            try:
+                event_streamers = configuration["event_streamer"]
+            except KeyError:
+                event_streamers = [CSVEventStreamer]
+            for event_streamer in event_streamers:
+                for algorithm in configuration["algorithms"]:
+                    for signature in configuration["signatures"]:
+                        signature_object = signature()
+                        alg = algorithm(signature=signature_object)
+                        if prototype_signature is not None:
+                            alg.cluster_representatives(
+                                signature_prototypes=prototype_signature,
+                                prototypes=prototypes
+                            )
+                        else:
+                            alg.prototypes = prototypes
+                        decorator = configuration["decorator"]()
+                        decorator.wrap_algorithm(alg)
+                        for index, path in enumerate(tree_paths):
+                            alg.start_tree()
+                            for event in event_streamer(csv_path=path):
+                                alg.add_event(event=event)
+                            alg.finish_tree()
+                        results["results"].append({
+                            "algorithm": "%s" % alg,
+                            "signature": "%s" % signature_object,
+                            "event_streamer": "%s" % event_streamer(csv_path=None),
+                            "decorator": decorator.descriptive_data()
+                        })
 
     return results
 

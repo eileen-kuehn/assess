@@ -135,6 +135,9 @@ class CSVEventStreamer(GNMImporter):
         """Test if process is appropriate to pass on"""
         return True
 
+    def __repr__(self):
+        return self.__class__.__name__
+
 
 class CSVEventStreamPruner(CSVEventStreamer):
     def __init__(self, csv_path, signature, prune_chance=0.0):
@@ -157,13 +160,16 @@ class CSVEventStreamPruner(CSVEventStreamer):
             self._kept[process_signature] = (random.random() > self.prune_chance)
             return self._kept[process_signature]
 
+    def __repr__(self):
+        return "%s (prune_chance=%s)" % (self.__class__.__name__, self.prune_chance)
+
 
 class CSVEventStreamBranchPruner(CSVEventStreamPruner):
     def _validate_process(self, process, job):
         try:
             parent = job.parent(process)
         except ObjectIsRootException:
-            parent = None
+            return True
         process_signature = self.signature.get_signature(process, parent)
         # check if *this* node has been pruned
         try:
