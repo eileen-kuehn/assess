@@ -132,7 +132,19 @@ class CSVEventStreamer(GNMImporter):
         return row
 
     def _validate_process(self, process, job):
-        """Test if process is appropriate to pass on"""
+        """
+        Hook for checking and modifying a process
+
+        This hook serves two functions:
+
+        - It may *veto* a process by returning `False`.
+
+        - It may *modify* a process inplace.
+
+        :param process:
+        :param job:
+        :return: whether the process gets passed on
+        """
         return True
 
     def __repr__(self):
@@ -140,6 +152,9 @@ class CSVEventStreamer(GNMImporter):
 
 
 class CSVEventStreamPruner(CSVEventStreamer):
+    """
+    Remove individual nodes from a stream
+    """
     def __init__(self, csv_path, signature, prune_chance=0.0):
         CSVEventStreamer.__init__(self, csv_path)
         self.signature = signature
@@ -165,11 +180,14 @@ class CSVEventStreamPruner(CSVEventStreamer):
 
 
 class CSVEventStreamBranchPruner(CSVEventStreamPruner):
+    """
+    Remove individual nodes and their children from a stream
+    """
     def _validate_process(self, process, job):
         try:
             parent = job.parent(process)
         except ObjectIsRootException:
-            return True
+            return True  # never prune root node to avoid bias
         process_signature = self.signature.get_signature(process, parent)
         # check if *this* node has been pruned
         try:
@@ -180,3 +198,35 @@ class CSVEventStreamBranchPruner(CSVEventStreamPruner):
             # if parent/branch is kept, this child *may* be pruned, otherwise it *must* be pruned
             self._kept[process_signature] = False if not keep_this else (random.random() > self.prune_chance)
             return self._kept[process_signature]
+
+
+class CSVEventStreamRelabelerMixin(object):
+    def __init__(
+            self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
+            csv_path, signature, prune_chance=0.0, label_generator=lambda name: name + '_relabel'):
+        super(CSVEventStreamRelabelerMixin, self).__init__(
+            self, csv_path=csv_path, signature=signature, prune_chance=prune_chance
+        )
+        self.label_generator = label_generator
+
+    def _validate_process(
+            self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
+            process, job):
+        # swap base class replacement with renaming
+        if not super(CSVEventStreamRelabelerMixin, self)._validate_process(
+                self, process=process, job=job
+        ):
+            process.name = self.label_generator(process.name)
+        return True  # accept all nodes
+
+
+class CSVEventStreamRelabeler(CSVEventStreamRelabelerMixin, CSVEventStreamPruner):
+    """
+    Relabel individual nodes from a stream
+    """
+
+
+class CSVEventStreamBranchRelabeler(CSVEventStreamRelabelerMixin, CSVEventStreamBranchPruner):
+    """
+    Relabel individual nodes and their children from a stream
+    """
