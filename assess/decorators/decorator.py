@@ -129,7 +129,7 @@ class Decorator(object):
             decorator = decorator.decorator
 
     def _compatible(self, decorator):
-        return type(decorator) == type(self)
+        return decorator._name == self._name
 
     def _update(self, decorator):
         pass

@@ -15,7 +15,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     def __init__(self, signature=Signature(), distance=SimpleDistance, **kwargs):
         TreeDistanceAlgorithm.__init__(self, signature, **kwargs)
         self._distance = None
-        self._measured_nodes = set()
+        self._measured_nodes = set()  # TODO: can those be removed?
         self._distance_builder = distance
         self._supported = {ProcessStartEvent: True, ProcessExitEvent: True}
 
