@@ -1,8 +1,12 @@
 import unittest
+import os
+import assess_tests
 
 from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.exceptions.exceptions import TreeInvalidatedException
 from assess_tests.basedata import simple_prototype
+
+from gnmutils.sources.filedatasource import FileDataSource
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -195,3 +199,39 @@ class TestPrototypeFunctions(unittest.TestCase):
             "(1 (0): (2 (1), 3 (1), 4 (1), 5 (1)))"
         )
 
+    def test_global_order(self):
+        prototype = Prototype()
+        root = prototype.add_node("root")
+        node_1 = prototype.add_node("node_1", parent=root)
+        node_2 = prototype.add_node("node_2", parent=root)
+        prototype.add_node("node_3", parent=node_2)
+        prototype.add_node("node_4", parent=node_1)
+        prototype.add_node("node_5", parent=node_2)
+        prototype.add_node("node_6", parent=node_1)
+
+        # test depth first
+        self.assertEqual([node.name for node in list(prototype.nodes())],
+                         ["root", "node_1", "node_4", "node_6", "node_2", "node_3", "node_5"])
+        # test order first
+        self.assertEqual([node.name for node in list(prototype.nodes(order_first=True))],
+                         ["root", "node_1", "node_2", "node_3", "node_4", "node_5", "node_6"])
+        # test linkage
+        self.assertEqual(node_2.previous_node, node_1)
+        self.assertEqual(node_2.next_node.name, "node_3")
+        self.assertEqual(node_2.parent(), root)
+
+    def test_from_job(self):
+        file_path = os.path.join(
+            os.path.dirname(assess_tests.__file__),
+            "data/c01-007-102/1/1-process.csv"
+        )
+        data_source = FileDataSource()
+        for job in data_source.jobs(path=file_path):
+            prototype = Prototype.from_job(job)
+        self.assertIsNotNone(prototype)
+        self.assertEqual(prototype.node_count(), 9109)
+
+        last_tme = 0
+        for node in prototype.nodes(order_first=True):
+            self.assertTrue(last_tme <= node.tme)
+            last_tme = node.tme

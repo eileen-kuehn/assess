@@ -5,7 +5,7 @@ the single nodes is defined.
 from assess.exceptions.exceptions import TreeInvalidatedException
 
 from gnmutils.objectcache import ObjectCache
-from gnmutils.exceptions import DataNotInCacheException
+from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
 
 
 class OrderedTreeNode(object):
@@ -19,12 +19,15 @@ class OrderedTreeNode(object):
     :param tree: Tree where node belongs to
     :param kwargs: Additional arguments
     """
-    def __init__(self, node_id, name=None, parent=None, position=0, tree=None, **kwargs):
+    def __init__(self, node_id, name=None, parent=None, previous_node=None, next_node=None, position=0,
+                 tree=None, **kwargs):
         self.node_id = node_id
         self.name = name
         self._parent = parent
         self._children = []
         self._prototype = tree
+        self.previous_node = previous_node
+        self.next_node = next_node
         self.position = position
         for key, value in kwargs.items():
             setattr(self, key, value)
@@ -121,6 +124,7 @@ class OrderedTree(object):
     def __init__(self):
         self.root = None
         self._node_counter = 0
+        self._last_node = None  # helper to build up global order
 
     def _unique_node_id(self):
         """
@@ -139,28 +143,39 @@ class OrderedTree(object):
         """
         return self._node_counter
 
-    def add_node(self, name=None, parent=None, **kwargs):
+    def add_node(self, name=None, parent=None, previous_node=None, next_node=None, **kwargs):
         """
         Method adds a new node to the actual tree. If parent is not given, the node gets the root
         ndoe of the tree.
 
         :param name: Name of the node to create
         :param parent: Parent of the node to attach to
+        :param previous_node: Reference to last node
+        :param next_node: Reference to next node
         :param kwargs: Additional parameters of the node
         :return: Reference to the created node
         """
+        if previous_node is None:
+            # try to determine last known node
+            previous_node = self._last_node
         node = OrderedTreeNode(
             node_id=self._unique_node_id(),
             name=name,
             parent=parent,
+            previous_node=previous_node,
+            next_node=next_node,
             tree=self,
             position=parent.child_count() if parent is not None else 0,
             **kwargs
         )
+        if previous_node is not None:
+            # set next node for last node
+            previous_node.next_node = node
         if self.root is None:
             self.root = node
         else:
             parent.children_list().append(node)
+        self._last_node = node
         self._node_counter += 1
         return node
 
@@ -196,13 +211,19 @@ class Tree(object):
         return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
-    def nodes(self, depth_first=True):
+    def nodes(self, depth_first=True, order_first=False):
         """
         Method that returns a generator yielding all nodes inside the tree, either in
         depth first or width first order.
         :param depth_first: Depth first order if True, otherwise width first.
         :return: Generator for tree nodes.
         """
+        def ofs(root):
+            yield root
+            while root.next_node is not None:
+                root = root.next_node
+                yield root
+
         def dfs(root):
             """
             Method recursively implements a depth first generator for nodes of the tree.
@@ -238,7 +259,8 @@ class Tree(object):
 
         base_node = self._graph.root
         if base_node is not None:
-            for node in dfs(base_node) if depth_first else wfs(base_node):
+            for node in ofs(base_node) if order_first else \
+                    dfs(base_node) if depth_first else wfs(base_node):
                 yield node
 
     @staticmethod
@@ -355,4 +377,19 @@ class Prototype(Tree):
                 parent = None
             process = result.add_node(parent=parent, **vars(node.value).copy())
             object_cache.add_data(process, key=process.pid, value=process.tme)
+        return result
+
+    @staticmethod
+    def from_job(job):
+        parent_dict = {}
+        result = Prototype()
+        for process in job.processes_in_order():
+            try:
+                parent = parent_dict.get(job.parent(process), None)
+            except ObjectIsRootException:
+                parent = None
+            node = result.add_node(parent=parent, **vars(process).copy())
+            # FIXME: also adding traffic here...
+            node.traffic = process.traffic
+            parent_dict[process] = node
         return result

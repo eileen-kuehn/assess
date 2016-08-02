@@ -98,8 +98,10 @@ class CSVEventStreamer(GNMImporter):
         data_source = FileDataSource()
         for job in data_source.jobs(path=self.path):
             job.prepare_traffic()
-            for process in job.processes_in_order():
-                if not self._validate_process(process=process, job=job):
+            prototype = Prototype.from_job(job)
+
+            for process in prototype.nodes(order_first=True):
+                if not self._validate_node(node=process):
                     continue
                 now = process.tme
                 events += 1
@@ -131,19 +133,17 @@ class CSVEventStreamer(GNMImporter):
                 pass
         return row
 
-    def _validate_process(self, process, job):
+    def _validate_node(self, node):
         """
-        Hook for checking and modifying a process
+        Hook for checking and modifying a node
 
         This hook serves two functions:
 
-        - It may *veto* a process by returning `False`.
+        - It may *veto* a node by returning `False`.
+        - It may *modify* a node inplace.
 
-        - It may *modify* a process inplace.
-
-        :param process:
-        :param job:
-        :return: whether the process gets passed on
+        :param node:
+        :return: whether the node gets passed on
         """
         return True
 
@@ -159,44 +159,46 @@ class CSVEventStreamPruner(CSVEventStreamer):
         CSVEventStreamer.__init__(self, csv_path)
         self.signature = signature
         self.prune_chance = prune_chance
-        self._kept = {}  # signature => pruned: bool
+        self._kept = {}  # signature => kept: bool
 
-    def _validate_process(self, process, job):
-        try:
-            parent = job.parent(process)
-        except ObjectIsRootException:
-            parent = None
-        process_signature = self.signature.get_signature(process, parent)
-        # always repeat per-signature decissions
+    def _validate_node(self, node):
+        parent = node.parent()
+        process_signature = self.signature.get_signature(node, parent)
+        # always repeat per-signature decisions
         try:
             return self._kept[process_signature]
-        # no decission yet, do it now
+        # no decision yet, do it now
         except KeyError:
             self._kept[process_signature] = (random.random() > self.prune_chance)
             return self._kept[process_signature]
 
     def __repr__(self):
-        return "%s (prune_chance=%s)" % (self.__class__.__name__, self.prune_chance)
+        return "%s (prune_chance=%s, pruned=%s, tested=%s)" % (
+            self.__class__.__name__,
+            self.prune_chance,
+            len(self._kept) - sum(self._kept.values()),
+            len(self._kept)
+        )
 
 
 class CSVEventStreamBranchPruner(CSVEventStreamPruner):
     """
     Remove individual nodes and their children from a stream
     """
-    def _validate_process(self, process, job):
-        try:
-            parent = job.parent(process)
-        except ObjectIsRootException:
+    def _validate_node(self, node):
+        parent = node.parent()
+        if parent is None:
             return True  # never prune root node to avoid bias
-        process_signature = self.signature.get_signature(process, parent)
+        process_signature = self.signature.get_signature(node, parent)
         # check if *this* node has been pruned
         try:
             return self._kept[process_signature]
         except KeyError:
             # see if *parent/branch* has been pruned already
-            keep_this = self._validate_process(parent, job)
+            keep_this = self._validate_node(parent)
             # if parent/branch is kept, this child *may* be pruned, otherwise it *must* be pruned
-            self._kept[process_signature] = False if not keep_this else (random.random() > self.prune_chance)
+            self._kept[process_signature] = False if not keep_this else \
+                (random.random() > self.prune_chance)
             return self._kept[process_signature]
 
 
@@ -205,18 +207,16 @@ class CSVEventStreamRelabelerMixin(object):
             self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
             csv_path, signature, prune_chance=0.0, label_generator=lambda name: name + '_relabel'):
         super(CSVEventStreamRelabelerMixin, self).__init__(
-            self, csv_path=csv_path, signature=signature, prune_chance=prune_chance
+            csv_path=csv_path, signature=signature, prune_chance=prune_chance
         )
         self.label_generator = label_generator
 
-    def _validate_process(
+    def _validate_node(
             self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
-            process, job):
+            node):
         # swap base class replacement with renaming
-        if not super(CSVEventStreamRelabelerMixin, self)._validate_process(
-                self, process=process, job=job
-        ):
-            process.name = self.label_generator(process.name)
+        if not super(CSVEventStreamRelabelerMixin, self)._validate_node(node):
+            node.name = self.label_generator(node.name)
         return True  # accept all nodes
 
 
