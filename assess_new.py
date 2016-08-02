@@ -377,15 +377,18 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
                             alg.prototypes = prototypes
                         decorator = configuration["decorator"]()
                         decorator.wrap_algorithm(alg)
+                        streamer = None
                         for index, path in enumerate(tree_paths):
                             alg.start_tree()
-                            for event in event_streamer(csv_path=path):
+                            streamer = event_streamer(csv_path=path)
+                            for event in streamer:
                                 alg.add_event(event=event)
                             alg.finish_tree()
                         results["results"].append({
                             "algorithm": "%s" % alg,
                             "signature": "%s" % signature_object,
-                            "event_streamer": "%s" % event_streamer(csv_path=None),
+                            "event_streamer": "%s" % streamer if streamer is not None
+                            else event_streamer(csv_path=None),
                             "decorator": decorator.descriptive_data()
                         })
 
