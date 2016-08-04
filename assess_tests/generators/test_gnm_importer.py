@@ -5,7 +5,7 @@ import random
 
 from assess.generators.gnm_importer import CSVTreeBuilder, GNMCSVEventStreamer, \
     EventStreamer, EventStreamPruner, EventStreamBranchPruner, EventStreamRelabeler, \
-    EventStreamBranchRelabeler
+    EventStreamBranchRelabeler, EventStreamDuplicator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.events.events import TrafficEvent
 from assess.exceptions.exceptions import EventNotSupportedException
@@ -140,6 +140,19 @@ class TestGNMImporter(unittest.TestCase):
                 traffic_events += 1
         self.assertEqual(4608, count)
         self.assertAlmostEqual(chance*5, count / float(index - traffic_events), 1)
+
+    def test_node_stream_duplicator(self):
+        random.seed(815)
+        chance = .1
+        csv_event_streamer = GNMCSVEventStreamer(csv_path=self.file_path)
+        event_stream_duplicator = EventStreamDuplicator(
+            signature=ParentChildByNameTopologySignature(),
+            chance=chance,
+            streamer=csv_event_streamer
+        )
+        for index, event in enumerate(EventStreamer(streamer=event_stream_duplicator)._streamer.node_iter()):
+            pass
+        self.assertAlmostEqual(chance, (index-9108)/float(9108), 1)
 
     def test_correct_ppids(self):
         # TODO: implement me (when removing nodes from tree, ppids need to be set)

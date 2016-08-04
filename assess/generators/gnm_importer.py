@@ -205,6 +205,33 @@ class EventStreamBranchPruner(EventStreamPruner):
             return self._kept[process_signature]
 
 
+class EventStreamDuplicator(EventStreamPruner):
+    """
+    Duplicate individual nodes from a node stream
+    """
+    def __init__(self, signature, chance=0.0, streamer=None):
+        super(EventStreamDuplicator, self).__init__(signature=signature, chance=chance,
+                                                    streamer=streamer)
+
+    def _get_tree(self):
+        if self._tree is None:
+            tree = Prototype()
+            for node in self._streamer.node_iter():
+                node_dict = node.dao().copy()
+                parent = node.parent()
+                duplicate_node = self._validate_node(node)
+                if duplicate_node:
+                    if parent is not None:
+                        tree.add_node(parent=parent, **node_dict)
+                tree.add_node(parent=parent, **node_dict)
+            self._tree = tree
+        return self._tree
+
+    def _validate_node(self, node):
+        # swap base class replacement with duplication
+        return not super(EventStreamDuplicator, self)._validate_node(node)
+
+
 class EventStreamRelabelerMixin(object):
     def __init__(
             self,  # type: EventStreamer | EventStreamRelabelerMixin
