@@ -222,6 +222,8 @@ class EventStreamDuplicator(EventStreamPruner):
                 duplicate_node = self._validate_node(node)
                 if duplicate_node:
                     if parent is not None:
+                        duplicate_dict = node_dict.copy()
+                        duplicate_dict["exit_tme"] = duplicate_dict["tme"]
                         tree.add_node(parent=parent, **node_dict)
                 tree.add_node(parent=parent, **node_dict)
             self._tree = tree

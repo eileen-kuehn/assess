@@ -150,8 +150,12 @@ class TestGNMImporter(unittest.TestCase):
             chance=chance,
             streamer=csv_event_streamer
         )
+        last_event = None
         for index, event in enumerate(EventStreamer(streamer=event_stream_duplicator)._streamer.node_iter()):
-            pass
+            if last_event is not None:
+                if last_event.pid == event.pid:
+                    self.assertEqual(0, last_event.exit_tme - last_event.tme)
+            last_event = event
         self.assertAlmostEqual(chance, (index-9108)/float(9108), 1)
 
     def test_correct_ppids(self):
