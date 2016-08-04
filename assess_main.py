@@ -9,7 +9,7 @@ from utility.exceptions import mainExceptionFrame
 
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
-from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
+from assess.generators.gnm_importer import GNMCSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signatures import *
 
 
@@ -119,7 +119,7 @@ def check_algorithms(paths=[], configurations=[]):
                         alg.start_tree(maxlen=index + (0 if options.no_diagonal else 1))
                     else:
                         alg.start_tree()
-                    for event in CSVEventStreamer(csv_path=path):
+                    for event in GNMCSVEventStreamer(csv_path=path):
                         alg.add_event(event=event)
                     alg.finish_tree()
                 results["results"].append({
@@ -142,7 +142,7 @@ def calculate_distance_matrix(paths=[], algorithm=None, signature=Signature):
         alg = algorithm(signature=signature())
         alg.prototypes = prototypes
         decorator.wrap_algorithm(alg)
-        for event in CSVEventStreamer(csv_path=path):
+        for event in GNMCSVEventStreamer(csv_path=path):
             alg.add_event(event=event)
     print("%s" % ", ".join("%.2f" % value for value in compression.compression_factors()))
     print("----------------------")

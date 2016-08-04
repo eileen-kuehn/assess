@@ -2,7 +2,10 @@
 Module describes a general tree as well as a more specialised prototype. Also the definition for
 the single nodes is defined.
 """
+import bisect
+
 from assess.exceptions.exceptions import TreeInvalidatedException
+from assess.events.events import Event
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
@@ -19,10 +22,10 @@ class OrderedTreeNode(object):
     :param tree: Tree where node belongs to
     :param kwargs: Additional arguments
     """
-    def __init__(self, node_id, name=None, parent=None, previous_node=None, next_node=None, position=0,
-                 tree=None, **kwargs):
-        self.node_id = node_id
+    def __init__(self, node_id, name=None, parent=None, previous_node=None, next_node=None,
+                 position=0, tree=None, **kwargs):
         self.name = name
+        self.node_id = node_id
         self._parent = parent
         self._children = []
         self._prototype = tree
@@ -31,6 +34,13 @@ class OrderedTreeNode(object):
         self.position = position
         for key, value in kwargs.items():
             setattr(self, key, value)
+
+    def dao(self):
+        def check_keys(key):
+            return not ("signature_id" in key or "position" in key or "previous_node" in key or
+                        "next_node" in key or "node_id" in key or
+                        key.startswith("_"))
+        return {key: getattr(self, key) for key in vars(self) if check_keys(key)}
 
     def depth(self):
         """
@@ -393,3 +403,27 @@ class Prototype(Tree):
             node.traffic = process.traffic
             parent_dict[process] = node
         return result
+
+    def event_iter(self):
+        exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
+        events = 0  # used to push parent events at same tme to the left
+
+        for node in self.node_iter():
+            now = node.tme
+            events += 1
+
+            # yield any exit events that should have happened so far
+            while exit_event_queue and exit_event_queue[-1][0] >= -now:
+                yield exit_event_queue.pop()[2]
+            # create the events for the current process
+            start_event, exit_event, traffic_events = Event.events_from_process(node)
+            # process starts NOW, exits LATER
+            yield start_event
+            bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
+            for traffic in traffic_events:
+                bisect.insort_right(exit_event_queue, (-(traffic.tme + 20), events, traffic))
+        while exit_event_queue:
+            yield exit_event_queue.pop()[2]
+
+    def node_iter(self):
+        return self.nodes(order_first=True)

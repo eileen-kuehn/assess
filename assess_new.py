@@ -12,7 +12,7 @@ import random
 from utility.report import update_parser, argparse_init, LVL
 from utility.exceptions import mainExceptionFrame, ExceptionFrame
 
-from assess.generators.gnm_importer import CSVEventStreamer, CSVTreeBuilder
+from assess.generators.gnm_importer import GNMCSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
 
 
@@ -240,7 +240,7 @@ def check_single_algorithm(args):
         decorator = args.get("decorator", None)()
         decorator.wrap_algorithm(algorithm=algorithm)
         algorithm.start_tree()
-        for event_streamer in args.get("event_streamers", [CSVEventStreamer]):
+        for event_streamer in args.get("event_streamers", [GNMCSVEventStreamer]):
             for event in event_streamer(args.get("tree", None)):
                 algorithm.add_event(event=event)
         algorithm.finish_tree()
@@ -318,7 +318,7 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
             try:
                 event_streamers = configuration["event_streamer"]
             except KeyError:
-                event_streamers = [CSVEventStreamer]
+                event_streamers = [GNMCSVEventStreamer]
             for algorithm in configuration["algorithms"]:
                 for signature in configuration["signatures"]:
                     for path in tree_paths:
@@ -362,7 +362,7 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
             try:
                 event_streamers = configuration["event_streamer"]
             except KeyError:
-                event_streamers = [CSVEventStreamer]
+                event_streamers = [GNMCSVEventStreamer]
             for event_streamer in event_streamers:
                 for algorithm in configuration["algorithms"]:
                     for signature in configuration["signatures"]:

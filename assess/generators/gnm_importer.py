@@ -3,14 +3,13 @@ Generators for event streams for GNM monitoring files
 """
 import random
 import csv
-import bisect
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.sources.filedatasource import FileDataSource
-from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
+from gnmutils.exceptions import DataNotInCacheException
 
-from assess.events.events import Event
 from assess.prototypes.simpleprototypes import Prototype
+from assess.generators.event_generator import EventGenerator, NodeGenerator
 
 
 class GNMImporter(object):
@@ -81,57 +80,74 @@ class CSVTreeBuilder(GNMImporter):
         return result
 
 
-class CSVEventStreamer(GNMImporter):
+class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
     """
     Generator for event stream from GNM csv files
 
     :param csv_path: path to a csv file
     :type csv_path: str or unicode
     """
-    def __init__(self, csv_path):
+    def __init__(self, csv_path, streamer=None):
+        NodeGenerator.__init__(self, streamer=streamer)
         self.path = csv_path
 
-    def __iter__(self):
-        exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
-        events = 0  # used to push parent events at same tme to the left
+    def node_iter(self):
+        for job in self._jobs():
+            return job.node_iter()
 
+    def event_iter(self):
+        for job in self._jobs():
+            return job.event_iter()
+
+    def _jobs(self):
         data_source = FileDataSource()
         for job in data_source.jobs(path=self.path):
             job.prepare_traffic()
             prototype = Prototype.from_job(job)
+            yield prototype
 
-            for process in prototype.nodes(order_first=True):
-                if not self._validate_node(node=process):
-                    continue
-                now = process.tme
-                events += 1
 
-                # yield any exit events that should have happened so far
-                while exit_event_queue and exit_event_queue[-1][0] >= -now:
-                    yield exit_event_queue.pop()[2]
-                # create the events for the current process
-                start_event, exit_event, traffic_events = Event.events_from_process(process)
-                # process starts NOW, exits LATER
-                yield start_event
-                bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
-                for traffic in traffic_events:
-                    bisect.insort_right(exit_event_queue, (-(traffic.tme + 20), events, traffic))
-        while exit_event_queue:
-            yield exit_event_queue.pop()[2]
+class EventStreamer(EventGenerator):
+    def event_iter(self):
+        return self._streamer.event_iter()
 
-    def _convert_types(self, row):
-        """Convert all known items of a row to their appropriate types"""
-        for key, value in row.iteritems():
-            try:
-                row[key] = self.default_key_type[key](value)
-            except ValueError:
-                if not value:  # empty string -> type default
-                    row[key] = self.default_key_type[key]()
-                else:
-                    raise
-            except KeyError:
-                pass
-        return row
+
+class EventStreamPruner(EventGenerator, NodeGenerator):
+    """
+    Remove individual nodes from a node stream
+    """
+    def __init__(self, signature, chance=0.0, streamer=None):
+        EventGenerator.__init__(self, streamer=streamer)
+        self.signature = signature
+        self.chance = chance
+        self._kept = {}  # signature => kept: bool
+        self._tree = None
+
+    def event_iter(self):
+        return self._get_tree().event_iter()
+
+    def node_iter(self):
+        return self._get_tree().node_iter()
+
+    def _get_tree(self):
+        if self._tree is None:
+            tree = Prototype()
+            for node in self._streamer.node_iter():
+                keep_node = self._validate_node(node)
+                if keep_node:
+                    parent = node.parent()
+                    while parent is not None and \
+                            not self._kept[self.signature.get_signature(parent, parent.parent())]:
+                        parent = parent.parent()
+                    if parent is not None or tree.root() is None:
+                        node_dict = node.dao().copy()
+                        try:
+                            node_dict["ppid"] = parent.pid
+                        except AttributeError:
+                            pass
+                        tree.add_node(parent=parent, **node_dict)
+            self._tree = tree
+        return self._tree
 
     def _validate_node(self, node):
         """
@@ -145,88 +161,77 @@ class CSVEventStreamer(GNMImporter):
         :param node:
         :return: whether the node gets passed on
         """
-        return True
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-
-class CSVEventStreamPruner(CSVEventStreamer):
-    """
-    Remove individual nodes from a stream
-    """
-    def __init__(self, csv_path, signature, prune_chance=0.0):
-        CSVEventStreamer.__init__(self, csv_path)
-        self.signature = signature
-        self.prune_chance = prune_chance
-        self._kept = {}  # signature => kept: bool
-
-    def _validate_node(self, node):
         parent = node.parent()
         process_signature = self.signature.get_signature(node, parent)
+        if parent is None:
+            # never prune root node to avoid bias
+            return self._kept.setdefault(process_signature, True)
         # always repeat per-signature decisions
         try:
             return self._kept[process_signature]
         # no decision yet, do it now
         except KeyError:
-            self._kept[process_signature] = (random.random() > self.prune_chance)
+            self._kept[process_signature] = (random.random() > self.chance)
             return self._kept[process_signature]
 
     def __repr__(self):
         return "%s (prune_chance=%s, pruned=%s, tested=%s)" % (
             self.__class__.__name__,
-            self.prune_chance,
+            self.chance,
             len(self._kept) - sum(self._kept.values()),
             len(self._kept)
         )
 
 
-class CSVEventStreamBranchPruner(CSVEventStreamPruner):
+class EventStreamBranchPruner(EventStreamPruner):
     """
-    Remove individual nodes and their children from a stream
+    Remove individual branches from a stream
     """
     def _validate_node(self, node):
         parent = node.parent()
-        if parent is None:
-            return True  # never prune root node to avoid bias
         process_signature = self.signature.get_signature(node, parent)
+        if parent is None:
+            # never prune root node to avoid bias
+            return self._kept.setdefault(process_signature, True)
         # check if *this* node has been pruned
         try:
             return self._kept[process_signature]
         except KeyError:
             # see if *parent/branch* has been pruned already
-            keep_this = self._validate_node(parent)
+            keep_this = self._kept[self.signature.get_signature(parent, parent.parent())]
             # if parent/branch is kept, this child *may* be pruned, otherwise it *must* be pruned
             self._kept[process_signature] = False if not keep_this else \
-                (random.random() > self.prune_chance)
+                (random.random() > self.chance)
             return self._kept[process_signature]
 
 
-class CSVEventStreamRelabelerMixin(object):
+class EventStreamRelabelerMixin(object):
     def __init__(
-            self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
-            csv_path, signature, prune_chance=0.0, label_generator=lambda name: name + '_relabel'):
-        super(CSVEventStreamRelabelerMixin, self).__init__(
-            csv_path=csv_path, signature=signature, prune_chance=prune_chance
+            self,  # type: EventStreamer | EventStreamRelabelerMixin
+            signature, chance=0.0, streamer=None, label_generator=lambda name: name + '_relabel'):
+        super(EventStreamRelabelerMixin, self).__init__(
+            signature=signature, chance=chance, streamer=streamer
         )
         self.label_generator = label_generator
 
     def _validate_node(
-            self,  # type: CSVEventStreamer | CSVEventStreamRelabelerMixin
+            self,  # type: EventStreamer | EventStreamRelabelerMixin
             node):
         # swap base class replacement with renaming
-        if not super(CSVEventStreamRelabelerMixin, self)._validate_node(node):
+        if not super(EventStreamRelabelerMixin, self)._validate_node(node):
             node.name = self.label_generator(node.name)
         return True  # accept all nodes
 
 
-class CSVEventStreamRelabeler(CSVEventStreamRelabelerMixin, CSVEventStreamPruner):
+class EventStreamRelabeler(EventStreamRelabelerMixin, EventStreamPruner):
     """
     Relabel individual nodes from a stream
     """
+    pass
 
 
-class CSVEventStreamBranchRelabeler(CSVEventStreamRelabelerMixin, CSVEventStreamBranchPruner):
+class EventStreamBranchRelabeler(EventStreamRelabelerMixin, EventStreamBranchPruner):
     """
     Relabel individual nodes and their children from a stream
     """
+    pass
