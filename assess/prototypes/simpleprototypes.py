@@ -38,8 +38,7 @@ class OrderedTreeNode(object):
     def dao(self):
         def check_keys(key):
             return not ("signature_id" in key or "position" in key or "previous_node" in key or
-                        "next_node" in key or "node_id" in key or
-                        key.startswith("_"))
+                        "next_node" in key or key.startswith("_"))
         return {key: getattr(self, key) for key in vars(self) if check_keys(key)}
 
     def depth(self):
@@ -135,6 +134,7 @@ class OrderedTree(object):
         self.root = None
         self._node_counter = 0
         self._last_node = None  # helper to build up global order
+        self._nodes_dict = {}
 
     def _unique_node_id(self):
         """
@@ -153,7 +153,8 @@ class OrderedTree(object):
         """
         return self._node_counter
 
-    def add_node(self, name=None, parent=None, previous_node=None, next_node=None, **kwargs):
+    def add_node(self, name=None, parent=None, previous_node=None, next_node=None, node_id=None,
+                 **kwargs):
         """
         Method adds a new node to the actual tree. If parent is not given, the node gets the root
         ndoe of the tree.
@@ -162,14 +163,16 @@ class OrderedTree(object):
         :param parent: Parent of the node to attach to
         :param previous_node: Reference to last node
         :param next_node: Reference to next node
+        :param node_id: unique ID of node
         :param kwargs: Additional parameters of the node
         :return: Reference to the created node
         """
         if previous_node is None:
             # try to determine last known node
             previous_node = self._last_node
+        # TODO: check if node_id is unique in tree
         node = OrderedTreeNode(
-            node_id=self._unique_node_id(),
+            node_id=node_id or self._unique_node_id(),
             name=name,
             parent=parent,
             previous_node=previous_node,
@@ -187,7 +190,19 @@ class OrderedTree(object):
             parent.children_list().append(node)
         self._last_node = node
         self._node_counter += 1
+        if self._nodes_dict.get(node.node_id, None) is not None:
+            raise
+        self._nodes_dict[node.node_id] = node
         return node
+
+    def node_by_node_id(self, node_id=None):
+        """
+        Method allows the access to nodes by specifying their node_id.
+
+        :param node_id: The node_id of the node to return.
+        :return: Node whose node_id matches, otherwise None
+        """
+        return self._nodes_dict.get(node_id, None)
 
 
 class Tree(object):
@@ -197,16 +212,19 @@ class Tree(object):
     def __init__(self):
         self._graph = OrderedTree()
 
-    def add_node(self, name, parent=None, **kwargs):
+    def add_node(self, name, parent=None, parent_node_id=None, **kwargs):
         """
         Method to add a new node to the tree. If given parent is None, and there is currently no
         root, then the node becomes the root of the tree.
 
         :param name: Name of the node to be created
         :param parent: Parent where to attach the node
+        :param parent_node_id: Reference to parent within tree
         :param kwargs: Additional attribute of the node
         :return: Reference to the newly created node
         """
+        if parent_node_id is not None:
+            parent = self._graph.node_by_node_id(node_id=parent_node_id)
         if parent is None and self.root() is not None:
             print kwargs
             raise TreeInvalidatedException
@@ -225,7 +243,9 @@ class Tree(object):
         """
         Method that returns a generator yielding all nodes inside the tree, either in
         depth first or width first order.
+
         :param depth_first: Depth first order if True, otherwise width first.
+        :param order_first: Returns nodes by order they have been added.
         :return: Generator for tree nodes.
         """
         def ofs(root):

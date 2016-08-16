@@ -170,3 +170,25 @@ class TestGNMImporter(unittest.TestCase):
             parent = node.parent()
             if parent is not None:
                 self.assertEqual(node.ppid, parent.pid)
+
+    def test_correct_parents(self):
+        csv_event_streamer = GNMCSVEventStreamer(csv_path=self.file_path)
+        node_stream_pruner = EventStreamPruner(
+            signature=ParentChildByNameTopologySignature(),
+            chance=.1,
+            streamer=csv_event_streamer
+        )
+        event_streamer = EventStreamer(streamer=node_stream_pruner)
+        for node in event_streamer._streamer.node_iter():
+            # tree is in node_stream_pruner._tree
+            comparison_tree = node_stream_pruner._tree
+            self.assertIsNotNone(comparison_tree)
+            # check if parent of node is in comparison_tree as expected
+            result = False
+            if node.parent() is not None:
+                parent = node.parent()
+                for original_node in comparison_tree.node_iter():
+                    if parent == original_node:
+                        result = True
+                        break
+                self.assertTrue(result, "Did not find correct parent")
