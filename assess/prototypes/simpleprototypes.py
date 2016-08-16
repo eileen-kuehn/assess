@@ -10,6 +10,8 @@ from assess.events.events import Event
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
 
+from evenmoreutils.randoms import id_generator
+
 
 class OrderedTreeNode(object):
     """
@@ -136,14 +138,16 @@ class OrderedTree(object):
         self._last_node = None  # helper to build up global order
         self._nodes_dict = {}
 
-    def _unique_node_id(self):
+    def unique_node_id(self, node_id=None):
         """
         Method returns a unique id.
 
         :return: Unique id
         """
         # nx.utils.generate_unique_node()
-        return str(self.node_count())
+        if node_id is None:
+            return str(self.node_count())
+        return "%s_%s" % (str.split(node_id, "_")[0], id_generator(size=6))
 
     def node_count(self):
         """
@@ -172,7 +176,7 @@ class OrderedTree(object):
             previous_node = self._last_node
         # TODO: check if node_id is unique in tree
         node = OrderedTreeNode(
-            node_id=node_id or self._unique_node_id(),
+            node_id=node_id or self.unique_node_id(),
             name=name,
             parent=parent,
             previous_node=previous_node,
@@ -181,6 +185,10 @@ class OrderedTree(object):
             position=parent.child_count() if parent is not None else 0,
             **kwargs
         )
+        # First check if the generated node is valid within tree
+        if self._nodes_dict.get(node.node_id, None) is not None:
+            raise TreeInvalidatedException
+        # Then go on with everything else
         if previous_node is not None:
             # set next node for last node
             previous_node.next_node = node
@@ -190,8 +198,6 @@ class OrderedTree(object):
             parent.children_list().append(node)
         self._last_node = node
         self._node_counter += 1
-        if self._nodes_dict.get(node.node_id, None) is not None:
-            raise
         self._nodes_dict[node.node_id] = node
         return node
 
@@ -228,7 +234,17 @@ class Tree(object):
         if parent is None and self.root() is not None:
             print kwargs
             raise TreeInvalidatedException
-        return self._graph.add_node(name=name, parent=parent, **kwargs)
+        try:
+            return self._graph.add_node(name=name, parent=parent, **kwargs)
+        except TreeInvalidatedException:
+            # got a collision for node_id, so regenerate
+            del kwargs["node_id"]
+            return self._graph.add_node(
+                name=name,
+                parent=parent,
+                node_id=self._graph.unique_node_id(),
+                **kwargs
+            )
 
     def node_count(self):
         """
