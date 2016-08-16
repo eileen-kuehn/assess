@@ -52,6 +52,9 @@ class StartExitDistance(Distance):
                     # start element is first considered matching, so -.5
                     # if end element is also matching, [-.5, 0] is added
                     # else ]0, .5] is added to correct the former matching behaviour
+                    # FIXME: distance can be infinite, so bound it here
+                    if distance == float("inf"):
+                        distance = 1
                     result_dict[prototype_node] = -.5 + distance
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
