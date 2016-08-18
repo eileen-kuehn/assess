@@ -211,6 +211,8 @@ class TreeDistanceAlgorithm(object):
                 # create node
                 node, parent = self.create_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
+                # added to keep information related signature for event
+                event.signature = signature
                 self._signature_tree.add_signature(signature=signature)
                 return self.update_distance(event, signature, **kwargs)
         elif isinstance(event, ProcessExitEvent):
@@ -218,6 +220,8 @@ class TreeDistanceAlgorithm(object):
                 # finish node
                 node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
+                # added to keep information related signature for event
+                event.signature = signature
                 return self.update_distance(event, signature, **kwargs)
         elif isinstance(event, TrafficEvent):
             if self._supported.get(TrafficEvent, False) or True:
