@@ -17,7 +17,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         self._distance = None
         self._measured_nodes = set()  # TODO: can those be removed?
         self._distance_builder = distance
-        self._supported = {ProcessStartEvent: True, ProcessExitEvent: True}
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True}
 
     @property
     def distance(self):

@@ -28,7 +28,7 @@ class TreeDistanceAlgorithm(object):
         self._prototypes = []
         self._signature_prototypes = PrototypeSignatureCache()
         self._event_counter = 0
-        self._supported = {ProcessStartEvent: False, ProcessExitEvent: False, TrafficEvent: False}
+        self.supported = {ProcessStartEvent: False, ProcessExitEvent: False, TrafficEvent: False}
 
         self._tree = Tree()
         self._signature_tree = SignatureCache()
@@ -207,7 +207,7 @@ class TreeDistanceAlgorithm(object):
         """
         self._event_counter += 1
         if isinstance(event, ProcessStartEvent):
-            if self._supported.get(ProcessStartEvent, False):
+            if self.supported.get(ProcessStartEvent, False):
                 # create node
                 node, parent = self.create_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
@@ -216,7 +216,7 @@ class TreeDistanceAlgorithm(object):
                 self._signature_tree.add_signature(signature=signature)
                 return self.update_distance(event, signature, **kwargs)
         elif isinstance(event, ProcessExitEvent):
-            if self._supported.get(ProcessExitEvent, False):
+            if self.supported.get(ProcessExitEvent, False):
                 # finish node
                 node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
@@ -224,7 +224,7 @@ class TreeDistanceAlgorithm(object):
                 event.signature = signature
                 return self.update_distance(event, signature, **kwargs)
         elif isinstance(event, TrafficEvent):
-            if self._supported.get(TrafficEvent, False) or True:
+            if self.supported.get(TrafficEvent, False) or True:
                 # add traffic
                 raise EventNotSupportedException(event)
         else:
