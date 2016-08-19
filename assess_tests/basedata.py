@@ -20,6 +20,18 @@ def simple_monitoring_tree():
     return test_tree
 
 
+def simple_repeated_monitoring_tree():
+    test_tree = Tree()
+    tree_root = test_tree.add_node("root", tme=0, exit_tme=3, pid=1, ppid=0)
+    tree_root.add_node("test", tme=0, exit_tme=1, pid=2, ppid=1)
+    tree_root.add_node("test", tme=0, exit_tme=1, pid=5, ppid=1)
+    tree_root.add_node("test", tme=0, exit_tme=1, pid=6, ppid=1)
+    tree_root.add_node("test", tme=0, exit_tme=1, pid=7, ppid=1)
+    tree_root.add_node("test", tme=1, exit_tme=2, pid=3, ppid=1)
+    tree_root.add_node("muh", tme=1, exit_tme=3, pid=4, ppid=1)
+    return test_tree
+
+
 def simple_additional_monitoring_tree():
     test_tree = Tree()
     tree_root = test_tree.add_node("root", tme=0, exit_tme=3, pid=1, ppid=0)
