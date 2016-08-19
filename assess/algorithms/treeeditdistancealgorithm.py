@@ -19,7 +19,7 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
         self._event_counter = 0
-        self._supported = {ProcessStartEvent: True}
+        self.supported = {ProcessStartEvent: True}
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
