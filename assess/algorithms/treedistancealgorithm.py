@@ -69,6 +69,8 @@ class TreeDistanceAlgorithm(object):
 
         :param value: List of prototypes
         """
+        # clean old prototypes first...
+        self._signature_prototypes = PrototypeSignatureCache()
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():

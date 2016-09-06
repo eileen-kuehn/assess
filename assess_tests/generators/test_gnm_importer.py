@@ -25,9 +25,9 @@ class TestGNMImporter(unittest.TestCase):
 
     def test_csv_tree(self):
         tree_builder = CSVTreeBuilder()
-        tree = tree_builder.build(self.old_file_path)
+        tree = tree_builder.build(self.file_path)
         self.assertIsNotNone(tree)
-        self.assertEqual(tree.node_count(), 21800)
+        self.assertEqual(tree.node_count(), 9109)
 
     def test_csv_stream(self):
         tree_builder = CSVTreeBuilder()

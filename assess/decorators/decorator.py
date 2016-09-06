@@ -15,6 +15,7 @@ class Decorator(object):
         self._algorithm = None
         self.decorator = None
         self._name = name
+        self._last_event_counts = None
 
     @property
     def algorithm(self):
@@ -78,6 +79,7 @@ class Decorator(object):
             self.decorator.start_tree(**kwargs)
         else:
             self._algorithm.__class__.start_tree(self._algorithm, **kwargs)
+        self._last_event_counts = None
         self._tree_started()
 
     def finish_tree(self):
@@ -107,7 +109,12 @@ class Decorator(object):
         else:
             result = self._algorithm.__class__.add_event(self._algorithm, event, **kwargs)
         if result is not None:
-            self._event_added(event, result[:])
+            # info about current progress
+            event_counts = self._algorithm.event_counts()
+            if self._last_event_counts is None or event_counts[0] > self._last_event_counts[0]:
+                self._event_added(event, result[:])
+                # FIXME: current test
+                # self._last_event_counts = event_counts
         return result
 
     def update(self, decorator):
