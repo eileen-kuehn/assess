@@ -26,6 +26,9 @@ class Distance(object):
         for prototype in self._algorithm.prototypes:
             yield self._monitoring_results_dict.setdefault(prototype, 0)
 
+    def current_distance(self):
+        return self._monitoring_results_dict.copy()
+
     def init_distance(self):
         """
         This method is just for initialisation purposes. Internal states are reset.
