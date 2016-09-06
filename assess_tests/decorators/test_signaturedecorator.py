@@ -33,10 +33,11 @@ class TestSignatureDecorator(unittest.TestCase):
         decorator.finish_tree()
         description = decorator.descriptive_data()
         self.assertEqual(len(description["signature"]), 1)
-        self.assertEqual(len(description["signature"][0]), 3)
+        self.assertEqual(len(set(description["signature"][0])), 3)
+        self.assertEqual(len(description["signature"][0]), 4)
         self.assertEqual(description["signature"][0][0], "root_-5995064038896156292")
         self.assertEqual(description["signature"][0][1], "test_703899357396914538")
-        self.assertEqual(description["signature"][0][2], "muh_703899357396914538")
+        self.assertEqual(description["signature"][0][3], "muh_703899357396914538")
 
         decorator.start_tree()
         for event in Event.from_tree(simple_monitoring_tree()):
