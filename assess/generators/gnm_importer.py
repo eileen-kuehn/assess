@@ -46,38 +46,11 @@ class CSVTreeBuilder(GNMImporter):
         :param csv_path: Path to GNM log file
         :return: Prototype tree
         """
-        process_cache = ObjectCache()
-        result = Prototype()
-
-        with open(csv_path) as csv_file:
-            for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
-                try:
-                    parent = process_cache.get_data(
-                        value=process.get("tme", 0),
-                        key=process.get("ppid", 0),
-                        validate_range=True
-                    )
-                except DataNotInCacheException:
-                    if result.root() is not None and \
-                            (int(process.get("tme")) < int(result.root().tme) or
-                                int(process.get("exit_tme")) > int(result.root().exit_tme)):
-                    #if int(process.get("uid", 0)) == 0 and result.root() is not None:
-                        continue
-                    parent = None
-                node = result.add_node(
-                    process.get("name", "."),
-                    parent=parent,
-                    tme=process.get("tme", 0),
-                    exit_tme=process.get("exit_tme", 0),
-                    pid=process.get("pid", 0),
-                    ppid=process.get("ppid", 0)
-                )
-                process_cache.add_data(
-                    data=node,
-                    key=process.get("pid", 0),
-                    value=process.get("tme", 0)
-                )
-        return result
+        data_source = FileDataSource()
+        for job in data_source.jobs(path=csv_path):
+            job.prepare_traffic()
+            prototype = Prototype.from_job(job)
+            return prototype
 
 
 class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
