@@ -89,12 +89,14 @@ class EventStreamPruner(EventGenerator, NodeGenerator):
     """
     Remove individual nodes from a node stream
     """
-    def __init__(self, signature, chance=0.0, streamer=None):
+    def __init__(self, signature, chance=0.0, streamer=None, seed=None):
         EventGenerator.__init__(self, streamer=streamer)
         self.signature = signature
         self.chance = chance
         self._kept = {}  # signature => kept: bool
         self._tree = None
+        if seed:
+            random.seed(seed)
 
     def event_iter(self):
         return self._get_tree().event_iter()
@@ -184,9 +186,9 @@ class EventStreamDuplicator(EventStreamPruner):
     """
     Duplicate individual nodes from a node stream
     """
-    def __init__(self, signature, chance=0.0, streamer=None):
+    def __init__(self, signature, chance=0.0, streamer=None, seed=None):
         super(EventStreamDuplicator, self).__init__(signature=signature, chance=chance,
-                                                    streamer=streamer)
+                                                    streamer=streamer, seed=seed)
 
     def _get_tree(self):
         if self._tree is None:
@@ -214,9 +216,10 @@ class EventStreamDuplicator(EventStreamPruner):
 class EventStreamRelabelerMixin(object):
     def __init__(
             self,  # type: EventStreamer | EventStreamRelabelerMixin
-            signature, chance=0.0, streamer=None, label_generator=lambda name: name + '_relabel'):
+            signature, chance=0.0, streamer=None, label_generator=lambda name: name + '_relabel',
+            seed=None):
         super(EventStreamRelabelerMixin, self).__init__(
-            signature=signature, chance=chance, streamer=streamer
+            signature=signature, chance=chance, streamer=streamer, seed=seed
         )
         self.label_generator = label_generator
 
