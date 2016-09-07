@@ -36,13 +36,15 @@ class AnomalyDecorator(Decorator):
         self._last_event_counts = None
 
     def _event_added(self, event, result):
+        # info about current progress
+        event_counts = self._algorithm.event_counts()
         # the event differs from the last one, so take the values
         ranges = self._current_range(progress=event_counts[0])
         [self._data[-1][index].append(not ranges[index][0] <= result[index] <= ranges[index][1])
             for index in xrange(len(result))]
 
     def _update(self, decorator):
-        self._distances.extend(decorator.data())
+        self._data.extend(decorator.data())
 
     def _current_range(self, progress):
         # expected_distance = -progress + max(prototype)
