@@ -3,7 +3,7 @@ import os
 import assess_tests
 
 from assess.prototypes.simpleprototypes import Prototype, Tree
-from assess.exceptions.exceptions import TreeInvalidatedException
+from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
 
 from gnmutils.sources.filedatasource import FileDataSource
@@ -235,3 +235,39 @@ class TestPrototypeFunctions(unittest.TestCase):
         for node in prototype.nodes(order_first=True):
             self.assertTrue(last_tme <= node.tme)
             last_tme = node.tme
+
+    def test_node_removal(self):
+        tree = Prototype()
+        root = tree.add_node("root")
+        node_1 = root.add_node("node_1")
+        node_2 = root.add_node("node_2")
+        node_3 = node_1.add_node("node_3")
+        node_4 = node_3.add_node("node_4")
+        node_5 = node_2.add_node("node_5")
+
+        self.assertEqual(tree.node_count(), 6)
+        self.assertRaises(NodeNotEmptyException, tree.remove_node, node_3)
+        tree.remove_node(node=node_5)
+        self.assertEqual(tree.node_count(), 5)
+        # check correct order
+        self.assertEqual(node_4, tree._graph._last_node)
+        self.assertEqual(None, node_4.next_node)
+
+        tree.remove_node(node=node_2)
+        self.assertEqual(tree.node_count(), 4)
+        self.assertEqual(node_1.next_node, node_3)
+        self.assertEqual(node_3.previous_node, node_1)
+
+        child_1 = node_3.add_node("child_1")
+        child_2 = node_3.add_node("child_2")
+        child_3 = node_3.add_node("child_3")
+        self.assertEqual(node_4.position, 0)
+        self.assertEqual(child_1.position, 1)
+        self.assertEqual(child_2.position, 2)
+        self.assertEqual(child_3.position, 3)
+        tree.remove_node(node=child_2)
+        self.assertEqual(child_1.position, 1)
+        self.assertEqual(child_2.position, 2)
+
+        tree.remove_subtree(node=node_3)
+        self.assertEqual(tree.node_count(), 2)

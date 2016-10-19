@@ -4,7 +4,8 @@ the single nodes is defined.
 """
 import bisect
 
-from assess.exceptions.exceptions import TreeInvalidatedException
+from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException, \
+    NodeNotRemovedException, NodeNotFoundException
 from assess.events.events import Event
 
 from gnmutils.objectcache import ObjectCache
@@ -135,6 +136,7 @@ class OrderedTree(object):
     def __init__(self):
         self.root = None
         self._node_counter = 0
+        self._unique_counter = 0
         self._last_node = None  # helper to build up global order
         self._nodes_dict = {}
 
@@ -146,7 +148,7 @@ class OrderedTree(object):
         """
         # nx.utils.generate_unique_node()
         if node_id is None:
-            return str(self.node_count())
+            return str(self._unique_counter)
         return "%s_%s" % (str.split(node_id, "_")[0], id_generator(size=6))
 
     def node_count(self):
@@ -156,6 +158,28 @@ class OrderedTree(object):
         :return: Current count of nodes
         """
         return self._node_counter
+
+    def remove_node(self, node=None):
+        if node.child_count() > 0:
+            raise NodeNotEmptyException()
+        node = self._nodes_dict.pop(node.node_id, None)
+        if node is None:
+            raise NodeNotRemovedException()
+        else:
+            self._node_counter -= 1
+            # remove from parent
+            children = node.parent().children_list()
+            node_index = children.index(node)
+            children.remove(node)
+            # update node positions
+            for index in range(node_index, len(children)):
+                children[index].position -= 1
+            if self._last_node == node:
+                self._last_node = node.previous_node
+                node.previous_node.next_node = None
+            else:
+                node.previous_node.next_node = node.next_node
+                node.next_node.previous_node = node.previous_node
 
     def add_node(self, name=None, parent=None, previous_node=None, next_node=None, node_id=None,
                  **kwargs):
@@ -198,6 +222,7 @@ class OrderedTree(object):
             parent.children_list().append(node)
         self._last_node = node
         self._node_counter += 1
+        self._unique_counter += 1
         self._nodes_dict[node.node_id] = node
         return node
 
@@ -208,7 +233,10 @@ class OrderedTree(object):
         :param node_id: The node_id of the node to return.
         :return: Node whose node_id matches, otherwise None
         """
-        return self._nodes_dict.get(node_id, None)
+        node = self._nodes_dict.get(node_id, None)
+        if node is None:
+            raise NodeNotFoundException()
+        return node
 
 
 class Tree(object):
@@ -217,6 +245,36 @@ class Tree(object):
     """
     def __init__(self):
         self._graph = OrderedTree()
+
+    def remove_node(self, node=None, node_id=None):
+        """
+        Method removes a node from the actual tree. The method raises an error if the node still
+        has children attached.
+
+        :param node: The node to be removed
+        :param node_id: unique ID of node
+        """
+        if node is None:
+            node = self._graph.node_by_node_id(node_id=node_id)
+        self._graph.remove_node(node=node)
+
+    def remove_subtree(self, node=None, node_id=None):
+        """
+        Method removes a subtree from the actual tree, meaning, that a node and all its children
+        are removed.
+
+        :param node: The node where subtree removal starts from
+        :param node_id: unique ID of node is removed recursively
+        """
+        if node is None:
+            node = self._graph.node_by_node_id(node_id=node_id)
+        nodes_to_be_removed = []
+        for child in self.nodes(node=node):
+            nodes_to_be_removed.append(child)
+        while len(nodes_to_be_removed) > 0:
+            node = nodes_to_be_removed.pop()
+            self.remove_node(node=node)
+
 
     def add_node(self, name, parent=None, parent_node_id=None, **kwargs):
         """
@@ -255,11 +313,12 @@ class Tree(object):
         return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
-    def nodes(self, depth_first=True, order_first=False):
+    def nodes(self, node=None, depth_first=True, order_first=False):
         """
         Method that returns a generator yielding all nodes inside the tree, either in
         depth first or width first order.
 
+        :param node: The node to start at
         :param depth_first: Depth first order if True, otherwise width first.
         :param order_first: Returns nodes by order they have been added.
         :return: Generator for tree nodes.
@@ -303,7 +362,7 @@ class Tree(object):
                 for child in root.children():
                     to_visit.append(child)
 
-        base_node = self._graph.root
+        base_node = node or self._graph.root
         if base_node is not None:
             for node in ofs(base_node) if order_first else \
                     dfs(base_node) if depth_first else wfs(base_node):

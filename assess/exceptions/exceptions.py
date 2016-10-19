@@ -31,6 +31,24 @@ class TreeInvalidatedException(BasicException):
         )
 
 
+class NodeNotEmptyException(BasicException):
+    """Thrown when trying to remove a node that still has children"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "A node is trying to be removed that still has children"
+        )
+
+
+class NodeNotRemovedException(BasicException):
+    """Thrown when a node could not be removed"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "A node could not be removed from tree"
+        )
+
+
 class MatrixDoesNotMatchBounds(BasicException):
     """Thrown when the distance matrix is expanded over its bounds"""
     def __init__(self, expected=None, width=None, height=None):
