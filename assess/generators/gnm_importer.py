@@ -68,7 +68,7 @@ class PrototypeCache(object):
             return os.path.join(real_path, 'prototypes.pkl')
         else:
             base_path, _ = os.path.splitext(real_path)
-            return base_path + 'prototypes.pkl'
+            return base_path + '_prototypes.pkl'
 
     def _prototypes_from_csv(self, csv_path):
         # For each individual CSV, we store *all* its content to one pkl.
@@ -77,7 +77,10 @@ class PrototypeCache(object):
         try:
             with open(cache_path, 'rb') as cache_pkl:
                 prototypes = pickle.load(cache_pkl)
-        except (OSError, IOError):
+        except (OSError, IOError, EOFError):
+            # clean up broken pickles
+            if os.path.exists(cache_path):
+                os.unlink(cache_path)
             data_source = self.data_source
             prototypes = []
             for job in data_source.jobs(path=csv_path):
@@ -103,7 +106,10 @@ class PrototypeCache(object):
             for job_csv_path in job_csv_paths:
                 for prototype in self._prototypes_from_csv(job_csv_path):
                     yield prototype
-        except (OSError, IOError):
+        except (OSError, IOError, EOFError):
+            # clean up broken pickles
+            if os.path.exists(cache_path):
+                os.unlink(cache_path)
             data_source = self.data_source
             job_files = []
             for job in data_source.jobs(path=dir_path):
