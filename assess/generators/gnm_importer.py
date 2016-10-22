@@ -4,6 +4,7 @@ Generators for event streams for GNM monitoring files
 import random
 import csv
 import os
+import logging
 try:
     import cPickle as pickle
 except NameError:
@@ -51,10 +52,20 @@ class PrototypeCache(object):
     ```python
     for prototype in PrototypeCache('foo.csv'):
         yield prototype
+    ```
+
+    The following environment variables may be set to control the cache:
+
+    `DISS_PROTOTYPE_CACHE_REFRESH`
+      Ignore all existing caches and recreate them.
     """
     def __init__(self, path, data_source=FileDataSource()):
         self.path = path
         self.data_source = data_source
+        self._logger = logging.getLogger('cache.prototypes')
+        self.force_refresh = bool(os.environ.get('DISS_PROTOTYPE_CACHE_REFRESH', False))
+        if self.force_refresh:
+            self._logger.warning('Forcefully refreshing caches (enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
 
     def __iter__(self):
         if os.path.isdir(self.path):
@@ -75,12 +86,15 @@ class PrototypeCache(object):
         # That content may be multiple prototypes, so we yield it!
         cache_path = self._cache_path(csv_path)
         try:
+            if self.force_refresh:
+                raise OSError
             with open(cache_path, 'rb') as cache_pkl:
                 prototypes = pickle.load(cache_pkl)
         except (OSError, IOError, EOFError):
             # clean up broken pickles
             if os.path.exists(cache_path):
                 os.unlink(cache_path)
+                self._logger.warning('Refreshing existing cache %r', cache_path)
             data_source = self.data_source
             prototypes = []
             for job in data_source.jobs(path=csv_path):
@@ -99,6 +113,8 @@ class PrototypeCache(object):
         # structure behave differently here!
         cache_path = self._cache_path(dir_path)
         try:
+            if self.force_refresh:
+                raise OSError
             # get list of files
             with open(cache_path, 'rb') as cache_pkl:
                 job_csv_paths = pickle.load(cache_pkl)
@@ -110,6 +126,7 @@ class PrototypeCache(object):
             # clean up broken pickles
             if os.path.exists(cache_path):
                 os.unlink(cache_path)
+                self._logger.warning('Refreshing existing cache %r', cache_path)
             data_source = self.data_source
             job_files = []
             for job in data_source.jobs(path=dir_path):
