@@ -3,6 +3,11 @@ Generators for event streams for GNM monitoring files
 """
 import random
 import csv
+import os
+try:
+    import cPickle as pickle
+except NameError:
+    import pickle
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.sources.filedatasource import FileDataSource
@@ -32,6 +37,86 @@ class GNMImporter(object):
         'error_code': int,
         'valid': int,
     }
+
+
+class PrototypeCache(object):
+    """
+    Cache for Prototypes built from a DataSource
+
+    :param path: path to job data
+    :param data_source: the DataSource to digest job data
+
+    This class is meant for use in iteration or conversion to a list:
+
+    ```python
+    for prototype in PrototypeCache('foo.csv'):
+        yield prototype
+    """
+    def __init__(self, path, data_source=FileDataSource()):
+        self.path = path
+        self.data_source = data_source
+
+    def __iter__(self):
+        if os.path.isdir(self.path):
+            return self._prototypes_from_dir(self.path)
+        else:
+            return self._prototypes_from_csv(self.path)
+
+    @staticmethod
+    def _cache_path(real_path):
+        if os.path.isdir(real_path):
+            return os.path.join(real_path, 'prototypes.pkl')
+        else:
+            base_path, _ = os.path.splitext(real_path)
+            return base_path + 'prototypes.pkl'
+
+    def _prototypes_from_csv(self, csv_path):
+        # For each individual CSV, we store *all* its content to one pkl.
+        # That content may be multiple prototypes, so we yield it!
+        cache_path = self._cache_path(csv_path)
+        try:
+            with open(cache_path, 'rb') as cache_pkl:
+                prototypes = pickle.load(cache_pkl)
+        except (OSError, IOError):
+            data_source = self.data_source
+            prototypes = []
+            for job in data_source.jobs(path=csv_path):
+                job.prepare_traffic()
+                prototype = Prototype.from_job(job)
+                prototypes.append(prototype)
+            with open(cache_path, 'wb') as cache_pkl:
+                pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
+        for prototype in prototypes:
+            yield prototype
+
+    def _prototypes_from_dir(self, dir_path):
+        # For each directory of CSVs, we store a header of files and
+        # individual, per-file pkls.
+        # Since the source will do the directory by itself, cached and uncached
+        # structure behave differently here!
+        cache_path = self._cache_path(dir_path)
+        try:
+            # get list of files
+            with open(cache_path, 'rb') as cache_pkl:
+                job_csv_paths = pickle.load(cache_pkl)
+            # get job files individually to allow refreshing any
+            for job_csv_path in job_csv_paths:
+                for prototype in self._prototypes_from_csv(job_csv_path):
+                    yield prototype
+        except (OSError, IOError):
+            data_source = self.data_source
+            job_files = []
+            for job in data_source.jobs(path=dir_path):
+                job.prepare_traffic()
+                prototype = Prototype.from_job(job)
+                yield prototype
+                assert job.path not in job_files, "Job file may not contain multiple jobs (%r)" % job.path
+                # store the job individually, just remember its file
+                with open(job.path, 'wb') as job_cache_pkl:
+                    pickle.dump([prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
+                job_files.append(job.path)
+            with open(cache_path, 'wb') as cache_pkl:
+                pickle.dump(job_files, cache_pkl, pickle.HIGHEST_PROTOCOL)
 
 
 class CSVTreeBuilder(GNMImporter):
