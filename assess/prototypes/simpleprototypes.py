@@ -146,11 +146,13 @@ class OrderedTreeNode(object):
         try:
             self.previous_node = self._prototype.node_by_node_id(self.previous_node)
         except NodeNotFoundException:
-            pass
+            if self.previous_node is not None:
+                raise
         try:
             self.next_node = self._prototype.node_by_node_id(self.next_node)
         except NodeNotFoundException:
-            pass
+            if self.next_node is not None:
+                raise
 
     def __repr__(self):
         return '%s(next=%s, prev=%s)' % (self.__class__.__name__, self.next_node.node_id, self.previous_node.node_id)
