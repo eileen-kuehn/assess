@@ -130,7 +130,7 @@ class OrderedTreeNode(object):
     # Since there is ALSO recursion with the tree itself, we wait for the tree
     # to be done loading everything and tell us about it.
     def __getstate__(self):
-        state = self.__dict__
+        state = self.__dict__.copy()
         if state['previous_node'] is not None:
             state['previous_node'] = state['previous_node'].node_id
         if state['next_node'] is not None:
