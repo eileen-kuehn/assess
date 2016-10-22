@@ -137,10 +137,7 @@ class CSVTreeBuilder(GNMImporter):
         :param csv_path: Path to GNM log file
         :return: Prototype tree
         """
-        data_source = FileDataSource()
-        for job in data_source.jobs(path=csv_path):
-            job.prepare_traffic()
-            prototype = Prototype.from_job(job)
+        for prototype in PrototypeCache(csv_path):
             return prototype
 
 
@@ -164,10 +161,7 @@ class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
             return job.event_iter()
 
     def _jobs(self):
-        data_source = FileDataSource()
-        for job in data_source.jobs(path=self.path):
-            job.prepare_traffic()
-            prototype = Prototype.from_job(job)
+        for prototype in PrototypeCache(self.path):
             yield prototype
 
 
