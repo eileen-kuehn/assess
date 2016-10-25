@@ -10,6 +10,20 @@ class SignaturePerformanceDecorator(Decorator):
     """
     The SignaturePerformanceDecorator measures performance for calculation of signatures.
     It differs between accumulated performance as well as single performance measurements.
+
+    Format looks like this:
+    {
+        "user time": [
+            [v1t1, ..., vnt1],
+            ...,
+            [v1tn, ..., vntn]],
+        "system time": [...],
+        "children's user time": [...],
+        "children's system time": [...],
+        "elapsed real time": [...]
+    }
+
+    Also for accumulated values, you can expect to have a list in list.
     """
     def __init__(self, accumulated=True):
         if accumulated:
