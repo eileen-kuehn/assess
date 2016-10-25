@@ -2,6 +2,7 @@
 Module supports different signature implementations that can be used to compress trees based
 on different characteristics of workflows.
 """
+from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 
 
 class Signature(object):
@@ -10,6 +11,12 @@ class Signature(object):
     By using signatures, similar nodes might be grouped for example. This improves
     the compression factor but might decrease the precision of the algorithm.
     """
+    signature_cache_class = SignatureCache
+    prototype_signature_cache_class = PrototypeSignatureCache
+
+    def __init__(self, *args, **kwargs):
+        self.count = 1
+
     def __new__(cls, *args, **kwargs):
         for arg in args:
             if "ParentChildByNameTopologySignature" in arg:

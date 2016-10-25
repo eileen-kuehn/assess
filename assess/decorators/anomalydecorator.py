@@ -1,3 +1,4 @@
+# FIXME: still needs conversion to new data structure
 from assess.decorators.decorator import Decorator
 
 

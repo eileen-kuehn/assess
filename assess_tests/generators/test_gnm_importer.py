@@ -42,7 +42,7 @@ class TestGNMImporter(unittest.TestCase):
         alg.finish_tree()
 
         self.assertEqual(index + 1, (9109 * 2) + 3155)  # number processes + traffic
-        self.assertEqual(distance[0], 0)
+        self.assertEqual(distance[0], [0])
 
     def test_correct_order(self):
         last_tme = 0

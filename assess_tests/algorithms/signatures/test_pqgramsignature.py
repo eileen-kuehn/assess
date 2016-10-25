@@ -27,7 +27,6 @@ class TestPQGramSignatureFunctionalities(unittest.TestCase):
         signatures = set()
         for node in simple_prototype().nodes():
             signatures.add(signature.get_signature(node, node.parent()))
-        print signatures
         self.assertEqual(len(signatures), 3)
 
     def test_pggram_signature(self):

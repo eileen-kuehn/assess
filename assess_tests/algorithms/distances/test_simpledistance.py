@@ -14,17 +14,19 @@ class TestSimpleDistance(unittest.TestCase):
         distance = SimpleDistance2(algorithm=self.algorithm)
         distance.init_distance()
         for index, dist in enumerate(distance):
-            self.assertEqual(dist, 0)
+            self.assertEqual(dist, [0])
         self.assertEqual(index, 0)
         self.assertFalse(distance.is_prototype_based_on_original())
 
         for node in self.test_tree.nodes():
             node_signature = self.algorithm.signature.get_signature(node, node.parent())
+            matching_prototypes = self.algorithm.signature_prototypes.get(signature=[node_signature])
             distance.update_distance(
-                signature=node_signature,
-                matching_prototypes=self.algorithm.signature_prototypes.get(signature=node_signature)
+                matches=[{token: matching_prototypes[index]} for index, token in
+                         enumerate([node_signature])]
             )
-        self.assertEqual(distance._monitoring_results_dict[self.algorithm.prototypes[0]], 0)
+        for result in distance._monitoring_results_dict:
+            self.assertEqual(result[self.algorithm.prototypes[0]], 0)
 
         result = distance._monitoring_results_dict
         distance.finish_distance()
@@ -34,18 +36,20 @@ class TestSimpleDistance(unittest.TestCase):
         distance = SimpleDistance(algorithm=self.algorithm)
         distance.init_distance()
         for index, dist in enumerate(distance):
-            self.assertEqual(dist, 3)
+            self.assertEqual(dist, [3])
         self.assertEqual(index, 0)
         self.assertFalse(distance.is_prototype_based_on_original())
 
         for node in self.test_tree.nodes():
             node_signature = self.algorithm.signature.get_signature(node, node.parent())
+            matching_prototypes = self.algorithm.signature_prototypes.get(signature=[node_signature])
             distance.update_distance(
-                signature=node_signature,
+                matches=[{token: matching_prototypes[index]} for index, token in
+                         enumerate([node_signature])],
                 value=float(node.exit_tme)-float(node.tme),
-                matching_prototypes=self.algorithm.signature_prototypes.get(signature=node_signature)
             )
-        self.assertEqual(distance._monitoring_results_dict[self.algorithm.prototypes[0]], 0)
+        for result in distance._monitoring_results_dict:
+            self.assertEqual(result[self.algorithm.prototypes[0]], 0)
 
         result = distance._monitoring_results_dict
         distance.finish_distance()

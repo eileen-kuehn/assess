@@ -2,7 +2,8 @@ import unittest
 
 from assess.algorithms.distances.distance import Distance
 from assess.prototypes.simpleprototypes import Prototype, Tree
-from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignaturecache import EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.signatures.signatures import *
 
 
@@ -37,7 +38,7 @@ def additional_monitoring_tree():
 
 
 def prototype_signature(prototype=None, signature=None):
-    signature_prototype = PrototypeSignatureCache()
+    signature_prototype = EnsemblePrototypeSignatureCache()
     for node in prototype.nodes():
         node_signature = signature.get_signature(node, node.parent())
         signature_prototype.add_signature(
@@ -57,9 +58,9 @@ def algorithm(signature):
     test.prototypes = [prototype()]
     test.signature_prototypes = prototype_signature(
         prototype=test.prototypes[0],
-        signature=signature
+        signature=EnsembleSignature(signatures=[signature])
     )
-    test.signature=signature
+    test.signature = signature
     return test
 
 
@@ -69,10 +70,11 @@ class TestDistance(unittest.TestCase):
         test_algorithm = algorithm(ParentChildByNameTopologySignature())
         test_algorithm.prototypes = ["1", "2", "3"]
         distance = Distance(algorithm=test_algorithm)
+        distance.init_distance()
         for index, dist in enumerate(distance):
-            self.assertEqual(dist, 0)
+            self.assertEqual(dist, [0])
         self.assertEqual(index, 2)
-        self.assertEqual(distance.node_count(), 0)
+        self.assertEqual(distance.node_count(), [0])
         self.assertFalse(distance.is_prototype_based_on_original())
 
     def test_raises(self):
@@ -83,18 +85,18 @@ class TestDistance(unittest.TestCase):
     def test_adding_of_results(self):
         distance = Distance(None)
         self.assertEqual(
-            distance._add_result_dicts({"1": 0, "2": 0}, {"1": 1, "2": 1}),
-            {"1": 1, "2": 1}
+            distance._add_result_dicts(base=[{"1": 0, "2": 0}], to_add=[{"1": 1, "2": 1}]),
+            [{"1": 1, "2": 1}]
         )
         self.assertEqual(
-            distance._add_result_dicts({"1": 1, "2": 1}, {"1": 2, "2": -1}),
-            {"1": 3, "2": 0}
+            distance._add_result_dicts([{"1": 1, "2": 1}], [{"1": 2, "2": -1}]),
+            [{"1": 3, "2": 0}]
         )
         self.assertEqual(
-            distance._add_result_dicts({"1": 1}, {"2": 1}),
-            {"1": 1, "2": 1}
+            distance._add_result_dicts([{"1": 1}], [{"2": 1}]),
+            [{"1": 1, "2": 1}]
         )
         self.assertEqual(
-            distance._add_result_dicts({"1": 2, "2": 0}, {"1": -1, "3": -.5}),
-            {"1": 1, "2": 0, "3": -.5}
+            distance._add_result_dicts([{"1": 2, "2": 0}], [{"1": -1, "3": -.5}]),
+            [{"1": 1, "2": 0, "3": -.5}]
         )

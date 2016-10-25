@@ -18,32 +18,41 @@ class Distance(object):
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
-        self._monitoring_results_dict = {}
-        self._measured_nodes = set()
+        self._monitoring_results_dict = None
+        self._measured_nodes = None
         self._based_on_original = False
 
     def __iter__(self):
+        """
+        Result looks like this: [e_1, ..., e_n]
+
+        :return:
+        """
         for prototype in self._algorithm.prototypes:
-            yield self._monitoring_results_dict.setdefault(prototype, 0)
+            yield [result.setdefault(prototype, 0) for result in self._monitoring_results_dict]
 
     def current_distance(self):
+        # FIXME: this does not work like this anymore...
         return self._monitoring_results_dict.copy()
 
     def init_distance(self):
         """
         This method is just for initialisation purposes. Internal states are reset.
         """
-        self._monitoring_results_dict = {}
-        self._measured_nodes = set()
+        count = self._algorithm.signature.count
+        self._monitoring_results_dict = [{} for _ in range(count)]
+        self._measured_nodes = [set() for _ in range(count)]
 
-    def update_distance(self, signature=None, matching_prototypes=None, **kwargs):
+    # FIXME: needs to be integrated
+    def update_distance(self, matches=[{}], **kwargs):
         """
         This method is called whenever a new event has been received.
 
-        :param signature: Signature of the node the event belongs to.
-        :param matching_prototypes: The prototypes that actually contain the signature.
-        :return: signature
+        :param matches: List of dictionaries that relates a token to a list of matching prototypes.
+        :param kwargs:
+        :return: list of signatures
         """
+        # FIXME: the return of list of signatures is going to be a problemw
         raise NotImplementedError
 
     def finish_distance(self):
@@ -60,9 +69,11 @@ class Distance(object):
         Returns the count of nodes considered for the actual distance measurement. This count is
         important to calculate the normalised distance with regard to the used distance.
 
+        Returned format looks like: [v1e1, ..., vnen]
+
         :return: Count of nodes considered from distance
         """
-        return len(self._measured_nodes)
+        return [len(measured_nodes) for measured_nodes in self._measured_nodes]
 
     def is_prototype_based_on_original(self):
         """
@@ -74,12 +85,21 @@ class Distance(object):
         return self._based_on_original
 
     @staticmethod
-    def _add_result_dicts(first, second):
-        result = dict((key, first.setdefault(key, 0) + second.setdefault(key, 0))
-                      for key in set(first.keys() + second.keys()))
+    def _add_result_dicts(base=None, to_add=None, index=None):
+        if index is None:
+            result = []
+            for index, element in enumerate(base):
+                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(key, 0))
+                                   for key in set(element.keys() + to_add[index].keys())))
+        else:
+            result = base
+            for element in to_add:
+                for key in element.keys():
+                    result[index][key] = result[index].get(key, 0) + element.get(key, 0)
         return result
 
     def __getstate__(self):
         obj_dict = self.__dict__.copy()
-        obj_dict["_measured_nodes"] = set()
+        # FIXME: maybe this needs to be something else here...
+        obj_dict["_measured_nodes"] = [set()] * self._algorithm.signature.count
         return obj_dict

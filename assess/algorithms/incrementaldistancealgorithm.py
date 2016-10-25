@@ -42,26 +42,27 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
 
     def _prototype_event_counts(self):
         if self.distance.is_prototype_based_on_original():
-            return [prototype.node_count() for prototype in self._prototypes]
-        return [self._signature_prototypes.node_count(prototype=prototype) for
-                prototype in self._prototypes]
+            return [[prototype.node_count() for prototype in self._prototypes] for _ in range(
+                self._signature.count)]
+        result = [self._signature_prototypes.node_count(prototype=prototype) for prototype in self._prototypes]
+        return [[element[i] for element in result] for i in range(len(result[0]))]
 
     def _event_count(self):
-        return self.distance.node_count()
+        return [[count for _ in self.prototypes] for count in self.distance.node_count()]
 
     def _update_distances(self, event, signature, **kwargs):
+        matching_prototypes = self._signature_prototypes.get(signature=signature)
         try:
             self.distance.update_distance(
-                signature=signature,
+                matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)],
                 value=float(event.tme)-float(event.start_tme),
-                matching_prototypes=self._signature_prototypes.get(signature=signature)
             )
         except AttributeError:
             self.distance.update_distance(
-                signature=signature,
-                matching_prototypes=self._signature_prototypes.get(signature=signature)
+                matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)]
             )
-        return [value for value in self.distance]
+        result = [value for value in self.distance]  # [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]
+        return [list(element) for element in zip(*result)]
 
     def finish_tree(self):
         return self.distance.finish_distance()
