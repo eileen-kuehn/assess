@@ -24,7 +24,10 @@ class Distance(object):
 
     def __iter__(self):
         """
-        Result looks like this: [e_1, ..., e_n]
+        Result looks like this: [e_1, ..., e_n] for prototypes
+        So first yield, yields all prototypes data for first ensemble.
+
+        Together you get: [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]
 
         :return:
         """
