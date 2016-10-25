@@ -123,9 +123,39 @@ class OrderedTreeNode(object):
         """
         return self._prototype.add_node(name=name, parent=self, **kwargs)
 
-    #def __repr__(self):
-    #    return self.__class__.__name__ + " (" + ', '.join('%s=%s'%(arg, self.__getattribute__(arg))
-    #                                                      for arg in vars(self)) + ")"
+    # Pickling
+    # The next/previous node fields create infinite recursion when traversing
+    # the tree, which is what pickle does. We store the IDs instead, and fetch
+    # the real nodes when loading.
+    # Since there is ALSO recursion with the tree itself, we wait for the tree
+    # to be done loading everything and tell us about it.
+    def __getstate__(self):
+        state = self.__dict__.copy()
+        if state['previous_node'] is not None:
+            state['previous_node'] = state['previous_node'].node_id
+        if state['next_node'] is not None:
+            state['next_node'] = state['next_node'].node_id
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__ = state
+        # NOTE: prev/next node resolution MUST be called externally
+
+    def resolve_siblings(self):
+        """Tell the node to load its siblings by ID; must be called once after unpickling"""
+        try:
+            self.previous_node = self._prototype.node_by_node_id(self.previous_node)
+        except NodeNotFoundException:
+            if self.previous_node is not None:
+                raise
+        try:
+            self.next_node = self._prototype.node_by_node_id(self.next_node)
+        except NodeNotFoundException:
+            if self.next_node is not None:
+                raise
+
+    def __repr__(self):
+        return '%s(next=%s, prev=%s)' % (self.__class__.__name__, self.next_node.node_id, self.previous_node.node_id)
 
 
 class OrderedTree(object):
@@ -237,6 +267,15 @@ class OrderedTree(object):
         if node is None:
             raise NodeNotFoundException()
         return node
+
+    def __setstate__(self, state):
+        # Since self._nodes_dict contains all nodes, each node must be fully
+        # unpickled before _nodes_dict can be created. This means the
+        # OrderedTree is finalized AFTER the nodes. We need to trigger a post-
+        # finalization step where nodes may look up siblings in the tree.
+        self.__dict__ = state
+        for node in self._nodes_dict.itervalues():
+            node.resolve_siblings()
 
 
 class Tree(object):
