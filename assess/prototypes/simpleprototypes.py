@@ -290,7 +290,6 @@ class Tree(object):
         if parent_node_id is not None:
             parent = self._graph.node_by_node_id(node_id=parent_node_id)
         if parent is None and self.root() is not None:
-            print kwargs
             raise TreeInvalidatedException
         try:
             return self._graph.add_node(name=name, parent=parent, **kwargs)

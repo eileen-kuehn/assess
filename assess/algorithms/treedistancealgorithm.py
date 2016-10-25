@@ -4,6 +4,7 @@ whilst calculating distances.
 """
 from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
+from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache, SignatureCache
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 from assess.exceptions.exceptions import EventNotSupportedException
@@ -24,15 +25,20 @@ class TreeDistanceAlgorithm(object):
     * _update_distance
     """
     def __init__(self, signature=Signature()):
-        self._signature = signature
+        if not isinstance(signature, EnsembleSignature):
+            self._signature = EnsembleSignature(signatures=[signature])
+        else:
+            self._signature = signature
+        # signature caches
+        self._signature_prototypes = self._signature.prototype_signature_cache_class()
+        self._signature_tree = self._signature.signature_cache_class()
+
         self._prototypes = []
-        self._signature_prototypes = PrototypeSignatureCache()
+        self._tree = Tree()
+        self._tree_dict = ObjectCache()
+
         self._event_counter = 0
         self.supported = {ProcessStartEvent: False, ProcessExitEvent: False, TrafficEvent: False}
-
-        self._tree = Tree()
-        self._signature_tree = SignatureCache()
-        self._tree_dict = ObjectCache()
         self._maxlen = None
 
     @property
@@ -70,7 +76,7 @@ class TreeDistanceAlgorithm(object):
         :param value: List of prototypes
         """
         # clean old prototypes first...
-        self._signature_prototypes = PrototypeSignatureCache()
+        self._signature_prototypes = self._signature.prototype_signature_cache_class()
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             for process in prototype.nodes():
@@ -90,6 +96,7 @@ class TreeDistanceAlgorithm(object):
 
         :return: Signatures for all protototypes
         """
+        # FIXME: here might appear a list of tokens
         return self._signature_prototypes
 
     def cluster_representatives(self, signature_prototypes=None, prototypes=None):
@@ -99,6 +106,7 @@ class TreeDistanceAlgorithm(object):
         :param signature_prototypes: Signature for all cluster representatives
         :param prototypes: Cluster name per cluster representative
         """
+        # FIXME: here might be another implementation
         self._signature_prototypes = signature_prototypes
         self._prototypes = prototypes
 
@@ -109,6 +117,7 @@ class TreeDistanceAlgorithm(object):
 
         :return: Signatures of monitoring tree
         """
+        # FIXME: now a list of signatures might be returned
         return self._signature_tree
 
     def tree_node_counts(self, signature=False):
@@ -116,28 +125,34 @@ class TreeDistanceAlgorithm(object):
         Returns the list of count of nodes for monitoring tree per prototype. If signature is True,
         the count of nodes based on signature is used. Signature defaults to False.
 
+        Format is like this: [ve1, ..., ven]
+
         :param signature: Determines if node count depends on signature, defaults to False
         :return: List of counts for monitoring tree per prototype
         """
         if signature:
-            count = self._signature_tree.node_count()
+            return self._signature_tree.node_count()
         else:
             count = self._tree.node_count()
-        return [count for _ in range(len(self._prototypes))]
+        return [count for _ in range(self._signature.count)] if count > 0 else []
 
     def prototype_node_counts(self, signature=False):
         """
         Returns the count of nodes per prototype tree. If signature is True, the count for converted
         prototypes based on given signature is returned. Signature defaults to False.
 
+        Format is like this: [[e1p1, ... e1pn], ..., [enp1, ..., enpn]]
+
         :param signature: Determines if node count depends on signature, defaults to False
         :return: List of counts for prototypes
         """
         if signature:
-            return [self._signature_prototypes.node_count(prototype=prototype)
-                    for prototype in self._prototypes]
+            return [list(element) for element in zip(
+                *[self._signature_prototypes.node_count(prototype=prototype) for
+                  prototype in self._prototypes])]
         try:
-            return [prototype.node_count() for prototype in self._prototypes]
+            return [[prototype.node_count() for prototype in self._prototypes]] * \
+                   self._signature.count
         except AttributeError:
             # working a Cluster Representative
             # TODO: clean this up a bit...
@@ -148,6 +163,8 @@ class TreeDistanceAlgorithm(object):
         """
         Method returns a list containing the events per prototype.
 
+        Format is like this: [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+
         :return: List of event counts per prototype
         """
         return self._prototype_event_counts()
@@ -157,10 +174,11 @@ class TreeDistanceAlgorithm(object):
         Method returns a list containing the current events considered from the monitoring tree by
         prototype.
 
+        Returned format looks like: [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+
         :return: List of monitoring tree event counts per prototype
         """
-        count = self._event_count()
-        return [count for _ in range(len(self._prototypes))]
+        return self._event_count()
 
     def start_tree(self, maxlen=None, **kwargs):
         """
@@ -171,7 +189,7 @@ class TreeDistanceAlgorithm(object):
         """
         self._tree = Tree()
         self._tree_dict = ObjectCache()
-        self._signature_tree = SignatureCache()
+        self._signature_tree = self._signature.signature_cache_class()
         self._event_counter = 0
         assert maxlen is None or maxlen <= len(self._prototypes)
         self._maxlen = maxlen
@@ -202,6 +220,8 @@ class TreeDistanceAlgorithm(object):
         """
         Method to add an event. For each event the actual distance from the stream object to
         different prototypes are calculated. The calculated distance is returned.
+
+        Format that can be expected: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
 
         :param event: The event to be added to the current distance measurement.
         :param kwargs:
@@ -238,15 +258,19 @@ class TreeDistanceAlgorithm(object):
 
         :return: Event count of monitoring tree
         """
-        return self._tree.node_count()
+        count = self._tree.node_count()
+        return [[count for _ in range(len(self._prototypes))] for _ in range(self._signature.count)]
 
     def _prototype_event_counts(self):
         """
         Method returns the current event count per prototype.
 
+        List format is like this: [p1, ..., pn]
+
         :return: List of event counts per prototoype
         """
-        return [prototype.node_count() for prototype in self._prototypes]
+        return [[prototype.node_count() for prototype in self._prototypes] for _ in range(
+            self._signature.count)]
 
     def create_node(self, event, **kwargs):
         """
@@ -293,6 +317,7 @@ class TreeDistanceAlgorithm(object):
         :param parent: The nodes parent
         :return: Calculated signature
         """
+        # FIXME: this method is dealing with lists of signatures now
         return self._signature.get_signature(node, parent)
 
     def update_distance(self, event, signature, **kwargs):
@@ -324,8 +349,8 @@ class TreeDistanceAlgorithm(object):
     def __getstate__(self):
         obj_dict = self.__dict__.copy()
         obj_dict["_prototypes"] = []
-        obj_dict["_signature_prototypes"] = PrototypeSignatureCache()
+        obj_dict["_signature_prototypes"] = type(self._signature_prototypes)()
         obj_dict["_tree"] = Tree()
-        obj_dict["_signature_tree"] = SignatureCache()
-        obj_dict["_tree_dict"] = ObjectCache()
+        obj_dict["_signature_tree"] = type(self._signature_tree)()
+        obj_dict["_tree_dict"] = type(self._tree_dict)()
         return obj_dict

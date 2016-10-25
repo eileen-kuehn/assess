@@ -23,10 +23,10 @@ class SignatureCache(object):
 
         :param signature: The signature to be added
         """
-        if signature not in self._prototype_dict:
-            self._prototype_dict[signature] = 1
-        else:
+        try:
             self._prototype_dict[signature] += 1
+        except KeyError:
+            self._prototype_dict[signature] = 1
 
     def get(self, signature=None):
         """

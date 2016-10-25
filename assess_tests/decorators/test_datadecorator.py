@@ -26,10 +26,10 @@ class TestDataDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"data": {
                 "prototypes": {
-                    "original": [5],
-                    "converted": [3]
+                    "original": [[5]],
+                    "converted": [[3]]
                 },
-                "monitoring": [{}]
+                "monitoring": {}
             }}
         )
         decorator.finish_tree()
@@ -37,13 +37,13 @@ class TestDataDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"data": {
                 "prototypes": {
-                    "original": [5],
-                    "converted": [3]
+                    "original": [[5]],
+                    "converted": [[3]]
                 },
-                "monitoring": [{
-                    "original": 0,
-                    "converted": 0
-                }]
+                "monitoring": {
+                    "original": [[0]],
+                    "converted": [[]]
+                }
             }}
         )
 
@@ -58,13 +58,13 @@ class TestDataDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"data": {
                 "prototypes": {
-                    "original": [5, 5],
-                    "converted": [3, 3]
+                    "original": [[5, 5]],  # FIXME: hier bin ich mir nicht sicher, ob dass das sagt, was ich gern hätte...
+                    "converted": [[3, 3]]
                 },
-                "monitoring": [{
-                    "original": 4,
-                    "converted": 3
-                }]
+                "monitoring": {
+                    "original": [[4]],
+                    "converted": [[3]]
+                }
             }}
         )
 
@@ -76,16 +76,13 @@ class TestDataDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"data": {
                 "prototypes": {
-                    "original": [5, 5],
-                    "converted": [3, 3]
+                    "original": [[5, 5]],  # FIXME: please check!
+                    "converted": [[3, 3]]
                 },
-                "monitoring": [{
-                    "original": 4,
-                    "converted": 3
-                }, {
-                    "original": 4,
-                    "converted": 3
-                }]
+                "monitoring": {
+                    "original": [[4], [4]],
+                    "converted": [[3], [3]]
+                }
             }}
         )
 
@@ -93,36 +90,33 @@ class TestDataDecorator(unittest.TestCase):
         decorator = DataDecorator()
         decorator._data = {
             "prototypes": {
-                "original": [10, 20, 100],
-                "converted": [5, 10, 10]
+                "original": [[10, 20, 100]],  # FIXME: please check!
+                "converted": [[5, 10, 10]]
             },
-            "monitoring": [{
-                "original": 80,
-                "converted": 10
-            }]
+            "monitoring": {
+                "original": [[80]],
+                "converted": [[10]]
+            }
         }
         second_decorator = DataDecorator()
         second_decorator._data = {
             "prototypes": {
-                "original": [10, 20, 100],
-                "converted": [5, 10, 10]
+                "original": [[10, 20, 100]],  # FIXME: please check!
+                "converted": [[5, 10, 10]]
             },
-            "monitoring": [{
-                "original": 100,
-                "converted": 20
-            }]
+            "monitoring": {
+                "original": [[100]],
+                "converted": [[20]]
+            }
         }
         decorator.update(second_decorator)
         self.assertEqual(decorator.data(), {
             "prototypes": {
-                "original": [10, 20, 100],
-                "converted": [5, 10, 10]
+                "original": [[10, 20, 100]],  # FIXME: please check!
+                "converted": [[5, 10, 10]]
             },
-            "monitoring": [{
-                "original": 80,
-                "converted": 10
-            }, {
-                "original": 100,
-                "converted": 20
-            }]
+            "monitoring": {
+                "original": [[80], [100]],
+                "converted": [[10], [20]]
+            }
         })

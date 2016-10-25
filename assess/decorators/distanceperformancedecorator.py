@@ -9,9 +9,23 @@ from assess.decorators.decorator import Decorator
 
 class DistancePerformanceDecorator(Decorator):
     """
-    The DistancePerofrmanceDecorator measures the time that is being used to update the distance
+    The DistancePerformanceDecorator measures the time that is being used to update the distance
     based on single events. Duration for signature creation etc. are excluded from this statistic.
     The Decorator differentiates between accumulated and single measurements.
+
+    Format looks like this:
+    {
+        "user time": [
+            [v1t1, ..., vnt1],
+            ...,
+            [v1tn, ..., vntn]],
+        "system time": [...],
+        "children's user time": [...],
+        "children's system time": [...],
+        "elapsed real time": [...]
+    }
+
+    Also for accumulated values, you can expect to have a list in list.
     """
     def __init__(self, accumulated=True):
         if accumulated:
@@ -30,9 +44,10 @@ class DistancePerformanceDecorator(Decorator):
 
     def _tree_started(self):
         if self._performances is None:
-            self._performances = [{}]
+            self._performances = {item: [[]] for item in self._items}
         else:
-            self._performances.append({})
+            for item in self._performances.values():
+                item.append([])
 
     def update_distance(self, event, signature, **kwargs):
         """
@@ -51,26 +66,28 @@ class DistancePerformanceDecorator(Decorator):
             **kwargs
         )
         end = os.times()
-        result_dict = zip(self._items, [end[i] - start[i] for i in range(len(start))])
-        for key, value in result_dict:
-            self._performances[-1].setdefault(key, []).append(value)
+
+        for index, start_value in enumerate(start):
+            self._performances[self._items[index]][-1].append(end[index] - start_value)
         return result
 
     def data(self):
-        if self._performances is not None:
+        if self._performances:
             if self._accumulated:
-                result = []
-                for performance in self._performances:
-                    result.append({})
-                    for key in performance:
-                        try:
-                            result[-1][key] = sum(performance[key])
-                        except TypeError:
-                            result[-1][key] = performance[key]
+                result = {item: [[]] for item in self._items}
+                for key in self._performances.keys():
+                    if len(self._performances[key][0]) > 0:
+                        result[key] = [[sum(elements)] for elements in self._performances[key]]
+                    else:
+                        result[key] = [[]]
                 return result
             else:
                 return self._performances
         return None
 
     def _update(self, decorator):
-        self._performances.extend(decorator.data())
+        for key in self._performances.keys():
+            if self._accumulated:
+                self._performances[key] = self._performances[key] + decorator.data()[key]
+            else:
+                self._performances[key].extend(decorator.data()[key])
