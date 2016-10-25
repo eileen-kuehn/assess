@@ -14,7 +14,6 @@ class CompressionFactorDecorator(Decorator):
     Returns data regarding ensembles in the following format:
     {
         "prototypes": [[p1e1, ..., pne1], ... [p1en, ..., pnen]],
-        # FIXME: which one was the right one?!
         "monitoring": [
             [ve1t1, ..., vent1],
             ...
