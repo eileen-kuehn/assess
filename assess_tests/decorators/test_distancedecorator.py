@@ -95,5 +95,6 @@ class TestDistanceDecorator(unittest.TestCase):
         for event in Event.from_tree(simple_monitoring_tree()):
             algorithm.add_event(event)
         algorithm.finish_tree()
+
         self.assertEqual([[[[.5, .2, .2, 0.0], [.5, .2, .2, 0.0]],
                            [[.6666666666666666, .42857142857142855, .42857142857142855, .25], [.5, .2, .2, 0.0]]]], decorator.data())

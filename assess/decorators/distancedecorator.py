@@ -13,16 +13,22 @@ class DistanceDecorator(Decorator):
 
     The results are given in the following format:
     [
-        [                               <- start of a tree
-            [p1e1t1, ..., pne1t1],      <- list of distance events per prototype
+        [                                       <- start of a tree
+            [                                   <- start of an ensemble
+                [v1p1e1t1, ..., vnp1e1t1],
+                ...,
+                [v1pne1t1, ..., vnp1e1t1]       <- list of distance events per prototype
+            ],
             ...
-            [p1ent1, ..., pnent1]       <- for each ensemble
+            [
+                [v1p1ent1, ..., vnp1ent1],
+                ...,
+                [v1pnent1, ..., vnpnent1]
+            ]
         ],
         ...
         [
-            [p1e1tn, ..., pne1tn],
             ...
-            [p1entn, ..., pnentn]
         ]
     ]
     """
