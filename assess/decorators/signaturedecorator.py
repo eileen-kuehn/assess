@@ -5,6 +5,21 @@ class SignatureDecorator(Decorator):
     """
     The SignatureDecorator outputs for each event the current signature it calculated and returns
     in form of a vector.
+
+    The format looks like:
+    [
+        [
+            [v1e1t1, ..., vne1t1],
+            ...,
+            [v1ent1, ..., vnent1]
+        ],
+        ...,
+        [
+            [v1e1tn, ..., vne1tn],
+            ...,
+            [v1entn, ..., vnentn]
+        ]
+    ]
     """
     def __init__(self):
         Decorator.__init__(self, name="signature")
