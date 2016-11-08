@@ -38,6 +38,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
         self.distance.init_distance()
+        self.supported = self.distance.supported
         self._measured_nodes = set()
 
     def _prototype_event_counts(self):

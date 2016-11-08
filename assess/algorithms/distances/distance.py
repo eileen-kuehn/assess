@@ -3,6 +3,7 @@ Module deals with different handlings for distances. Those can easily be attache
 to adjust calculated distance. Therefore different combinations become available and can easily
 be parameterised.
 """
+from assess.events.events import ProcessExitEvent, ProcessStartEvent, TrafficEvent
 
 
 class Distance(object):
@@ -21,6 +22,7 @@ class Distance(object):
         self._monitoring_results_dict = None
         self._measured_nodes = None
         self._based_on_original = False
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
     def __iter__(self):
         """
