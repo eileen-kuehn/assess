@@ -2,7 +2,6 @@
 Generators for event streams for GNM monitoring files
 """
 import random
-import csv
 import os
 import logging
 try:
@@ -10,9 +9,7 @@ try:
 except NameError:
     import pickle
 
-from gnmutils.objectcache import ObjectCache
 from gnmutils.sources.filedatasource import FileDataSource
-from gnmutils.exceptions import DataNotInCacheException
 
 from assess.prototypes.simpleprototypes import Prototype
 from assess.generators.event_generator import EventGenerator, NodeGenerator
@@ -65,7 +62,8 @@ class PrototypeCache(object):
         self._logger = logging.getLogger('cache.prototypes')
         self.force_refresh = bool(os.environ.get('DISS_PROTOTYPE_CACHE_REFRESH', False))
         if self.force_refresh:
-            self._logger.warning('Forcefully refreshing caches (enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
+            self._logger.warning('Forcefully refreshing caches '
+                                 '(enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
 
     def __iter__(self):
         if os.path.isdir(self.path):
@@ -133,7 +131,8 @@ class PrototypeCache(object):
                 job.prepare_traffic()
                 prototype = Prototype.from_job(job)
                 yield prototype
-                assert job.path not in job_files, "Job file may not contain multiple jobs (%r)" % job.path
+                assert job.path not in job_files, \
+                    "Job file may not contain multiple jobs (%r)" % job.path
                 # store the job individually, just remember its file
                 with open(job.path, 'wb') as job_cache_pkl:
                     pickle.dump([prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
