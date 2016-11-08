@@ -193,6 +193,7 @@ class PrototypeSignatureCache(SignatureCache):
                 except KeyError:
                     pass
         else:
-            for _, _, score in self._prototype_dict.iterscoreditems():
-                result += score
+            for prototype_dict in self._prototype_dict.values():
+                for value_dict in prototype_dict.values():
+                    result += value_dict.get("count", 0)
         return result
