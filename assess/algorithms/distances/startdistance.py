@@ -1,6 +1,6 @@
 from assess.algorithms.distances.distance import Distance
 from assess.algorithms.signatures.signaturecache import SignatureCache
-from assess.events.events import ProcessExitEvent
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
 class StartDistance(Distance):
@@ -8,10 +8,10 @@ class StartDistance(Distance):
         Distance.__init__(self, **kwargs)
         self._based_on_original = True
         self._signature_cache = None
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
 
     def init_distance(self):
         Distance.init_distance(self)
-        self._algorithm.supported[ProcessExitEvent] = False
         self._signature_cache = [SignatureCache() for _ in range(self._algorithm.signature.count)]
         for prototype in self._algorithm.prototypes:
             node_count = prototype.node_count()
