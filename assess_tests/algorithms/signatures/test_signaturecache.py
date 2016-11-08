@@ -3,8 +3,10 @@ import os
 import json
 
 import assess_tests
-from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
+from assess_tests.basedata import simple_additional_monitoring_tree, simple_prototype
+
 from assess.algorithms.statistics.statistics import MeanVariance
+from assess.algorithms.signatures.signatures import *
 
 
 class TestSignatureCache(unittest.TestCase):
@@ -131,3 +133,12 @@ class TestPrototypeSignatureCache(unittest.TestCase):
             os.path.dirname(assess_tests.__file__),
             "data/cluster.json"
         )
+
+    def test_from_signatures(self):
+        prototype = simple_additional_monitoring_tree()
+        other_prototype = simple_prototype()
+        tree_index = prototype.to_index(signature=ParentChildByNameTopologySignature())
+        prototype_index = other_prototype.to_index(signature=ParentChildByNameTopologySignature())
+        prototype_cache = PrototypeSignatureCache.from_signature_caches([tree_index, prototype_index], prototype=1, threshold=.9)
+        self.assertEqual(9, prototype_cache.frequency())
+        self.assertEqual(3, prototype_cache.node_count())
