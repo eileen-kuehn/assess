@@ -7,6 +7,7 @@ import bisect
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException
 from assess.events.events import Event
+from assess.algorithms.signatures.signaturecache import SignatureCache
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
@@ -536,6 +537,17 @@ class Prototype(Tree):
             node.traffic = process.traffic
             parent_dict[process] = node
         return result
+
+    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False):
+        signature_cache = SignatureCache()
+        for node in self.node_iter():
+            current_signature = signature.get_signature(node, node.parent())
+            if start_support:
+                signature_cache.add_signature(current_signature)
+            if exit_support:
+                signature_cache.add_signature(current_signature, {
+                    "duration": node.exit_tme - node.tme})
+        return signature_cache
 
     def event_iter(self):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
