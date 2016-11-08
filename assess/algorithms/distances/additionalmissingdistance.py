@@ -54,7 +54,6 @@ class AdditionalMissingDistance(Distance):
                     self._monitoring_results_dict[index][prototype] -
                     self._additional_nodes_dict[index][prototype])
         # add local node distance to global tree distance
-        # FIXME: this is still a problem
         self._monitoring_results_dict = self._add_result_dicts(
             result_dict,
             self._monitoring_results_dict)

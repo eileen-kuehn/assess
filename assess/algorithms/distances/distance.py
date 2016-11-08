@@ -35,7 +35,6 @@ class Distance(object):
             yield [result.setdefault(prototype, 0) for result in self._monitoring_results_dict]
 
     def current_distance(self):
-        # FIXME: this does not work like this anymore...
         return self._monitoring_results_dict.copy()
 
     def init_distance(self):
@@ -46,7 +45,6 @@ class Distance(object):
         self._monitoring_results_dict = [{} for _ in range(count)]
         self._measured_nodes = [set() for _ in range(count)]
 
-    # FIXME: needs to be integrated
     def update_distance(self, matches=[{}], **kwargs):
         """
         This method is called whenever a new event has been received.
@@ -55,7 +53,6 @@ class Distance(object):
         :param kwargs:
         :return: list of signatures
         """
-        # FIXME: the return of list of signatures is going to be a problemw
         raise NotImplementedError
 
     def finish_distance(self):

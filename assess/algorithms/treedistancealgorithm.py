@@ -96,7 +96,6 @@ class TreeDistanceAlgorithm(object):
 
         :return: Signatures for all protototypes
         """
-        # FIXME: here might appear a list of tokens
         return self._signature_prototypes
 
     def cluster_representatives(self, signature_prototypes=None, prototypes=None):
@@ -117,7 +116,6 @@ class TreeDistanceAlgorithm(object):
 
         :return: Signatures of monitoring tree
         """
-        # FIXME: now a list of signatures might be returned
         return self._signature_tree
 
     def tree_node_counts(self, signature=False):
@@ -317,7 +315,6 @@ class TreeDistanceAlgorithm(object):
         :param parent: The nodes parent
         :return: Calculated signature
         """
-        # FIXME: this method is dealing with lists of signatures now
         return self._signature.get_signature(node, parent)
 
     def update_distance(self, event, signature, **kwargs):

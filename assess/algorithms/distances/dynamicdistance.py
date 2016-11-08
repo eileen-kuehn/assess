@@ -15,7 +15,6 @@ class DynamicDistance(Distance):
     def __iter__(self):
         wrapped_distance = self._wrapped_distance.current_distance()
         for prototype in self._algorithm.prototypes:
-            # FIXME: this is going to produce errors
             yield self._monitoring_results_dict.setdefault(prototype, 0) + \
                   wrapped_distance.setdefault(prototype, 0)
 
