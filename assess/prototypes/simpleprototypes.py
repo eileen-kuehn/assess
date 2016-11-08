@@ -156,7 +156,11 @@ class OrderedTreeNode(object):
                 raise
 
     def __repr__(self):
-        return '%s(next=%s, prev=%s)' % (self.__class__.__name__, self.next_node.node_id, self.previous_node.node_id)
+        return '%s(next=%s, prev=%s)' % (
+            self.__class__.__name__,
+            getattr(self.next_node, "node_id", None),
+            getattr(self.previous_node, "node_id", None)
+        )
 
 
 class OrderedTree(object):
