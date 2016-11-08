@@ -97,6 +97,10 @@ class PrototypeSignatureCache(SignatureCache):
     signatures.
     """
     @staticmethod
+    def from_signature_caches(signature_caches, prototype=None, threshold=.1):
+        return NotImplementedError
+
+    @staticmethod
     def from_cluster_representatives(cluster_representatives):
         """
         Method builds a PrototypeSignatureCache by a given dict describing Cluster Representatives
