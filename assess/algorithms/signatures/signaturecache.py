@@ -131,13 +131,21 @@ class PrototypeSignatureCache(SignatureCache):
         :param prototype: Prototype the signature belongs to
         :param value: Value for signature
         """
+        try:
+            # bump current count
+            self._prototype_dict[signature] = self._prototype_dict[signature]
+        except KeyError:
+            pass
         prototype_dictionary = self._prototype_dict.setdefault(signature, dict())
         if prototype in prototype_dictionary:
-            prototype_dictionary[prototype].add(value=value)
+            prototype_dictionary[prototype]["count"] += 1
+            prototype_dictionary[prototype]["duration"].add(value=value)
         else:
             statistics = SplittedStatistics(statistics_type=MeanVariance)
             statistics.add(value=value)
-            prototype_dictionary[prototype] = statistics
+            prototype_dictionary[prototype] = {}
+            prototype_dictionary[prototype]["duration"] = statistics
+            prototype_dictionary[prototype]["count"] = 1
 
     def node_count(self, prototype=None):
         """
@@ -181,11 +189,10 @@ class PrototypeSignatureCache(SignatureCache):
         if prototype is not None:
             for value in self._prototype_dict.values():
                 try:
-                    result += value.get(prototype, None).count
-                except AttributeError:
+                    result += value.get(prototype, {})["count"]
+                except KeyError:
                     pass
         else:
-            for value in self._prototype_dict.values():
-                for statistics in value.values():
-                    result += statistics.count
+            for _, _, score in self._prototype_dict.iterscoreditems():
+                result += score
         return result

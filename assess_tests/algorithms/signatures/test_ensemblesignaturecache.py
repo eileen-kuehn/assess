@@ -79,7 +79,7 @@ class TestEnsembleSignatureCache(unittest.TestCase):
             else:
                 self.assertTrue(isinstance(cache.get(signature=tokens)[0], dict))
             cache.add_signature(tokens, prototype=tree, value=1)
-            stats = cache.get(signature=tokens)[0][tree]
+            stats = cache.get(signature=tokens)[0][tree]["duration"]
             self.assertTrue(stats.count >= 1)
         self.assertEqual([4], cache.node_count())
         self.assertEqual([4], cache.frequency())
@@ -109,7 +109,7 @@ class TestEnsembleSignatureCache(unittest.TestCase):
             received = cache.get(signature=tokens)
             self.assertEqual(2, len(received))
             self.assertTrue(isinstance(received[0], dict))
-            self.assertTrue(received[0][prototype].count >= 1)
+            self.assertTrue(received[0][prototype]["count"] >= 1)
         self.assertEqual([4, 4], cache.node_count())
         self.assertEqual([4, 4], cache.frequency())
 
