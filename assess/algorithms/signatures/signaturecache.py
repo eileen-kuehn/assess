@@ -98,7 +98,23 @@ class PrototypeSignatureCache(SignatureCache):
     """
     @staticmethod
     def from_signature_caches(signature_caches, prototype=None, threshold=.1):
-        return NotImplementedError
+        result = PrototypeSignatureCache()
+        token_set = set()
+        for signature_cache in signature_caches:
+            token_set.update(signature_cache.internal().keys())
+        for token in token_set:
+            occurences = len([1 for signature_cache in signature_caches if token in signature_cache])
+            if occurences / float(len(signature_caches)) > threshold:
+                # signature is getting part of prototype signature
+                # calculate average count
+                counts = sum([signature_cache.get(token) for signature_cache in signature_caches])
+                durations = [signature_cache[token]["duration"] for signature_cache in signature_caches if token in signature_cache]
+                for duration in durations:
+                    for value in duration:
+                        result.add_signature(token, prototype, value)
+                result.get(token)[prototype]["count"] = int(round(
+                    counts / float(len(signature_caches))))
+        return result
 
     @staticmethod
     def from_cluster_representatives(cluster_representatives):
