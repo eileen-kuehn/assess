@@ -16,17 +16,40 @@ class SignatureCache(object):
     def __init__(self):
         self._prototype_dict = FrequencyCacheMap()
 
-    def add_signature(self, signature=None):
+    def __setitem__(self, key, value):
+        try:
+            self._prototype_dict[key] = value
+        except KeyError:
+            self._prototype_dict[key] = value
+
+    def __getitem__(self, item):
+        return self._prototype_dict.get(item, None)
+
+    def __iter__(self):
+        for signature in self._prototype_dict:
+            yield signature
+
+    def __contains__(self, item):
+        if item in self._prototype_dict:
+            return True
+        return False
+
+    def __len__(self):
+        return len(self._prototype_dict.keys())
+
+    def add_signature(self, signature=None, value=None):
         """
         Adding another occurence of a signature to the current cache. If signature is not in the
         Cache so far, its count is set to 1, otherwise it is incremented.
 
         :param signature: The signature to be added
+        :param value: The value to be added to the current signature cache
         """
-        try:
-            self._prototype_dict[signature] += 1
-        except KeyError:
-            self._prototype_dict[signature] = 1
+        current_value = self._prototype_dict.get(signature, {})
+        if value:
+            for key in value:
+                current_value.setdefault(key, []).append(value[key])
+        self[signature] = current_value
 
     def get(self, signature=None):
         """
@@ -36,7 +59,7 @@ class SignatureCache(object):
         :param signature: Signature to get the count for
         :return: Current count for signature, otherwise 0
         """
-        return self._prototype_dict.get(signature, 0)
+        return self._prototype_dict.score(signature)
 
     def node_count(self, **kwargs):
         """
@@ -53,7 +76,10 @@ class SignatureCache(object):
 
         :return: Accumulated count for all signatures
         """
-        return sum(self._prototype_dict.values())
+        result = 0
+        for _, _, score in self._prototype_dict.iterscoreditems():
+            result += score
+        return result
 
     def internal(self):
         """
@@ -126,6 +152,9 @@ class PrototypeSignatureCache(SignatureCache):
                     count += 1
         return count
 
+    def __getitem__(self, item):
+        return self._prototype_dict.get(item, dict())
+
     def get(self, signature=None):
         """
         Returns a dictionary of prototypes with their statistics for a given signature. If the
@@ -134,7 +163,7 @@ class PrototypeSignatureCache(SignatureCache):
         :param signature: Signature to return the statistics for
         :return: Dictionary of prototypes with statistics as value
         """
-        return self._prototype_dict.get(signature, dict())
+        return self[signature]
 
     def frequency(self, prototype=None):
         """
