@@ -46,21 +46,24 @@ class SplittedStatistics(object):
             else:
                 self._statistics[index].add(value=value)
                 # perform merging
-                merged = True
-                while merged:
-                    merged = False
-                    if self._distribution_distance(index, index + 1) <= 1:
-                        self._statistics[index].update(statistics=self._statistics[index + 1])
-                        del self._statistics[index + 1]
-                        merged = True
-                    if self._distribution_distance(index - 1, index) <= 1:
-                        self._statistics[index - 1].update(statistics=self._statistics[index])
-                        del self._statistics[index]
-                        index -= 1
-                        merged = True
+                self._perform_merging(index)
         else:
             # just create a statistics object
             self._statistics.append(self._statistics_type(value=value))
+
+    def _perform_merging(self, index):
+        merged = True
+        while merged:
+            merged = False
+            if self._distribution_distance(index, index + 1) <= 1:
+                self._statistics[index] += self._statistics[index + 1]
+                del self._statistics[index + 1]
+                merged = True
+            if self._distribution_distance(index - 1, index) <= 1:
+                self._statistics[index - 1] += self._statistics[index]
+                del self._statistics[index]
+                index -= 1
+                merged = True
 
     def _distribution_distance(self, lower, upper):
         assert lower < upper
