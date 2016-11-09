@@ -51,7 +51,16 @@ class SignatureCache(object):
                 current_value.setdefault(key, []).append(value[key])
         self[signature] = current_value
 
-    def get(self, signature=None):
+    def get(self, signature):
+        """
+        Get the current value for given signature
+
+        :param signature: Signature to get the count for
+        :return: Current count for signature, otherwise 0
+        """
+        return self[signature]
+
+    def get_count(self, signature):
         """
         Get the current count for a given signature. If signature does not exist in cache, a count
         of 0 is returned.
@@ -107,12 +116,12 @@ class PrototypeSignatureCache(SignatureCache):
             if occurences / float(len(signature_caches)) > threshold:
                 # signature is getting part of prototype signature
                 # calculate average count
-                counts = sum([signature_cache.get(token) for signature_cache in signature_caches])
+                counts = sum([signature_cache.get_count(token) for signature_cache in signature_caches])
                 durations = [signature_cache[token]["duration"] for signature_cache in signature_caches if token in signature_cache]
                 for duration in durations:
-                    for value in duration:
-                        result.add_signature(token, prototype, value)
-                result.get(token)[prototype]["count"] = int(round(
+                    # TODO: I need to deal with SplittedStatistics here
+                    pass
+                result.get(token).setdefault(prototype, {})["count"] = int(round(
                     counts / float(len(signature_caches))))
         return result
 
@@ -139,7 +148,7 @@ class PrototypeSignatureCache(SignatureCache):
                 signature_cache.add_signature(signature=element["name"], prototype=cluster)
         return signature_cache
 
-    def add_signature(self, signature=None, prototype=None, value=0.0):
+    def add_signature(self, signature=None, prototype=None, value=None):
         """
         Add a signature and its current value for a given prototype.
 
@@ -183,7 +192,7 @@ class PrototypeSignatureCache(SignatureCache):
     def __getitem__(self, item):
         return self._prototype_dict.get(item, dict())
 
-    def get(self, signature=None):
+    def get(self, signature):
         """
         Returns a dictionary of prototypes with their statistics for a given signature. If the
         signature does not exist, an empty dictionary is returned.

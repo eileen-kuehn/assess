@@ -26,11 +26,11 @@ class TestEnsembleSignatureCache(unittest.TestCase):
             tokens = signature.get_signature(node, parent=node.parent())
             if not cache.node_count():
                 # nothing added yet
-                self.assertEqual([], cache.get(signature=tokens))
+                self.assertEqual([], cache.get_count(signature=tokens))
             else:
-                self.assertEqual([0], cache.get(signature=tokens))
+                self.assertEqual([0], cache.get_count(signature=tokens))
             cache.add_signature(tokens)
-            self.assertEqual([1], cache.get(signature=tokens))
+            self.assertEqual([1], cache.get_count(signature=tokens))
         self.assertEqual([4], cache.node_count())
         self.assertEqual([4], cache.frequency())
 
@@ -49,11 +49,11 @@ class TestEnsembleSignatureCache(unittest.TestCase):
         for node in simple_unique_node_tree().nodes():
             tokens = signature.get_signature(node, parent=node.parent())
             if not cache.node_count():
-                self.assertEqual([], cache.get(signature=tokens))
+                self.assertEqual([], cache.get_count(signature=tokens))
             else:
-                self.assertEqual([0, 0], cache.get(signature=tokens))
+                self.assertEqual([0, 0], cache.get_count(signature=tokens))
             cache.add_signature(tokens)
-            self.assertEqual([1, 1], cache.get(signature=tokens))
+            self.assertEqual([1, 1], cache.get_count(signature=tokens))
         self.assertEqual([4, 4], cache.node_count())
         self.assertEqual([4, 4], cache.frequency())
 

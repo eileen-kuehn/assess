@@ -30,7 +30,7 @@ class EnsembleSignatureCache(object):
                 self._signature_dicts = [SignatureCache() for _ in range(len(signature))]
                 self._signature_dicts[index].add_signature(signature=token)
 
-    def get(self, signature=None):
+    def get(self, signature):
         """
         Get the current counts for each signature of a given token. If token does not exist in
         cache, a count of 0 is returned.
@@ -40,6 +40,20 @@ class EnsembleSignatureCache(object):
         """
         try:
             return [self._signature_dicts[index].get(signature=token) for index, token in
+                    enumerate(signature)]
+        except IndexError:
+            return []
+
+    def get_count(self, signature):
+        """
+        Get the current counts for each signature of a given token. If token does not exist in
+        cache, a count of 0 is returned.
+
+        :param signature: Signature to get the count for
+        :return: List of current count for tokens, otherwise []
+        """
+        try:
+            return [self._signature_dicts[index].get_count(signature=token) for index, token in
                     enumerate(signature)]
         except IndexError:
             return []

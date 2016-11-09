@@ -25,8 +25,8 @@ class TestSignatureCache(unittest.TestCase):
         self.assertEqual(cache.node_count(), 1)
         cache.add_signature(signature="hello")
         self.assertEqual(cache.node_count(), 2)
-        self.assertEqual(cache.get(signature="test"), 2)
-        self.assertEqual(cache.get(signature="muh"), 0)
+        self.assertEqual(cache.get_count(signature="test"), 2)
+        self.assertEqual(cache.get_count(signature="muh"), 0)
 
     def test_frequency(self):
         cache = SignatureCache()
@@ -44,7 +44,7 @@ class TestSignatureCache(unittest.TestCase):
         cache.add_signature(signature=None)
         self.assertEqual(cache.node_count(), 1)
         self.assertEqual(cache.frequency(), 2)
-        self.assertEqual(cache.get(signature=None), 2)
+        self.assertEqual(cache.get_count(signature=None), 2)
 
 
 class TestPrototypeSignatureCache(unittest.TestCase):
