@@ -11,40 +11,50 @@ class TestStartExitSimilarity(unittest.TestCase):
 
     def test_creation(self):
         similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
-        similarity.init_distance()
+        similarity.init_distance(prototypes=self.algorithm.prototypes, signature_prototypes=self.algorithm.signature_prototypes)
 
-        for index, dist in enumerate(similarity):
+        for index, dist in enumerate(similarity.iter_on_prototypes(self.algorithm.prototypes)):
             self.assertEqual(dist, [0])
         self.assertEqual(index, 0)
 
     def test_base_similarity(self):
         similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
-        similarity.init_distance()
+        similarity.init_distance(prototypes=self.algorithm.prototypes, signature_prototypes=self.algorithm.signature_prototypes)
 
         for index, node in enumerate(monitoring_tree().nodes()):
             node_signature = self.algorithm.signature.get_signature(node, node.parent())
             matching_prototypes = self.algorithm.signature_prototypes.get(signature=[node_signature])
             similarity.update_distance(
+                prototypes=self.algorithm.prototypes,
+                signature_prototypes=self.algorithm.signature_prototypes,
                 matches=[{token: matching_prototypes[index]} for index, token in
                          enumerate([node_signature])]
             )
         for result in similarity._monitoring_results_dict:
             self.assertEqual(result[self.algorithm.prototypes[0]], 4)
         similarity.update_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
                      enumerate([node_signature])]
         )
         for result in similarity._monitoring_results_dict:
             self.assertEqual(result[self.algorithm.prototypes[0]], 5)
         similarity.update_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
                      enumerate([node_signature])]
         )
         similarity.update_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
                      enumerate([node_signature])]
         )
         similarity.update_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
                      enumerate([node_signature])]
         )

@@ -16,17 +16,18 @@ class StartExitSimilarity(Distance):
         self._based_on_original = True
         self._signature_cache = None
 
-    def init_distance(self):
-        Distance.init_distance(self)
+    def init_distance(self, prototypes, signature_prototypes):
+        Distance.init_distance(self, prototypes, signature_prototypes)
         self._signature_cache = [SignatureCache() for _ in range(len(self._monitoring_results_dict))]
-        for prototype in self._algorithm.prototypes:
+        for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
-    def update_distance(self, matches=[{}], value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, matches=[{}], value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 self._update_distances(
+                    prototypes=prototypes,
                     index=index,
                     prototype_nodes=matching_prototypes,
                     node_signature=signature,
@@ -35,14 +36,13 @@ class StartExitSimilarity(Distance):
                 self._signature_cache[index].add_signature(signature=signature)
         return [match.keys()[0] for match in matches]
 
-    def finish_distance(self):
+    def finish_distance(self, prototypes, signature_prototypes):
         pass
 
     def node_count(self):
         return [signature_cache.frequency()/2.0 for signature_cache in self._signature_cache]
 
-    def _update_distances(self, index=0, prototype_nodes=None, node_signature=None, value=None):
-        prototypes = self._algorithm.prototypes
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None, value=None):
         result_dict = dict(zip(prototypes, [0] * len(prototypes)))
         for prototype_node in prototype_nodes:
             if self._signature_cache[index].get(signature=node_signature) < \

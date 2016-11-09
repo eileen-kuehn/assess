@@ -18,18 +18,19 @@ class SimpleDistance(Distance):
     * Explicit version: $\delta = |H(P)| - |H(T_{i})| + 2|H(T^{\mathrm{add}}_{i})|$
     * Recursive version: Too long ;)
     """
-    def init_distance(self):
-        Distance.init_distance(self)
-        for prototype in self._algorithm.prototypes:
-            node_counts = self._algorithm.signature_prototypes.node_count(prototype=prototype)
+    def init_distance(self, prototypes, signature_prototypes):
+        Distance.init_distance(self, prototypes, signature_prototypes)
+        for prototype in prototypes:
+            node_counts = signature_prototypes.node_count(prototype=prototype)
             for index, node_count in enumerate(node_counts):
                 self._monitoring_results_dict[index][prototype] = node_count
 
-    def update_distance(self, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, matches=[{}], **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes[index]:
                     self._update_distances(
+                        prototypes=prototypes,
                         index=index,
                         prototype_nodes=matching_prototypes,
                         node_signature=signature
@@ -37,11 +38,10 @@ class SimpleDistance(Distance):
                     self._measured_nodes[index].add(signature)
         return [match.keys() for match in matches]
 
-    def finish_distance(self):
+    def finish_distance(self, prototypes, signature_prototypes):
         pass
 
-    def _update_distances(self, index=0, prototype_nodes=None, node_signature=None):
-        prototypes = self._algorithm.prototypes
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
 
         for prototype_node in prototype_nodes:
@@ -58,17 +58,18 @@ class SimpleDistance2(Distance):
     """
     Implementation of SimpleDistance starting with an initial distance of 0.
     """
-    def init_distance(self):
-        Distance.init_distance(self)
-        for prototype in self._algorithm.prototypes:
+    def init_distance(self, prototypes, signature_prototypes):
+        Distance.init_distance(self, prototypes, signature_prototypes)
+        for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
-    def update_distance(self, matches=[{}]):
+    def update_distance(self, prototypes, signature_prototypes, matches=[{}], **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes[index]:
                     self._update_distances(
+                        prototypes=prototypes,
                         index=index,
                         prototype_nodes=matching_prototypes,
                         node_signature=signature
@@ -76,12 +77,11 @@ class SimpleDistance2(Distance):
                 self._measured_nodes[index].add(signature)
         return [match.keys()[0] for match in matches]
 
-    def finish_distance(self):
-        prototypes = self._algorithm.prototypes
+    def finish_distance(self, prototypes, signature_prototypes):
         result_dict = [dict(zip(prototypes, [0] * len(prototypes))) for _ in range(self.signature_count)]
 
         for prototype in prototypes:
-            node_counts = self._algorithm.signature_prototypes.node_count(prototype=prototype)
+            node_counts = signature_prototypes.node_count(prototype=prototype)
             # matching
             for index, node_count in enumerate(node_counts):
                 result_dict[index][prototype] = node_count - (
@@ -95,8 +95,7 @@ class SimpleDistance2(Distance):
         return [[value] for monitoring_result in self._monitoring_results_dict for value
                 in monitoring_result.values()]
 
-    def _update_distances(self, index=0, prototype_nodes=None, node_signature=None):
-        prototypes = self._algorithm.prototypes
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = 0

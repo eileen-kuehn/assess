@@ -66,12 +66,11 @@ def algorithm(signature):
 
 class TestDistance(unittest.TestCase):
     def test_creation(self):
-        self.assertRaises(TypeError, Distance)
         test_algorithm = algorithm(ParentChildByNameTopologySignature())
         test_algorithm.prototypes = ["1", "2", "3"]
         distance = Distance(signature_count=test_algorithm.signature.count)
-        distance.init_distance()
-        for index, dist in enumerate(distance):
+        distance.init_distance(prototypes=test_algorithm.prototypes, signature_prototypes=test_algorithm.signature_prototypes)
+        for index, dist in enumerate(distance.iter_on_prototypes(test_algorithm.prototypes)):
             self.assertEqual(dist, [0])
         self.assertEqual(index, 2)
         self.assertEqual(distance.node_count(), [0])
@@ -79,8 +78,8 @@ class TestDistance(unittest.TestCase):
 
     def test_raises(self):
         distance = Distance()
-        self.assertRaises(NotImplementedError, distance.update_distance)
-        self.assertRaises(NotImplementedError, distance.finish_distance)
+        self.assertRaises(NotImplementedError, distance.update_distance, None, None)
+        self.assertRaises(NotImplementedError, distance.finish_distance, None, None)
 
     def test_adding_of_results(self):
         distance = Distance()

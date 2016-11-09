@@ -32,12 +32,12 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
 
     @TreeDistanceAlgorithm.prototypes.setter
     def prototypes(self, value=None):
-        self.distance.init_distance()
+        self.distance.init_distance(prototypes=self.prototypes, signature_prototypes=self.signature_prototypes)
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
-        self.distance.init_distance()
+        self.distance.init_distance(prototypes=self.prototypes, signature_prototypes=self.signature_prototypes)
         self.supported = self.distance.supported
         self._measured_nodes = set()
 
@@ -55,18 +55,23 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         matching_prototypes = self._signature_prototypes.get(signature=signature)
         try:
             self.distance.update_distance(
+                prototypes=self.prototypes,
+                signature_prototypes=self.signature_prototypes,
                 matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)],
                 value=float(event.tme)-float(event.start_tme),
             )
         except AttributeError:
             self.distance.update_distance(
+                prototypes=self.prototypes,
+                signature_prototypes=self.signature_prototypes,
                 matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)]
             )
-        result = [value for value in self.distance]  # [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]
+        # [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]
+        result = [value for value in self.distance.iter_on_prototypes(self.prototypes)]
         return [list(element) for element in zip(*result)]
 
     def finish_tree(self):
-        return self.distance.finish_distance()
+        return self.distance.finish_distance(self.prototypes, self.signature_prototypes)
 
     def __repr__(self):
         return "%s (%s)" %(self.__class__.__name__, self.distance.__class__.__name__)

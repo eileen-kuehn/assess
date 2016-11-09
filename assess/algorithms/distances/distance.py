@@ -27,7 +27,7 @@ class Distance(object):
         self._based_on_original = False
         self.signature_count = signature_count
 
-    def __iter__(self):
+    def iter_on_prototypes(self, prototypes=None):
         """
         Result looks like this: [e_1, ..., e_n] for prototypes
         So first yield, yields all prototypes data for first ensemble.
@@ -36,20 +36,20 @@ class Distance(object):
 
         :return:
         """
-        for prototype in self._algorithm.prototypes:
+        for prototype in prototypes:
             yield [result.setdefault(prototype, 0) for result in self._monitoring_results_dict]
 
     def current_distance(self):
         return self._monitoring_results_dict.copy()
 
-    def init_distance(self):
+    def init_distance(self, prototypes, signature_prototypes):
         """
         This method is just for initialisation purposes. Internal states are reset.
         """
         self._monitoring_results_dict = [{} for _ in range(self.signature_count)]
         self._measured_nodes = [set() for _ in range(self.signature_count)]
 
-    def update_distance(self, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, matches=[{}], **kwargs):
         """
         This method is called whenever a new event has been received.
 
@@ -59,7 +59,7 @@ class Distance(object):
         """
         raise NotImplementedError
 
-    def finish_distance(self):
+    def finish_distance(self, prototypes, signature_prototypes):
         """
         This method is usually called, when the tree has been finished. It can be used to make
         adaptions/corrections to the calculated distance.

@@ -52,7 +52,8 @@ class AnomalyDecorator(Decorator):
                 for j, prototype_result in enumerate(ensemble_result):
                     self._data[-1][i][j].append(not ranges[i][0] <= result[i][j] <= ranges[i][1])
         else:
-            for i, prototype in enumerate(self.algorithm.distance):
+            for i, prototype in enumerate(self.algorithm.distance.iter_on_prototypes(
+                    self._algorithm.prototypes)):
                 for j, ensemble in enumerate(prototype):
                     self._data[-1][j][i].append(not ranges[j][i][0] <= ensemble <= ranges[j][i][1])
         self._last_event_counts = None
