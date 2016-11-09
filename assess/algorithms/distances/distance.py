@@ -16,13 +16,14 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances it currently
     stores.
     """
+    supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
+
     def __init__(self, algorithm):
         self._algorithm = algorithm
 
         self._monitoring_results_dict = None
         self._measured_nodes = None
         self._based_on_original = False
-        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
     def __iter__(self):
         """
