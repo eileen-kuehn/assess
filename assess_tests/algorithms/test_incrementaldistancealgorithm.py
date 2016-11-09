@@ -1137,7 +1137,8 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
 
         self.assertEqual([], algorithm.tree_node_counts(signature=False))
-        self.assertEqual([], algorithm.tree_node_counts(signature=True))
+        # FIXME: I might expect [] here, because it is not initialised
+        self.assertEqual([0], algorithm.tree_node_counts(signature=True))
         algorithm.start_tree()
         for event in Event.from_tree(simple_monitoring_tree()):
             algorithm.add_event(event)
@@ -1215,7 +1216,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
 
         self.assertEqual([], algorithm.tree_node_counts(signature=False))
-        self.assertEqual([], algorithm.tree_node_counts(signature=True))
+        self.assertEqual([0, 0], algorithm.tree_node_counts(signature=True))
         algorithm.start_tree()
         for event in Event.from_tree(simple_monitoring_tree()):
             algorithm.add_event(event)

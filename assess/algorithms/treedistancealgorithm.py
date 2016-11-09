@@ -5,7 +5,6 @@ whilst calculating distances.
 from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache, SignatureCache
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 from assess.exceptions.exceptions import EventNotSupportedException
 
@@ -31,7 +30,6 @@ class TreeDistanceAlgorithm(object):
             self._signature = signature
         # signature caches
         self._signature_prototypes = self._signature.prototype_signature_cache_class()
-        self._signature_tree = self._signature.signature_cache_class()
 
         self._prototypes = []
         self._tree = Tree()
@@ -109,15 +107,6 @@ class TreeDistanceAlgorithm(object):
         self._signature_prototypes = signature_prototypes
         self._prototypes = prototypes
 
-    @property
-    def signature_tree(self):
-        """
-        Method that returns the signatures of the current monitoring tree.
-
-        :return: Signatures of monitoring tree
-        """
-        return self._signature_tree
-
     def tree_node_counts(self, signature=False):
         """
         Returns the list of count of nodes for monitoring tree per prototype. If signature is True,
@@ -129,7 +118,7 @@ class TreeDistanceAlgorithm(object):
         :return: List of counts for monitoring tree per prototype
         """
         if signature:
-            return self._signature_tree.node_count()
+            return self.distance.node_count()
         else:
             count = self._tree.node_count()
         return [count for _ in range(self._signature.count)] if count > 0 else []
@@ -187,7 +176,6 @@ class TreeDistanceAlgorithm(object):
         """
         self._tree = Tree()
         self._tree_dict = ObjectCache()
-        self._signature_tree = self._signature.signature_cache_class()
         self._event_counter = 0
         assert maxlen is None or maxlen <= len(self._prototypes)
         self._maxlen = maxlen
@@ -233,7 +221,6 @@ class TreeDistanceAlgorithm(object):
                 signature = self.create_signature(node, parent)
                 # added to keep information related signature for event
                 event.signature = signature
-                self._signature_tree.add_signature(signature=signature)
                 return self.update_distance(event, signature, **kwargs)
         elif isinstance(event, ProcessExitEvent):
             if self.supported.get(ProcessExitEvent, False):
@@ -348,6 +335,5 @@ class TreeDistanceAlgorithm(object):
         obj_dict["_prototypes"] = []
         obj_dict["_signature_prototypes"] = type(self._signature_prototypes)()
         obj_dict["_tree"] = Tree()
-        obj_dict["_signature_tree"] = type(self._signature_tree)()
         obj_dict["_tree_dict"] = type(self._tree_dict)()
         return obj_dict

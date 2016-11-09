@@ -46,7 +46,7 @@ class DataDecorator(Decorator):
         self._data["monitoring"].setdefault("original", [None])[-1] = \
             [self._algorithm.tree.node_count()]
         self._data["monitoring"].setdefault("converted", [None])[-1] = \
-            self._algorithm.signature_tree.node_count()
+            self._algorithm.distance.node_count()
 
     def data(self):
         return self._data

@@ -75,6 +75,9 @@ class Distance(object):
 
         Returned format looks like: [v1e1, ..., vnen]
 
+        This method always at least returns a count of 0. Also if the distance itself was not
+        initialised, still 0 is returned.
+
         :return: Count of nodes considered from distance
         """
         return [len(measured_nodes) for measured_nodes in self._measured_nodes]

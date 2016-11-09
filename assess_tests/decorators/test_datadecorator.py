@@ -42,7 +42,7 @@ class TestDataDecorator(unittest.TestCase):
                 },
                 "monitoring": {
                     "original": [[0]],
-                    "converted": [[]]
+                    "converted": [[0]]
                 }
             }}
         )
