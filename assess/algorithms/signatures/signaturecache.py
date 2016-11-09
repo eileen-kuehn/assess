@@ -48,7 +48,11 @@ class SignatureCache(object):
         current_value = self._prototype_dict.get(signature, {})
         if value:
             for key in value:
-                current_value.setdefault(key, []).append(value[key])
+                current_value.setdefault(key, SplittedStatistics(statistics_type=MeanVariance)).add(value[key])
+        try:
+            current_value["count"] += 1
+        except KeyError:
+            current_value["count"] = 1
         self[signature] = current_value
 
     def get(self, signature):
@@ -68,7 +72,13 @@ class SignatureCache(object):
         :param signature: Signature to get the count for
         :return: Current count for signature, otherwise 0
         """
-        return self._prototype_dict.score(signature)
+        try:
+            return self._prototype_dict.get(signature, {}).get("count", 0)
+        except KeyError:
+            return 0
+
+    def get_statistics(self, signature, key):
+        pass
 
     def node_count(self, **kwargs):
         """
@@ -156,21 +166,17 @@ class PrototypeSignatureCache(SignatureCache):
         :param prototype: Prototype the signature belongs to
         :param value: Value for signature
         """
+        prototype_dictionary = self._prototype_dict.get(signature, dict())
+        current_value = prototype_dictionary.setdefault(prototype, {})
+        if value:
+            for key in value:
+                current_value.setdefault(key, SplittedStatistics(statistics_type=MeanVariance)).add(value=value[key])
         try:
-            # bump current count
-            self._prototype_dict[signature] = self._prototype_dict[signature]
+            current_value["count"] += 1
         except KeyError:
-            pass
-        prototype_dictionary = self._prototype_dict.setdefault(signature, dict())
-        if prototype in prototype_dictionary:
-            prototype_dictionary[prototype]["count"] += 1
-            prototype_dictionary[prototype]["duration"].add(value=value)
-        else:
-            statistics = SplittedStatistics(statistics_type=MeanVariance)
-            statistics.add(value=value)
-            prototype_dictionary[prototype] = {}
-            prototype_dictionary[prototype]["duration"] = statistics
-            prototype_dictionary[prototype]["count"] = 1
+            current_value["count"] = 1
+        # bumps the current count and sets current values
+        self._prototype_dict[signature] = prototype_dictionary
 
     def node_count(self, prototype=None):
         """

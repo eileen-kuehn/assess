@@ -75,13 +75,13 @@ class TestPrototypeSignatureCache(unittest.TestCase):
     def test_frequency(self):
         cache = PrototypeSignatureCache()
         self.assertEqual(cache.frequency(), 0)
-        cache.add_signature(signature="test", prototype="1", value=1)
-        cache.add_signature(signature="test", prototype="1", value=1)
-        cache.add_signature(signature="test", prototype="2", value=2)
+        cache.add_signature(signature="test", prototype="1", value={"duration": 1})
+        cache.add_signature(signature="test", prototype="1", value={"duration": 1})
+        cache.add_signature(signature="test", prototype="2", value={"duration": 2})
         self.assertEqual(cache.frequency(), 3)
         self.assertEqual(cache.frequency(prototype="1"), 2)
         self.assertEqual(cache.frequency(prototype="2"), 1)
-        cache.add_signature(signature="hello", prototype="1", value=1)
+        cache.add_signature(signature="hello", prototype="1", value={"duration": 1})
         self.assertEqual(cache.frequency(prototype="1"), 3)
         self.assertEqual(cache.frequency(prototype="2"), 1)
 

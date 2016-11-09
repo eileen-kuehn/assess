@@ -82,7 +82,7 @@ class TreeDistanceAlgorithm(object):
                 self._signature_prototypes.add_signature(
                     signature=signature,
                     prototype=prototype,
-                    value=(float(process.exit_tme)-float(process.tme))
+                    value={"duration": (float(process.exit_tme)-float(process.tme))}
                 )
         self._prototypes = value
 

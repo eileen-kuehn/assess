@@ -44,7 +44,7 @@ def prototype_signature(prototype=None, signature=None):
         signature_prototype.add_signature(
             signature=node_signature,
             prototype=prototype,
-            value=(float(node.exit_tme)-float(node.tme))
+            value={"duration": (float(node.exit_tme)-float(node.tme))}
         )
     return signature_prototype
 

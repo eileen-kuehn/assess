@@ -78,7 +78,7 @@ class TestEnsembleSignatureCache(unittest.TestCase):
                 self.assertEqual([], cache.get(signature=tokens))
             else:
                 self.assertTrue(isinstance(cache.get(signature=tokens)[0], dict))
-            cache.add_signature(tokens, prototype=tree, value=1)
+            cache.add_signature(tokens, prototype=tree, value={"duration": 1})
             stats = cache.get(signature=tokens)[0][tree]["duration"]
             self.assertTrue(stats.count >= 1)
         self.assertEqual([4], cache.node_count())
@@ -105,7 +105,7 @@ class TestEnsembleSignatureCache(unittest.TestCase):
                 received = cache.get(signature=tokens)
                 self.assertEqual(2, len(received))
                 self.assertTrue(isinstance(received[0], dict))
-            cache.add_signature(tokens, prototype=prototype, value=1)
+            cache.add_signature(tokens, prototype=prototype, value={"duration": 1})
             received = cache.get(signature=tokens)
             self.assertEqual(2, len(received))
             self.assertTrue(isinstance(received[0], dict))
@@ -119,6 +119,6 @@ class TestEnsembleSignatureCache(unittest.TestCase):
 
         prototype = simple_monitoring_tree()
         for node in prototype.nodes():
-            cache.add_signature(signature.get_signature(node, parent=node.parent()), prototype=prototype, value=1)
+            cache.add_signature(signature.get_signature(node, parent=node.parent()), prototype=prototype, value={"duration": 1})
         self.assertEqual([3, 4], cache.node_count())
         self.assertEqual([4, 4], cache.frequency())
