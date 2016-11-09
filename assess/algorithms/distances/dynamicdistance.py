@@ -49,7 +49,7 @@ class DynamicDistance(Distance):
             self._algorithm.signature_prototypes.node_count(prototype=prototype)
         return 1 - frequency / float(count + frequency)
 
-    def update_distance(self, prototypes, signature_prototypes, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], **kwargs):
         result_dict = [dict(zip(self._algorithm.prototypes, [0] * len(
             prototypes))) for _ in range(self.signature_count)]
 

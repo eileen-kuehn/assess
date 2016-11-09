@@ -5,6 +5,7 @@ on their start and exit events.
 
 from assess.algorithms.distances.distance import Distance
 from assess.algorithms.signatures.signaturecache import SignatureCache
+from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
 
 class StartExitDistance(Distance):
@@ -26,11 +27,12 @@ class StartExitDistance(Distance):
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = node_count
 
-    def update_distance(self, prototypes, signature_prototypes, matches=[{}], value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type, matches=[{}], value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 self._update_distances(
                     prototypes=prototypes,
+                    event_type=event_type,
                     index=index,
                     prototype_nodes=matching_prototypes,
                     node_signature=signature,
@@ -47,7 +49,7 @@ class StartExitDistance(Distance):
 
         for prototype_node in prototype_nodes:
             if self._signature_cache[index].get(signature=node_signature) < \
-                            2*prototype_nodes[prototype_node]["duration"].count:
+                            2 * prototype_nodes[prototype_node]["count"]:
                 distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
                 if distance is None:
                     result_dict[prototype_node] = -.5

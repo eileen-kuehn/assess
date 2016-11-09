@@ -57,6 +57,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             self.distance.update_distance(
                 prototypes=self.prototypes,
                 signature_prototypes=self.signature_prototypes,
+                event_type=type(event),
                 matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)],
                 value=float(event.tme)-float(event.start_tme),
             )
@@ -64,6 +65,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
             self.distance.update_distance(
                 prototypes=self.prototypes,
                 signature_prototypes=self.signature_prototypes,
+                event_type=type(event),
                 matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)]
             )
         # [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]

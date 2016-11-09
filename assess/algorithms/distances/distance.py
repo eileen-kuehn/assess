@@ -49,7 +49,7 @@ class Distance(object):
         self._monitoring_results_dict = [{} for _ in range(self.signature_count)]
         self._measured_nodes = [set() for _ in range(self.signature_count)]
 
-    def update_distance(self, prototypes, signature_prototypes, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], **kwargs):
         """
         This method is called whenever a new event has been received.
 

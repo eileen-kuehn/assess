@@ -19,7 +19,7 @@ class StartDistance(Distance):
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = node_count
 
-    def update_distance(self, prototypes, signature_prototypes, matches=[{}], value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 self._update_distances(

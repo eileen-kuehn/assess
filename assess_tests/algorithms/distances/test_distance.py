@@ -79,7 +79,6 @@ class TestDistance(unittest.TestCase):
     def test_raises(self):
         distance = Distance()
         self.assertRaises(NotImplementedError, distance.update_distance, None, None)
-        self.assertRaises(NotImplementedError, distance.finish_distance, None, None)
 
     def test_adding_of_results(self):
         distance = Distance()

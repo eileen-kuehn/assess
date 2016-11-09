@@ -23,7 +23,7 @@ class AdditionalMissingDistance(Distance):
                 self._additional_nodes_dict[index][prototype] = 0
                 self._missing_nodes_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, matches=[], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[], **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes:
