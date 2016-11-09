@@ -32,9 +32,6 @@ class StartDistance(Distance):
                 self._signature_cache[index].add_signature(signature=signature)
         return [match.keys() for match in matches]
 
-    def finish_distance(self, prototypes, signature_prototypes):
-        pass
-
     def node_count(self):
         return [signature_cache.frequency() for signature_cache in self._signature_cache]
 

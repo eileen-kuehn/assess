@@ -66,7 +66,7 @@ class Distance(object):
 
         :return: Array of distances in prototype order.
         """
-        raise NotImplementedError
+        pass
 
     def node_count(self):
         """

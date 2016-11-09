@@ -38,9 +38,6 @@ class SimpleDistance(Distance):
                     self._measured_nodes[index].add(signature)
         return [match.keys() for match in matches]
 
-    def finish_distance(self, prototypes, signature_prototypes):
-        pass
-
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
 
