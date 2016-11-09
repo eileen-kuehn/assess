@@ -27,7 +27,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         :return: Distance in use
         """
         if self._distance is None:
-            self._distance = self._distance_builder(algorithm=self)
+            self._distance = self._distance_builder(signature_count=self.signature.count)
         return self._distance
 
     @TreeDistanceAlgorithm.prototypes.setter

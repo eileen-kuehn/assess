@@ -18,12 +18,14 @@ class Distance(object):
     """
     supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
-    def __init__(self, algorithm):
-        self._algorithm = algorithm
-
+    def __init__(self, signature_count=1):
+        """
+        :param signature_count: The count of signatures that are processed
+        """
         self._monitoring_results_dict = None
         self._measured_nodes = None
         self._based_on_original = False
+        self.signature_count = signature_count
 
     def __iter__(self):
         """
@@ -44,9 +46,8 @@ class Distance(object):
         """
         This method is just for initialisation purposes. Internal states are reset.
         """
-        count = self._algorithm.signature.count
-        self._monitoring_results_dict = [{} for _ in range(count)]
-        self._measured_nodes = [set() for _ in range(count)]
+        self._monitoring_results_dict = [{} for _ in range(self.signature_count)]
+        self._measured_nodes = [set() for _ in range(self.signature_count)]
 
     def update_distance(self, matches=[{}], **kwargs):
         """
@@ -104,5 +105,5 @@ class Distance(object):
     def __getstate__(self):
         obj_dict = self.__dict__.copy()
         # FIXME: maybe this needs to be something else here...
-        obj_dict["_measured_nodes"] = [set()] * self._algorithm.signature.count
+        obj_dict["_measured_nodes"] = [set()] * self.signature_count
         return obj_dict

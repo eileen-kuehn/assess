@@ -11,7 +11,7 @@ class TestSimpleDistance(unittest.TestCase):
         self.test_tree = monitoring_tree()
 
     def test_creation2(self):
-        distance = SimpleDistance2(algorithm=self.algorithm)
+        distance = SimpleDistance2(signature_count=self.algorithm.signature.count)
         distance.init_distance()
         for index, dist in enumerate(distance):
             self.assertEqual(dist, [0])
@@ -33,7 +33,7 @@ class TestSimpleDistance(unittest.TestCase):
         self.assertEqual(result, distance._monitoring_results_dict)
 
     def test_creation(self):
-        distance = SimpleDistance(algorithm=self.algorithm)
+        distance = SimpleDistance(signature_count=self.algorithm.signature.count)
         distance.init_distance()
         for index, dist in enumerate(distance):
             self.assertEqual(dist, [3])

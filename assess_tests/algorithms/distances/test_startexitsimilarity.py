@@ -10,7 +10,7 @@ class TestStartExitSimilarity(unittest.TestCase):
         self.algorithm = algorithm(signature=ParentChildByNameTopologySignature())
 
     def test_creation(self):
-        similarity = StartExitSimilarity(algorithm=self.algorithm)
+        similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
         similarity.init_distance()
 
         for index, dist in enumerate(similarity):
@@ -18,7 +18,7 @@ class TestStartExitSimilarity(unittest.TestCase):
         self.assertEqual(index, 0)
 
     def test_base_similarity(self):
-        similarity = StartExitSimilarity(algorithm=self.algorithm)
+        similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
         similarity.init_distance()
 
         for index, node in enumerate(monitoring_tree().nodes()):

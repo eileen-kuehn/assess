@@ -5,10 +5,10 @@ from assess.algorithms.signatures.signaturecache import SignatureCache
 
 
 class DynamicDistance(Distance):
-    def __init__(self, algorithm, max_count=3, wrapped_distance=None):
-        Distance.__init__(self, algorithm)
+    def __init__(self, max_count=3, wrapped_distance=None, **kwargs):
+        Distance.__init__(self, **kwargs)
         self._max_count = max_count
-        self._wrapped_distance = wrapped_distance(algorithm)
+        self._wrapped_distance = wrapped_distance(**kwargs)
         self._order_cache = None
         self._last_signatures = None
 
@@ -25,8 +25,8 @@ class DynamicDistance(Distance):
     def init_distance(self):
         Distance.init_distance(self)
         self._wrapped_distance.init_distance()
-        self._order_cache = [{} for _ in range(self._algorithm.signature.count)]
-        self._last_signatures = [deque(maxlen=self._max_count)] * self._algorithm.signature.count
+        self._order_cache = [{} for _ in range(self.signature_count)]
+        self._last_signatures = [deque(maxlen=self._max_count)] * self.signature_count
 
         # create the order-dependent signature cache for prototypes
         # FIXME: this does not work with current CRs
@@ -51,7 +51,7 @@ class DynamicDistance(Distance):
 
     def update_distance(self, matches=[{}], **kwargs):
         result_dict = [dict(zip(self._algorithm.prototypes, [0] * len(
-            self._algorithm.prototypes))) for _ in range(self._algorithm.signature.count)]
+            self._algorithm.prototypes))) for _ in range(self.signature_count)]
 
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():

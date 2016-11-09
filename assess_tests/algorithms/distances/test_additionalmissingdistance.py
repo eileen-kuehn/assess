@@ -12,7 +12,7 @@ class TestAdditionalMissingDistance(unittest.TestCase):
         self.algorithm = algorithm(signature=ParentChildByNameTopologySignature())
 
     def test_creation(self):
-        distance = AdditionalMissingDistance(algorithm=self.algorithm)
+        distance = AdditionalMissingDistance(signature_count=self.algorithm.signature.count)
         distance.init_distance()
 
         for index, dist in enumerate(distance):
@@ -20,7 +20,7 @@ class TestAdditionalMissingDistance(unittest.TestCase):
         self.assertEqual(index, 0)
 
     def test_distance(self):
-        distance = AdditionalMissingDistance(algorithm=self.algorithm)
+        distance = AdditionalMissingDistance(signature_count=self.algorithm.signature.count)
         distance.init_distance()
 
         for node in monitoring_tree().nodes():
@@ -38,7 +38,7 @@ class TestAdditionalMissingDistance(unittest.TestCase):
         )
 
     def test_additional_distance(self):
-        distance = AdditionalMissingDistance(algorithm=self.algorithm)
+        distance = AdditionalMissingDistance(signature_count=self.algorithm.signature.count)
         distance.init_distance()
 
         for index, node in enumerate(additional_monitoring_tree().nodes()):

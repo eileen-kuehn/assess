@@ -20,10 +20,10 @@ class StartExitDistance(Distance):
 
     def init_distance(self):
         Distance.init_distance(self)
-        self._signature_cache = [SignatureCache() for _ in range(self._algorithm.signature.count)]
+        self._signature_cache = [SignatureCache() for _ in range(self.signature_count)]
         for prototype in self._algorithm.prototypes:
             node_count = prototype.node_count()
-            for index in range(self._algorithm.signature.count):
+            for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = node_count
 
     def update_distance(self, matches=[{}], value=None, **kwargs):

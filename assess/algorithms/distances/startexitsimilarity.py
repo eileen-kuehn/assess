@@ -20,7 +20,7 @@ class StartExitSimilarity(Distance):
         Distance.init_distance(self)
         self._signature_cache = [SignatureCache() for _ in range(len(self._monitoring_results_dict))]
         for prototype in self._algorithm.prototypes:
-            for index in range(self._algorithm.signature.count):
+            for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
     def update_distance(self, matches=[{}], value=None, **kwargs):

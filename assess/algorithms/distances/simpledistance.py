@@ -61,7 +61,7 @@ class SimpleDistance2(Distance):
     def init_distance(self):
         Distance.init_distance(self)
         for prototype in self._algorithm.prototypes:
-            for index in range(self._algorithm.signature.count):
+            for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
     def update_distance(self, matches=[{}]):
@@ -78,7 +78,7 @@ class SimpleDistance2(Distance):
 
     def finish_distance(self):
         prototypes = self._algorithm.prototypes
-        result_dict = [dict(zip(prototypes, [0] * len(prototypes))) for _ in range(self._algorithm.signature.count)]
+        result_dict = [dict(zip(prototypes, [0] * len(prototypes))) for _ in range(self.signature_count)]
 
         for prototype in prototypes:
             node_counts = self._algorithm.signature_prototypes.node_count(prototype=prototype)

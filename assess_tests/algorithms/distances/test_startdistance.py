@@ -12,7 +12,7 @@ class TestStartDistance(unittest.TestCase):
     def test_simple(self):
         algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature())
         algorithm.prototypes = [simple_prototype()]
-        distance = StartDistance(algorithm=algorithm)
+        distance = StartDistance(signature_count=algorithm.signature.count)
         distance.init_distance()
 
         for index, dist in enumerate(distance):
@@ -37,7 +37,7 @@ class TestStartDistance(unittest.TestCase):
     def test_repeated(self):
         algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature())
         algorithm.prototypes = [simple_prototype()]
-        distance = StartDistance(algorithm=algorithm)
+        distance = StartDistance(signature_count=algorithm.signature.count)
         distance.init_distance()
 
         for index, dist in enumerate(distance):
