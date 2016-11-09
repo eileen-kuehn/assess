@@ -128,11 +128,11 @@ class PrototypeSignatureCache(SignatureCache):
                 # calculate average count
                 counts = sum([signature_cache.get_count(token) for signature_cache in signature_caches])
                 durations = [signature_cache[token]["duration"] for signature_cache in signature_caches if token in signature_cache]
-                for duration in durations:
-                    # TODO: I need to deal with SplittedStatistics here
-                    pass
-                result.get(token).setdefault(prototype, {})["count"] = int(round(
-                    counts / float(len(signature_caches))))
+                prototype_dictionary = result._prototype_dict.get(token, dict())
+                current_value = prototype_dictionary.setdefault(prototype, {})
+                current_value["duration"] = sum(durations[1:], durations[0])
+                current_value["count"] = int(round(counts / float(len(signature_caches))))
+                result[token] = prototype_dictionary
         return result
 
     @staticmethod
