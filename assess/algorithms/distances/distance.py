@@ -3,6 +3,7 @@ Module deals with different handlings for distances. Those can easily be attache
 to adjust calculated distance. Therefore different combinations become available and can easily
 be parameterised.
 """
+from assess.events.events import ProcessExitEvent, ProcessStartEvent, TrafficEvent
 
 
 class Distance(object):
@@ -15,14 +16,18 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances it currently
     stores.
     """
-    def __init__(self, algorithm):
-        self._algorithm = algorithm
+    supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
+    def __init__(self, signature_count=1):
+        """
+        :param signature_count: The count of signatures that are processed
+        """
         self._monitoring_results_dict = None
         self._measured_nodes = None
         self._based_on_original = False
+        self.signature_count = signature_count
 
-    def __iter__(self):
+    def iter_on_prototypes(self, prototypes=None):
         """
         Result looks like this: [e_1, ..., e_n] for prototypes
         So first yield, yields all prototypes data for first ensemble.
@@ -31,21 +36,21 @@ class Distance(object):
 
         :return:
         """
-        for prototype in self._algorithm.prototypes:
+        for prototype in prototypes:
             yield [result.setdefault(prototype, 0) for result in self._monitoring_results_dict]
 
     def current_distance(self):
         return self._monitoring_results_dict.copy()
 
-    def init_distance(self):
+    def init_distance(self, prototypes, signature_prototypes):
         """
         This method is just for initialisation purposes. Internal states are reset.
         """
-        count = self._algorithm.signature.count
-        self._monitoring_results_dict = [{} for _ in range(count)]
-        self._measured_nodes = [set() for _ in range(count)]
+        self._monitoring_results_dict = [{} for _ in range(self.signature_count)]
+        self._measured_nodes = [set() for _ in range(self.signature_count)]
 
-    def update_distance(self, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        **kwargs):
         """
         This method is called whenever a new event has been received.
 
@@ -55,14 +60,14 @@ class Distance(object):
         """
         raise NotImplementedError
 
-    def finish_distance(self):
+    def finish_distance(self, prototypes, signature_prototypes):
         """
         This method is usually called, when the tree has been finished. It can be used to make
         adaptions/corrections to the calculated distance.
 
         :return: Array of distances in prototype order.
         """
-        raise NotImplementedError
+        pass
 
     def node_count(self):
         """
@@ -70,6 +75,9 @@ class Distance(object):
         important to calculate the normalised distance with regard to the used distance.
 
         Returned format looks like: [v1e1, ..., vnen]
+
+        This method always at least returns a count of 0. Also if the distance itself was not
+        initialised, still 0 is returned.
 
         :return: Count of nodes considered from distance
         """
@@ -89,8 +97,8 @@ class Distance(object):
         if index is None:
             result = []
             for index, element in enumerate(base):
-                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(key, 0))
-                                   for key in set(element.keys() + to_add[index].keys())))
+                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(
+                    key, 0)) for key in set(element.keys() + to_add[index].keys())))
         else:
             result = base
             for element in to_add:
@@ -101,5 +109,5 @@ class Distance(object):
     def __getstate__(self):
         obj_dict = self.__dict__.copy()
         # FIXME: maybe this needs to be something else here...
-        obj_dict["_measured_nodes"] = [set()] * self._algorithm.signature.count
+        obj_dict["_measured_nodes"] = [set()] * self.signature_count
         return obj_dict

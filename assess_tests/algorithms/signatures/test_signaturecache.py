@@ -3,8 +3,10 @@ import os
 import json
 
 import assess_tests
-from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
+from assess_tests.basedata import simple_additional_monitoring_tree, simple_prototype
+
 from assess.algorithms.statistics.statistics import MeanVariance
+from assess.algorithms.signatures.signatures import *
 
 
 class TestSignatureCache(unittest.TestCase):
@@ -23,8 +25,8 @@ class TestSignatureCache(unittest.TestCase):
         self.assertEqual(cache.node_count(), 1)
         cache.add_signature(signature="hello")
         self.assertEqual(cache.node_count(), 2)
-        self.assertEqual(cache.get(signature="test"), 2)
-        self.assertEqual(cache.get(signature="muh"), 0)
+        self.assertEqual(cache.get_count(signature="test"), 2)
+        self.assertEqual(cache.get_count(signature="muh"), 0)
 
     def test_frequency(self):
         cache = SignatureCache()
@@ -42,7 +44,7 @@ class TestSignatureCache(unittest.TestCase):
         cache.add_signature(signature=None)
         self.assertEqual(cache.node_count(), 1)
         self.assertEqual(cache.frequency(), 2)
-        self.assertEqual(cache.get(signature=None), 2)
+        self.assertEqual(cache.get_count(signature=None), 2)
 
 
 class TestPrototypeSignatureCache(unittest.TestCase):
@@ -66,20 +68,20 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         cache.add_signature(signature="hello", prototype="1")
         self.assertEqual(cache.node_count(), 2)
         self.assertEqual(len(cache.get(signature="test")), 2)
-        self.assertEqual(cache.get(signature="test")["1"].count, 1)
-        self.assertEqual(cache.get(signature="test")["2"].count, 1)
+        self.assertEqual(cache.get(signature="test")["1"]["count"], 1)
+        self.assertEqual(cache.get(signature="test")["2"]["count"], 1)
         self.assertEqual(len(cache.get(signature="muh")), 0)
 
     def test_frequency(self):
         cache = PrototypeSignatureCache()
         self.assertEqual(cache.frequency(), 0)
-        cache.add_signature(signature="test", prototype="1", value=1)
-        cache.add_signature(signature="test", prototype="1", value=1)
-        cache.add_signature(signature="test", prototype="2", value=2)
+        cache.add_signature(signature="test", prototype="1", value={"duration": 1})
+        cache.add_signature(signature="test", prototype="1", value={"duration": 1})
+        cache.add_signature(signature="test", prototype="2", value={"duration": 2})
         self.assertEqual(cache.frequency(), 3)
         self.assertEqual(cache.frequency(prototype="1"), 2)
         self.assertEqual(cache.frequency(prototype="2"), 1)
-        cache.add_signature(signature="hello", prototype="1", value=1)
+        cache.add_signature(signature="hello", prototype="1", value={"duration": 1})
         self.assertEqual(cache.frequency(prototype="1"), 3)
         self.assertEqual(cache.frequency(prototype="2"), 1)
 
@@ -131,3 +133,12 @@ class TestPrototypeSignatureCache(unittest.TestCase):
             os.path.dirname(assess_tests.__file__),
             "data/cluster.json"
         )
+
+    def test_from_signatures(self):
+        prototype = simple_additional_monitoring_tree()
+        other_prototype = simple_prototype()
+        tree_index = prototype.to_index(signature=ParentChildByNameTopologySignature())
+        prototype_index = other_prototype.to_index(signature=ParentChildByNameTopologySignature())
+        prototype_cache = PrototypeSignatureCache.from_signature_caches([tree_index, prototype_index], prototype=1, threshold=.9)
+        self.assertEqual(9, prototype_cache.frequency())
+        self.assertEqual(3, prototype_cache.node_count())

@@ -42,7 +42,7 @@ def simple_repeated_monitoring_tree():
 
 
 def simple_additional_monitoring_tree():
-    test_tree = Tree()
+    test_tree = Prototype()
     tree_root = test_tree.add_node("root", tme=0, exit_tme=3, pid=1, ppid=0)
     tree_root.add_node("hello", tme=0, exit_tme=2, pid=2, ppid=1)
     tree_root.add_node("yes", tme=0, exit_tme=1, pid=3, ppid=1)

@@ -26,6 +26,54 @@ class SplittedStatistics(object):
         self._threshold = threshold
         self._attraction_factor = attraction_factor
 
+    def __add__(self, other):
+        if self._threshold != other._threshold:
+            return TypeError
+        if self._attraction_factor != other._attraction_factor:
+            return TypeError
+        if self._statistics_type != other._statistics_type:
+            return TypeError
+        new_object = type(self)(statistics_type=self._statistics_type,
+                                threshold=self._threshold,
+                                attraction_factor=self._attraction_factor)
+        new_object += self
+        new_object += other
+        return new_object
+
+    def __iadd__(self, other):
+        if self._threshold != other._threshold:
+            return TypeError
+        if self._attraction_factor != other._attraction_factor:
+            return TypeError
+        if self._statistics_type != other._statistics_type:
+            return TypeError
+        for statistic in other._statistics:
+            if len(self._statistics) > 0:
+                value = statistic.mean
+                distance, index = self._closest_value_and_index(value)
+                if distance > self._threshold:
+                    new_statistic = self._statistics_type()
+                    new_statistic += statistic
+                    if (self._statistics[index - 1].mean if index > 0 else -float("inf")) \
+                            < value < self._statistics[index].mean:
+                        self._statistics.insert(index, new_statistic)
+                        self._perform_merging(index)
+                    else:
+                        self._statistics.insert(index + 1, new_statistic)
+                        self._perform_merging(index + 1)
+                else:
+                    self._statistics[index] += statistic
+                    self._perform_merging(index)
+            else:
+                new_statistic = self._statistics_type()
+                new_statistic += statistic
+                self._statistics.append(new_statistic)
+        return self
+
+    def __iter__(self):
+        for statistic in self._statistics:
+            yield statistic
+
     def add(self, value):
         """
         Method to add a specific value. Depending on the value, it is either added to existing
@@ -46,21 +94,24 @@ class SplittedStatistics(object):
             else:
                 self._statistics[index].add(value=value)
                 # perform merging
-                merged = True
-                while merged:
-                    merged = False
-                    if self._distribution_distance(index, index + 1) <= 1:
-                        self._statistics[index].update(statistics=self._statistics[index + 1])
-                        del self._statistics[index + 1]
-                        merged = True
-                    if self._distribution_distance(index - 1, index) <= 1:
-                        self._statistics[index - 1].update(statistics=self._statistics[index])
-                        del self._statistics[index]
-                        index -= 1
-                        merged = True
+                self._perform_merging(index)
         else:
             # just create a statistics object
             self._statistics.append(self._statistics_type(value=value))
+
+    def _perform_merging(self, index):
+        merged = True
+        while merged:
+            merged = False
+            if self._distribution_distance(index, index + 1) <= 1:
+                self._statistics[index] += self._statistics[index + 1]
+                del self._statistics[index + 1]
+                merged = True
+            if self._distribution_distance(index - 1, index) <= 1:
+                self._statistics[index - 1] += self._statistics[index]
+                del self._statistics[index]
+                index -= 1
+                merged = True
 
     def _distribution_distance(self, lower, upper):
         assert lower < upper

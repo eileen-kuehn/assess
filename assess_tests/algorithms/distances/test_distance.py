@@ -44,7 +44,7 @@ def prototype_signature(prototype=None, signature=None):
         signature_prototype.add_signature(
             signature=node_signature,
             prototype=prototype,
-            value=(float(node.exit_tme)-float(node.tme))
+            value={"duration": (float(node.exit_tme)-float(node.tme))}
         )
     return signature_prototype
 
@@ -66,24 +66,22 @@ def algorithm(signature):
 
 class TestDistance(unittest.TestCase):
     def test_creation(self):
-        self.assertRaises(TypeError, Distance)
         test_algorithm = algorithm(ParentChildByNameTopologySignature())
         test_algorithm.prototypes = ["1", "2", "3"]
-        distance = Distance(algorithm=test_algorithm)
-        distance.init_distance()
-        for index, dist in enumerate(distance):
+        distance = Distance(signature_count=test_algorithm.signature.count)
+        distance.init_distance(prototypes=test_algorithm.prototypes, signature_prototypes=test_algorithm.signature_prototypes)
+        for index, dist in enumerate(distance.iter_on_prototypes(test_algorithm.prototypes)):
             self.assertEqual(dist, [0])
         self.assertEqual(index, 2)
         self.assertEqual(distance.node_count(), [0])
         self.assertFalse(distance.is_prototype_based_on_original())
 
     def test_raises(self):
-        distance = Distance(None)
-        self.assertRaises(NotImplementedError, distance.update_distance)
-        self.assertRaises(NotImplementedError, distance.finish_distance)
+        distance = Distance()
+        self.assertRaises(NotImplementedError, distance.update_distance, None, None)
 
     def test_adding_of_results(self):
-        distance = Distance(None)
+        distance = Distance()
         self.assertEqual(
             distance._add_result_dicts(base=[{"1": 0, "2": 0}], to_add=[{"1": 1, "2": 1}]),
             [{"1": 1, "2": 1}]

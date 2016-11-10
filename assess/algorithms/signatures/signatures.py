@@ -20,7 +20,8 @@ class Signature(object):
     def __new__(cls, *args, **kwargs):
         for arg in args:
             if "ParentChildByNameTopologySignature" in arg:
-                return ParentChildByNameTopologySignature.__new__(ParentChildByNameTopologySignature)
+                return ParentChildByNameTopologySignature.__new__(
+                    ParentChildByNameTopologySignature)
             elif "ParentChildOrderTopologySignature" in arg:
                 return ParentChildOrderTopologySignature()
             elif "ParentChildOrderByNameTopologySignature" in arg:

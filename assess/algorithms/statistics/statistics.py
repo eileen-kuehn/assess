@@ -21,6 +21,21 @@ class MeanVariance(object):
         if value is not None:
             self.add(value=value)
 
+    def __iadd__(self, statistics):
+        """
+        Method that updates the current MeanVariance object with the given MeanVariance object.
+        Practically, a merging of both objects is performed.
+
+        :param statistics: object which values are merged
+        """
+        count = self._count + statistics.count
+        delta = statistics.mean - self.mean
+        self._mean += delta * (statistics.count / count)
+        self._temporal += statistics._temporal + (
+            delta * delta * self._count * statistics.count / count)
+        self._count = count
+        return self
+
     def add(self, value=.0):
         self._count += 1
         delta = value - self._mean
@@ -119,19 +134,3 @@ class MeanVariance(object):
         :return: Count of considered values
         """
         return self._count
-
-    def update(self, statistics):
-        """
-        Method that updates the current MeanVariance object with the given MeanVariance object.
-        Practically, a merging of both objects is performed.
-
-        :param statistics: object which values are merged
-        """
-        count = self._count + statistics.count
-
-        delta = statistics.mean - self.mean
-        self._mean += delta * (statistics.count / count)
-        self._temporal += statistics._temporal + \
-                          (delta * delta * self._count * statistics.count / count)
-        self._count = count
-

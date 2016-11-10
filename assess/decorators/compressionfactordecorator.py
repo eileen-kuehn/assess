@@ -53,7 +53,7 @@ class CompressionFactorDecorator(Decorator):
         original = self._algorithm.tree.node_count()  # value
         if original == 0:
             return [0]
-        node_counts = self._algorithm.signature_tree.node_count()  # [ve1, ..., ven]
+        node_counts = self._algorithm.distance.node_count()  # [ve1, ..., ven]
         return [1.0 - (node_count / float(original)) for node_count in node_counts]
 
     def _compression_factor(self):

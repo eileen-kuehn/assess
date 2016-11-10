@@ -52,7 +52,8 @@ class AnomalyDecorator(Decorator):
                 for j, prototype_result in enumerate(ensemble_result):
                     self._data[-1][i][j].append(not ranges[i][0] <= result[i][j] <= ranges[i][1])
         else:
-            for i, prototype in enumerate(self.algorithm.distance):
+            for i, prototype in enumerate(self.algorithm.distance.iter_on_prototypes(
+                    self._algorithm.prototypes)):
                 for j, ensemble in enumerate(prototype):
                     self._data[-1][j][i].append(not ranges[j][i][0] <= ensemble <= ranges[j][i][1])
         self._last_event_counts = None
@@ -90,7 +91,9 @@ class AnomalyDecorator(Decorator):
         lower = []
         upper = []
         for ensemble_index, current_progress in enumerate(progress):
-            lower.append([-current_progress + count for count in self._tmp_prototype_counts[ensemble_index]])
-            upper.append([-current_progress + count * (1 + self._percentage) for count in self._tmp_prototype_counts[ensemble_index]])
+            lower.append([-current_progress + count
+                          for count in self._tmp_prototype_counts[ensemble_index]])
+            upper.append([-current_progress + count * (1 + self._percentage)
+                          for count in self._tmp_prototype_counts[ensemble_index]])
         result = [zip(lower[index], upper[index]) for index in range(len(lower))]
         return result
