@@ -6,8 +6,8 @@ import bisect
 
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException
-from assess.events.events import Event
-from assess.algorithms.signatures.signaturecache import SignatureCache
+from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent
+from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
@@ -542,16 +542,39 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False):
-        signature_cache = SignatureCache()
+    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False, cache=None):
+        if cache is None:
+            cache = SignatureCache(
+                {
+                    ProcessStartEvent: start_support,
+                    ProcessExitEvent: exit_support,
+                    TrafficEvent: traffic_support
+                })
         for node in self.node_iter():
             current_signature = signature.get_signature(node, node.parent())
             if start_support:
-                signature_cache.add_signature(current_signature)
+                cache.add_signature(current_signature)
             if exit_support:
-                signature_cache.add_signature(current_signature, {
+                cache.add_signature(current_signature, {
                     "duration": node.exit_tme - node.tme})
-        return signature_cache
+        return cache
+
+    def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False, cache=None):
+        if cache is None:
+            cache = PrototypeSignatureCache(
+                {
+                    ProcessStartEvent: start_support,
+                    ProcessExitEvent: exit_support,
+                    TrafficEvent: traffic_support
+                })
+        for node in self.node_iter():
+            current_signature = signature.get_signature(node, node.parent())
+            if start_support:
+                cache.add_signature(current_signature, self)
+            if exit_support:
+                cache.add_signature(current_signature, self, {
+                    "duration": node.exit_tme - node.tme})
+        return cache
 
     def event_iter(self):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
