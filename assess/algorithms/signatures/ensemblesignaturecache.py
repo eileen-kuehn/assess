@@ -3,9 +3,7 @@ This module implements ensemble version of SignatureCache as well as PrototypeSi
 enable ensemble based algorithms.
 """
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
-from assess.algorithms.statistics.splittedstatistics import SplittedStatistics
-from assess.algorithms.statistics.statistics import MeanVariance
-from cachemap.frequencycachemap import FrequencyCacheMap
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
 class EnsembleSignatureCache(object):
@@ -13,10 +11,15 @@ class EnsembleSignatureCache(object):
     The EnsembleSignatureCache holds a list of SignatureCache objects to enable the approach to
     handle different kinds of signatures in parallel.
     """
-    def __init__(self):
+    def __init__(self, supported=None):
         self._signature_dicts = []
+        self.supported = supported or {
+            ProcessStartEvent: True,
+            ProcessExitEvent: False,
+            TrafficEvent: False
+        }
 
-    def add_signature(self, signature=None):
+    def add_signature(self, signature=None, value=None):
         """
         Adding another occurence of a signature to the current cache. If signature is not in the
         Cache so far, its count is set to 1, otherwise it is incremented.
@@ -25,10 +28,10 @@ class EnsembleSignatureCache(object):
         """
         for index, token in enumerate(signature):
             try:
-                self._signature_dicts[index].add_signature(signature=token)
+                self._signature_dicts[index].add_signature(signature=token, value=value)
             except IndexError:
-                self._signature_dicts = [SignatureCache() for _ in range(len(signature))]
-                self._signature_dicts[index].add_signature(signature=token)
+                self._signature_dicts = [SignatureCache(self.supported) for _ in range(len(signature))]
+                self._signature_dicts[index].add_signature(signature=token, value=value)
 
     def get(self, signature):
         """

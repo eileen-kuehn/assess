@@ -5,6 +5,7 @@ also defines the statistics being available for PrototypeSignatureCache.
 
 from assess.algorithms.statistics.splittedstatistics import SplittedStatistics
 from assess.algorithms.statistics.statistics import MeanVariance
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 from cachemap.frequencycachemap import FrequencyCacheMap
 
 
@@ -13,8 +14,13 @@ class SignatureCache(object):
     The SignatureCache takes care of managing statistics for based on the signature. Different
     statistics, e.g. MeanVariance can be supported.
     """
-    def __init__(self):
+    def __init__(self, supported=None):
         self._prototype_dict = FrequencyCacheMap()
+        self.supported = supported or {
+            ProcessStartEvent: True,
+            ProcessExitEvent: False,
+            TrafficEvent: False
+        }
 
     def __setitem__(self, key, value):
         try:
@@ -117,7 +123,7 @@ class PrototypeSignatureCache(SignatureCache):
     """
     @staticmethod
     def from_signature_caches(signature_caches, prototype=None, threshold=.1):
-        result = PrototypeSignatureCache()
+        result = PrototypeSignatureCache(signature_caches[0].supported)
         token_set = set()
         for signature_cache in signature_caches:
             token_set.update(signature_cache.internal().keys())
