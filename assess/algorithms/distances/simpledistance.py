@@ -25,7 +25,8 @@ class SimpleDistance(Distance):
             for index, node_count in enumerate(node_counts):
                 self._monitoring_results_dict[index][prototype] = node_count
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes[index]:
@@ -61,7 +62,8 @@ class SimpleDistance2(Distance):
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes[index]:
@@ -75,7 +77,8 @@ class SimpleDistance2(Distance):
         return [match.keys()[0] for match in matches]
 
     def finish_distance(self, prototypes, signature_prototypes):
-        result_dict = [dict(zip(prototypes, [0] * len(prototypes))) for _ in range(self.signature_count)]
+        result_dict = [dict(zip(prototypes, [0] * len(prototypes))) for _ in range(
+            self.signature_count)]
 
         for prototype in prototypes:
             node_counts = signature_prototypes.node_count(prototype=prototype)

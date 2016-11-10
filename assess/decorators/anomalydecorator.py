@@ -91,7 +91,9 @@ class AnomalyDecorator(Decorator):
         lower = []
         upper = []
         for ensemble_index, current_progress in enumerate(progress):
-            lower.append([-current_progress + count for count in self._tmp_prototype_counts[ensemble_index]])
-            upper.append([-current_progress + count * (1 + self._percentage) for count in self._tmp_prototype_counts[ensemble_index]])
+            lower.append([-current_progress + count
+                          for count in self._tmp_prototype_counts[ensemble_index]])
+            upper.append([-current_progress + count * (1 + self._percentage)
+                          for count in self._tmp_prototype_counts[ensemble_index]])
         result = [zip(lower[index], upper[index]) for index in range(len(lower))]
         return result

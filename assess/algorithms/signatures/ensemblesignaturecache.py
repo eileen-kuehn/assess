@@ -30,7 +30,8 @@ class EnsembleSignatureCache(object):
             try:
                 self._signature_dicts[index].add_signature(signature=token, value=value)
             except IndexError:
-                self._signature_dicts = [SignatureCache(self.supported) for _ in range(len(signature))]
+                self._signature_dicts = [SignatureCache(self.supported) for _ in range(
+                    len(signature))]
                 self._signature_dicts[index].add_signature(signature=token, value=value)
 
     def get(self, signature):

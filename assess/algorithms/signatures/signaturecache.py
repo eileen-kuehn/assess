@@ -54,7 +54,8 @@ class SignatureCache(object):
         current_value = self._prototype_dict.get(signature, {})
         if value:
             for key in value:
-                current_value.setdefault(key, SplittedStatistics(statistics_type=MeanVariance)).add(value[key])
+                current_value.setdefault(
+                    key, SplittedStatistics(statistics_type=MeanVariance)).add(value[key])
         try:
             current_value["count"] += 1
         except KeyError:
@@ -128,12 +129,15 @@ class PrototypeSignatureCache(SignatureCache):
         for signature_cache in signature_caches:
             token_set.update(signature_cache.internal().keys())
         for token in token_set:
-            occurences = len([1 for signature_cache in signature_caches if token in signature_cache])
+            occurences = len([1 for signature_cache in signature_caches
+                              if token in signature_cache])
             if occurences / float(len(signature_caches)) > threshold:
                 # signature is getting part of prototype signature
                 # calculate average count
-                counts = sum([signature_cache.get_count(token) for signature_cache in signature_caches])
-                durations = [signature_cache[token]["duration"] for signature_cache in signature_caches if token in signature_cache]
+                counts = sum([signature_cache.get_count(token) for
+                              signature_cache in signature_caches])
+                durations = [signature_cache[token]["duration"] for
+                             signature_cache in signature_caches if token in signature_cache]
                 prototype_dictionary = result._prototype_dict.get(token, dict())
                 current_value = prototype_dictionary.setdefault(prototype, {})
                 current_value["duration"] = sum(durations[1:], durations[0])
@@ -176,7 +180,8 @@ class PrototypeSignatureCache(SignatureCache):
         current_value = prototype_dictionary.setdefault(prototype, {})
         if value:
             for key in value:
-                current_value.setdefault(key, SplittedStatistics(statistics_type=MeanVariance)).add(value=value[key])
+                current_value.setdefault(
+                    key, SplittedStatistics(statistics_type=MeanVariance)).add(value=value[key])
         try:
             current_value["count"] += 1
         except KeyError:

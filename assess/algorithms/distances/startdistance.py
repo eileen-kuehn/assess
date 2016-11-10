@@ -19,7 +19,8 @@ class StartDistance(Distance):
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = node_count
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 self._update_distances(
@@ -35,7 +36,8 @@ class StartDistance(Distance):
     def node_count(self):
         return [signature_cache.frequency() for signature_cache in self._signature_cache]
 
-    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None, value=None):
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
+                          value=None):
         result_dict = dict(zip(prototypes, [1] * len(prototypes)))
 
         for prototype_node in prototype_nodes:

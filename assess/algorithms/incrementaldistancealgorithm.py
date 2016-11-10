@@ -32,12 +32,14 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
 
     @TreeDistanceAlgorithm.prototypes.setter
     def prototypes(self, value=None):
-        self.distance.init_distance(prototypes=self.prototypes, signature_prototypes=self.signature_prototypes)
+        self.distance.init_distance(prototypes=self.prototypes,
+                                    signature_prototypes=self.signature_prototypes)
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
-        self.distance.init_distance(prototypes=self.prototypes, signature_prototypes=self.signature_prototypes)
+        self.distance.init_distance(prototypes=self.prototypes,
+                                    signature_prototypes=self.signature_prototypes)
         self.supported = self.distance.supported
         self._measured_nodes = set()
 
@@ -45,7 +47,8 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         if self.distance.is_prototype_based_on_original():
             return [[prototype.node_count() for prototype in self._prototypes] for _ in range(
                 self._signature.count)]
-        result = [self._signature_prototypes.node_count(prototype=prototype) for prototype in self._prototypes]
+        result = [self._signature_prototypes.node_count(prototype=prototype)
+                  for prototype in self._prototypes]
         return [[element[i] for element in result] for i in range(len(result[0]))]
 
     def _event_count(self):
@@ -58,7 +61,8 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
                 prototypes=self.prototypes,
                 signature_prototypes=self.signature_prototypes,
                 event_type=type(event),
-                matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)],
+                matches=[{token: matching_prototypes[index]}
+                         for index, token in enumerate(signature)],
                 value=float(event.tme)-float(event.start_tme),
             )
         except AttributeError:
@@ -66,7 +70,8 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
                 prototypes=self.prototypes,
                 signature_prototypes=self.signature_prototypes,
                 event_type=type(event),
-                matches=[{token: matching_prototypes[index]} for index, token in enumerate(signature)]
+                matches=[{token: matching_prototypes[index]}
+                         for index, token in enumerate(signature)]
             )
         # [[p1e1, ..., p1en], ..., [pne1, ..., pnen]]
         result = [value for value in self.distance.iter_on_prototypes(self.prototypes)]

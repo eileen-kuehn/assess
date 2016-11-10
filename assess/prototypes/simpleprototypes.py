@@ -542,7 +542,8 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False, cache=None):
+    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False,
+                 cache=None):
         if cache is None:
             cache = SignatureCache(
                 {
@@ -559,7 +560,8 @@ class Prototype(Tree):
                     "duration": node.exit_tme - node.tme})
         return cache
 
-    def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False, cache=None):
+    def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False,
+                     cache=None):
         if cache is None:
             cache = PrototypeSignatureCache(
                 {

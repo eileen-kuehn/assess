@@ -49,7 +49,8 @@ class Distance(object):
         self._monitoring_results_dict = [{} for _ in range(self.signature_count)]
         self._measured_nodes = [set() for _ in range(self.signature_count)]
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        **kwargs):
         """
         This method is called whenever a new event has been received.
 
@@ -96,8 +97,8 @@ class Distance(object):
         if index is None:
             result = []
             for index, element in enumerate(base):
-                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(key, 0))
-                                   for key in set(element.keys() + to_add[index].keys())))
+                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(
+                    key, 0)) for key in set(element.keys() + to_add[index].keys())))
         else:
             result = base
             for element in to_add:

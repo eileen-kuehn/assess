@@ -76,30 +76,6 @@ class DistanceMatrixDecorator(Decorator):
                 else:
                     self._distance_matrix[-1][i][j] = result[i][j]
 
-
-        # if self._normalized:
-        #     if self._tmp_prototype_counts is None:
-        #         self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
-        #     event_counts = self._algorithm.event_counts()
-        #
-        #     for index, prototype_result in enumerate(result):
-        #         for i, ensemble in enumerate(prototype_result):
-        #             try:
-        #                 self._distance_matrix[i][-1][index] = ensemble / float(
-        #                     event_counts[index][i] + self._tmp_prototype_counts[index][i])
-        #             except IndexError:
-        #                 self._distance_matrix[i][-1] = [0] * len(self.algorithm.prototypes)
-        #                 self._distance_matrix[i][-1][index] = ensemble / float(
-        #                     event_counts[index][i] + self._tmp_prototype_counts[index][i])
-        # else:
-        #     for index, prototype_result in enumerate(result):
-        #         for i, ensemble in enumerate(prototype_result):
-        #             try:
-        #                 self._distance_matrix[i][-1][index] = ensemble
-        #             except IndexError:
-        #                 self._distance_matrix[i][-1] = [0] * len(self.algorithm.prototypes)
-        #                 self._distance_matrix[i][-1][index] = ensemble
-
     def _matrix_size(self):
         if self._distance_matrix is None:
             self._distance_matrix = [[]]

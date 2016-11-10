@@ -18,12 +18,14 @@ class StartExitSimilarity(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache() for _ in range(len(self._monitoring_results_dict))]
+        self._signature_cache = [SignatureCache() for _ in range(len(
+            self._monitoring_results_dict))]
         for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}], value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
+                        value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 self._update_distances(
@@ -39,7 +41,8 @@ class StartExitSimilarity(Distance):
     def node_count(self):
         return [signature_cache.frequency()/2.0 for signature_cache in self._signature_cache]
 
-    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None, value=None):
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
+                          value=None):
         result_dict = dict(zip(prototypes, [0] * len(prototypes)))
         for prototype_node in prototype_nodes:
             if self._signature_cache[index].get_count(signature=node_signature) < \

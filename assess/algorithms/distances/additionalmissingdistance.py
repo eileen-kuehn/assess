@@ -23,7 +23,8 @@ class AdditionalMissingDistance(Distance):
                 self._additional_nodes_dict[index][prototype] = 0
                 self._missing_nodes_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[], **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[],
+                        **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature not in self._measured_nodes:
@@ -63,7 +64,8 @@ class AdditionalMissingDistance(Distance):
         return [[value] for monitoring_result in self._monitoring_results_dict for value
                 in monitoring_result.values()]
 
-    def _update_additional_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
+    def _update_additional_distances(self, prototypes, index=0, prototype_nodes=None,
+                                     node_signature=None):
         result_dict = [dict(zip(prototypes, [1] * len(prototypes)))]
 
         for prototype_node in prototype_nodes:
@@ -80,7 +82,8 @@ class AdditionalMissingDistance(Distance):
             base=self._additional_nodes_dict
         )
 
-    def _update_missing_distances(self, prototypes, signature_prototypes, index, prototype_nodes=None, node_signature=None):
+    def _update_missing_distances(self, prototypes, signature_prototypes, index,
+                                  prototype_nodes=None, node_signature=None):
         result_dict = [dict(zip(prototypes, [1] * len(prototypes)))]
         for prototype_node in prototype_nodes:
             result_dict[index][prototype_node] = 0
