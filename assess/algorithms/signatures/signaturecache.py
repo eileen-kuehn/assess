@@ -131,7 +131,8 @@ class PrototypeSignatureCache(SignatureCache):
         for token in token_set:
             occurences = len([1 for signature_cache in signature_caches
                               if token in signature_cache])
-            if occurences / float(len(signature_caches)) > threshold:
+            probability = occurences / float(len(signature_caches))
+            if probability > threshold:
                 # signature is getting part of prototype signature
                 # calculate average count
                 counts = sum([signature_cache.get_count(token) for
@@ -142,6 +143,7 @@ class PrototypeSignatureCache(SignatureCache):
                 current_value = prototype_dictionary.setdefault(prototype, {})
                 current_value["duration"] = sum(durations[1:], durations[0])
                 current_value["count"] = int(round(counts / float(len(signature_caches))))
+                current_value["probability"] = probability
                 result[token] = prototype_dictionary
         return result
 
