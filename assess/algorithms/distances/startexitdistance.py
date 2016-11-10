@@ -72,6 +72,8 @@ class StartExitDistance(Distance):
         result_dict = dict(zip(prototypes, [base] * len(prototypes)))
 
         for prototype_node in prototype_nodes:
+            if prototype_nodes[prototype_node] is None:
+                continue
             if self._signature_cache[index].get_count(signature=node_signature) < \
                             prototype_nodes[prototype_node]["count"]:
                 distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
