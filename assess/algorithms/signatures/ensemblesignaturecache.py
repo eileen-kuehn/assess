@@ -90,8 +90,9 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
     The EnsemblePrototypeSignatureCache holds a list of PrototypeSignatureCaches to enable
     ensemble methods for distance measurements.
     """
-    def __init__(self):
-        self._prototype_dicts = []
+    def __init__(self, **kwargs):
+        PrototypeSignatureCache.__init__(self, **kwargs)
+        self._prototype_dict = []
 
     def add_signature(self, signature=None, prototype=None, value=None):
         """
@@ -103,14 +104,14 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         """
         for index, token in enumerate(signature):
             try:
-                self._prototype_dicts[index].add_signature(signature=token,
-                                                           prototype=prototype,
-                                                           value=value)
+                self._prototype_dict[index].add_signature(signature=token,
+                                                          prototype=prototype,
+                                                          value=value)
             except IndexError:
-                self._prototype_dicts = [PrototypeSignatureCache() for _ in range(len(signature))]
-                self._prototype_dicts[index].add_signature(signature=token,
-                                                           prototype=prototype,
-                                                           value=value)
+                self._prototype_dict = [PrototypeSignatureCache() for _ in range(len(signature))]
+                self._prototype_dict[index].add_signature(signature=token,
+                                                          prototype=prototype,
+                                                          value=value)
 
     def node_count(self, prototype=None):
         """
@@ -121,7 +122,7 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         :param prototype: Prototype to get the number of signatures for
         :return: List of numbers of tokens for prototype
         """
-        return [cache.node_count(prototype=prototype) for cache in self._prototype_dicts]
+        return [cache.node_count(prototype=prototype) for cache in self._prototype_dict]
 
     def get(self, signature=None):
         """
@@ -132,7 +133,7 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         :return: List of dictionaries of prototypes with statistics as value
         """
         try:
-            return [self._prototype_dicts[index].get(signature=token) for index, token in
+            return [self._prototype_dict[index].get(signature=token) for index, token in
                     enumerate(signature)]
         except IndexError:
             return []
@@ -147,4 +148,4 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         :param prototype: Prototype to determine frequency from
         :return: List of frequency of tokens
         """
-        return [cache.frequency(prototype=prototype) for cache in self._prototype_dicts]
+        return [cache.frequency(prototype=prototype) for cache in self._prototype_dict]
