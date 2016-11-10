@@ -26,16 +26,19 @@ class StartExitDistance(Distance):
         Distance.__init__(self, **kwargs)
         self._based_on_original = True
         self._signature_cache = None
+        assert 0 <= weight <= 1
         self._weight = weight
-        assert 0 <= self._weight <= 1
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
         self._signature_cache = [SignatureCache() for _ in range(self.signature_count)]
         for prototype in prototypes:
-            node_count = prototype.node_count()
             for index in range(self.signature_count):
-                self._monitoring_results_dict[index][prototype] = node_count
+                node_count = signature_prototypes.frequency(prototype)
+                try:
+                    self._monitoring_results_dict[index][prototype] = node_count[index]
+                except TypeError:
+                    self._monitoring_results_dict[index][prototype] = node_count
 
     def update_distance(self, prototypes, signature_prototypes, event_type, matches=[{}], value=None, **kwargs):
         for index, match in enumerate(matches):
@@ -53,21 +56,22 @@ class StartExitDistance(Distance):
         return [match.keys()[0] for match in matches]
 
     def node_count(self):
-        return [signature_cache.frequency()/2.0 for signature_cache in self._signature_cache]
+        return self._signature_cache.frequency()
 
     def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None, node_signature=None, value=None):
+        weight = 2 * self._weight  # two times, because looking at start and exit
         if event_type == ProcessStartEvent:
             # because we have to consider signatures from start and exit, we need to deal with
             # the half of the given weight here
-            base = self._weight / 2.0
+            base = weight / 2.0
         else:
-            property_base = 1 - self._weight
-            base = self._weight / 2.0 + property_base
+            property_base = 2 - weight
+            base = weight / 2.0 + property_base
         result_dict = dict(zip(prototypes, [base] * len(prototypes)))
 
         for prototype_node in prototype_nodes:
             if self._signature_cache[index].get_count(signature=node_signature) < \
-                            2 * prototype_nodes[prototype_node]["count"]:
+                            prototype_nodes[prototype_node]["count"]:
                 distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
                 # distance is none when start event or properties are 0
                 result_dict[prototype_node] = -base
