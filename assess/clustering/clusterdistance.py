@@ -29,7 +29,6 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         self.distance = distance
 
     def __call__(self, first, second, default=None):
-        start_time = time.time()
         if isinstance(first, EnsembleSignatureCache):
             first = first.internal()[0]
         if isinstance(second, EnsembleSignatureCache):
@@ -63,8 +62,6 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         self.distance.finish_distance(prototypes, prototypes_cache)
         result = next(self.distance.iter_on_prototypes(prototypes))[0] / float(
             first.frequency() + second.frequency())
-        done_time = time.time()
-        print('Calculated distance of %s in %s' % (result, str_time(done_time - start_time)))
         return result
 
     def update(self, first, second, base_distance=0, default=None):

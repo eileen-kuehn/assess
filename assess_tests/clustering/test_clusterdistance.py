@@ -32,4 +32,4 @@ class TestClusterDistance(unittest.TestCase):
         cache_one = simple_prototype().to_index(signature, start_support=True, exit_support=True, cache=cache_one)
         cache_two = EnsembleSignatureCache()
         cache_two = simple_monitoring_tree().to_index(signature, start_support=True, exit_support=True, cache=cache_two)
-        self.assertEqual(2, distance(cache_one, cache_two))
+        self.assertAlmostEqual(0.11, distance(cache_one, cache_two), 2)
