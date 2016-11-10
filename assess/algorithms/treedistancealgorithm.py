@@ -36,7 +36,7 @@ class TreeDistanceAlgorithm(object):
         self._tree_dict = ObjectCache()
 
         self._event_counter = 0
-        self.supported = {ProcessStartEvent: False, ProcessExitEvent: False, TrafficEvent: False}
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
         self._maxlen = None
 
     @property
@@ -77,13 +77,13 @@ class TreeDistanceAlgorithm(object):
         self._signature_prototypes = self._signature.prototype_signature_cache_class()
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
-            for process in prototype.nodes():
-                signature = self._signature.get_signature(process, process.parent())
-                self._signature_prototypes.add_signature(
-                    signature=signature,
-                    prototype=prototype,
-                    value={"duration": (float(process.exit_tme)-float(process.tme))}
-                )
+            prototype.to_prototype(
+                signature=self.signature,
+                start_support=self.supported[ProcessStartEvent],
+                exit_support=self.supported[ProcessExitEvent],
+                traffic_support=self.supported[TrafficEvent],
+                cache=self._signature_prototypes
+            )
         self._prototypes = value
 
     @property
