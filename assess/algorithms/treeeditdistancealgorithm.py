@@ -6,7 +6,7 @@ framework for dynamic trees.
 import zss
 
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
-from assess.events.events import ProcessStartEvent
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
 class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
@@ -19,7 +19,7 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
         self._monitoring_results = []
         self._event_counter = 0
-        self.supported = {ProcessStartEvent: True}
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)

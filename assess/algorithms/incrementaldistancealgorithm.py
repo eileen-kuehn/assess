@@ -5,7 +5,7 @@ Module offers functionality to execute an incremental distance measurement for d
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.algorithms.signatures.signatures import Signature
-from assess.events.events import ProcessStartEvent, ProcessExitEvent
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
 class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
@@ -17,7 +17,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         self._distance = None
         self._measured_nodes = set()  # TODO: can those be removed?
         self._distance_builder = distance
-        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True}
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
     @property
     def distance(self):
