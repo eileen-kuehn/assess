@@ -70,6 +70,10 @@ class SplittedStatistics(object):
                 self._statistics.append(new_statistic)
         return self
 
+    def __iter__(self):
+        for statistic in self._statistics:
+            yield statistic
+
     def add(self, value):
         """
         Method to add a specific value. Depending on the value, it is either added to existing
