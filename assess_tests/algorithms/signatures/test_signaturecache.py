@@ -142,3 +142,16 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         prototype_cache = PrototypeSignatureCache.from_signature_caches([tree_index, prototype_index], prototype=1, threshold=.9)
         self.assertEqual(9, prototype_cache.frequency())
         self.assertEqual(3, prototype_cache.node_count())
+
+    def test_from_signature_frequency(self):
+        prototype = simple_prototype()
+        signature = ParentChildByNameTopologySignature()
+        validation_index = prototype.to_index(signature=signature)
+        prototype_index = PrototypeSignatureCache.from_signature_caches(
+            [prototype.to_index(signature) for _ in range(10)],
+            prototype=prototype,
+            threshold=0)
+        self.assertEqual(validation_index.frequency(), prototype_index.frequency())
+        for token in validation_index:
+            self.assertEqual(validation_index.get_count(signature=token),
+                             prototype_index.get_count(signature=token, prototype=prototype))
