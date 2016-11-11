@@ -33,10 +33,19 @@ class PrototypeWrapper(object):
         self._signature_cache = signature_cache
         self._prototype_name = prototype_name
 
+    def __iter__(self):
+        return iter(self._signature_cache)
+
     def node_count(self, prototype=None):
         return self._signature_cache.node_count()
 
     def get(self, signature):
+        # TODO: maybe if function returns empty dict, this one should also?
+        if isinstance(self._signature_cache, PrototypeSignatureCache):
+            try:
+                return {self._prototype_name: self._signature_cache.get(signature).values()[0]}
+            except IndexError:
+                return {self._prototype_name: None}
         return {self._prototype_name: self._signature_cache.get(signature)}
 
     def frequency(self, prototype=None):
