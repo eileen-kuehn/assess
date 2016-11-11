@@ -5,7 +5,27 @@ from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatur
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
-from dengraph.utilities.pretty import str_time
+
+class SignatureWrapper(object):
+    def __init__(self, signature_cache):
+        self._signature_cache = signature_cache
+        self._key = self._signature_cache.internal().keys()[0]
+
+    def __iter__(self):
+        return iter(self._signature_cache)
+
+    def node_count(self):
+        if isinstance(self._signature_cache, PrototypeSignatureCache):
+            return self._signature_cache.node_count().values()[0]
+        return self._signature_cache.node_count()
+
+    def get(self, signature):
+        if isinstance(self._signature_cache, PrototypeSignatureCache):
+            return self._signature_cache.get(signature).values()[0]
+        return self._signature_cache.get(signature)
+
+    def frequency(self):
+        return self._signature_cache.frequency()
 
 
 class PrototypeWrapper(object):
@@ -36,6 +56,7 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         # placeholder prototypes to access data
         prototypes = [first]
         prototypes_cache = PrototypeWrapper(first, prototypes[0])
+        second = SignatureWrapper(second)
 
         self.distance.init_distance(prototypes, prototypes_cache)
         for signature in second:
