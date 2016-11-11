@@ -211,6 +211,19 @@ class PrototypeSignatureCache(SignatureCache):
     def __getitem__(self, item):
         return self._prototype_dict.get(item, dict())
 
+    def get_count(self, signature, prototype):
+        """
+        Get the current count for a given signature. If signature does not exist in cache, a count
+        of 0 is returned.
+
+        :param signature: Signature to get the count for
+        :return: Current count for signature, otherwise 0
+        """
+        try:
+            return self._prototype_dict.get(signature, {}).get(prototype, {}).get("count", 0)
+        except KeyError:
+            return 0
+
     def get(self, signature):
         """
         Returns a dictionary of prototypes with their statistics for a given signature. If the
