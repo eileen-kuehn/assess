@@ -12,7 +12,7 @@ class TestClusterDistance(unittest.TestCase):
     def test_creation(self):
         distance = ClusterDistance()
         self.assertIsNotNone(distance)
-        self.assertEqual(.1, distance.threshold)
+        self.assertEqual(0, distance.threshold)
 
     def test_mean(self):
         distance = ClusterDistance()
