@@ -1,5 +1,6 @@
 import dengraph.graph
-from dengraph.dengraphvio import DenGraphVIO
+from dengraph.dengraph import DenGraphIO
+from dengraph.graphs.adjacency_graph import AdjacencyGraph
 from dengraph.graphs.distance_graph import DistanceGraph
 
 from assess.clustering.clusterdistance import ClusterDistance
@@ -7,15 +8,27 @@ from assess.clustering.clusterdistance import ClusterDistance
 
 class Clustering(object):
     def __init__(self, distance, cluster_distance=.1, core_neighbours=5):
-        self.clusterer = DenGraphVIO(
-            base_graph=DistanceGraph(
-                nodes=[],
-                distance=ClusterDistance(distance=distance),
-                symmetric=True
-            ),
-            cluster_distance=cluster_distance,
-            core_neighbours=core_neighbours
-        )
+        self._nodes = []
+        self._clusterer = None
+        self.distance = distance
+        self.cluster_distance = cluster_distance
+        self.core_neighbours = core_neighbours
+
+    @property
+    def clusterer(self):
+        if self._clusterer is None:
+            distance = ClusterDistance(distance=self.distance)
+            self._clusterer = DenGraphIO(
+                base_graph=AdjacencyGraph(DistanceGraph(
+                    nodes=self._nodes,
+                    distance=distance,
+                    symmetric=True
+                )),
+                cluster_distance=self.cluster_distance,
+                core_neighbours=self.core_neighbours
+            )
+            self._clusterer.graph.distance = distance
+        return self._clusterer
 
     def __setitem__(self, key, value):
         """
@@ -26,7 +39,8 @@ class Clustering(object):
         :param value:
         :return:
         """
-        self.clusterer[value] = {}
+        value.key = key
+        self._nodes.append(value)
 
     def __getitem__(self, item):
         """
