@@ -160,8 +160,8 @@ class TreeDistanceAlgorithm(object):
         try:
             event_counts = self.distance.node_count(prototypes=self._prototypes, signature_prototypes=self._signature_prototypes)
         except AttributeError:
-            self._prototype_event_counts()
-        return [[value for event_count in event_counts for value in event_count] for _ in range(self.signature.count)]
+            return self._prototype_event_counts()
+        return [list(element) for element in zip(*event_counts)]
 
     def event_counts(self):
         """
@@ -251,9 +251,7 @@ class TreeDistanceAlgorithm(object):
         :return: Event count of monitoring tree
         """
         count = self.tree_node_counts(signature=True)
-        return [[count] for _ in range(len(self._prototypes))]
-        # count = self._tree.node_count()
-        # return [[count for _ in range(len(self._prototypes))] for _ in range(self._signature.count)]
+        return [count for _ in range(len(self._prototypes))]
 
     def _prototype_event_counts(self):
         """

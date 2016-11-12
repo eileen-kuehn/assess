@@ -30,7 +30,7 @@ class TestTreeDistanceAlgorithm(unittest.TestCase):
         algorithm = TreeDistanceAlgorithm()
         algorithm.prototypes = [Prototype()]
         algorithm.start_tree()
-        self.assertEqual(algorithm.event_counts(), [[0]])
+        self.assertEqual(algorithm.event_counts(), [[]])
         self.assertEqual(algorithm.prototype_event_counts(), [[0]])
 
     def test_format_prototype_node_counts(self):
