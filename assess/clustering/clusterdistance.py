@@ -53,7 +53,7 @@ class PrototypeWrapper(object):
 
 
 class ClusterDistance(dengraph.distance.IncrementalDistance):
-    def __init__(self, threshold=.1, distance=None):
+    def __init__(self, threshold=0, distance=None):
         self.threshold = threshold
         self.distance = distance
 
@@ -100,7 +100,9 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
     def mean(self, *args, **kwargs):
         if len(args) == 1:
             args = args[0]
-        return PrototypeSignatureCache.from_signature_caches(args, prototype=1)
+        return PrototypeSignatureCache.from_signature_caches(args,
+                                                             prototype=1,
+                                                             threshold=self.threshold)
 
     def median(self, *args, **kwargs):
         return NotImplementedError
