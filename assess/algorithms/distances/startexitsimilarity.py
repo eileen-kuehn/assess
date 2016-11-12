@@ -38,8 +38,10 @@ class StartExitSimilarity(Distance):
                 self._signature_cache[index].add_signature(signature=signature)
         return [match.keys()[0] for match in matches]
 
-    def node_count(self):
-        return [signature_cache.frequency()/2.0 for signature_cache in self._signature_cache]
+    def node_count(self, prototypes=None, signature_prototypes=None):
+        if prototypes is not None:
+            return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
+        return [signature_cache.frequency() for signature_cache in self._signature_cache]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None):

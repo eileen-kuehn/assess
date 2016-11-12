@@ -76,5 +76,5 @@ class DynamicDistance(Distance):
     def finish_distance(self, prototpyes, signature_prototypes):
         return self._wrapped_distance.finish_distance(prototpyes, signature_prototypes)
 
-    def node_count(self):
-        return self._wrapped_distance.node_count()
+    def node_count(self, prototypes=None, signature_prototypes=None):
+        return self._wrapped_distance.node_count(prototypes, signature_prototypes)

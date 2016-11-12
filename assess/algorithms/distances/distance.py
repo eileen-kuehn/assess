@@ -69,7 +69,7 @@ class Distance(object):
         """
         pass
 
-    def node_count(self):
+    def node_count(self, prototypes=None, signature_prototypes=None):
         """
         Returns the count of nodes considered for the actual distance measurement. This count is
         important to calculate the normalised distance with regard to the used distance.
@@ -81,6 +81,8 @@ class Distance(object):
 
         :return: Count of nodes considered from distance
         """
+        if prototypes is not None:
+            return [signature_prototypes.node_count(prototype=prototype) for prototype in prototypes]
         return [len(measured_nodes) for measured_nodes in self._measured_nodes]
 
     def is_prototype_based_on_original(self):
