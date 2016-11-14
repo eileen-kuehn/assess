@@ -64,6 +64,10 @@ class PrototypeCache(object):
         if self.force_refresh:
             self._logger.warning('Forcefully refreshing caches '
                                  '(enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
+        self.preloaded_only = bool(os.environ.get('DISS_PROTOTYPE_CACHE_PRELOADED_ONLY', False))
+        if self.preloaded_only:
+            self._logger.warning('Only working with preloaded caches '
+                                 '(enabled via $DISS_PROTOTYPE_CACHE_PRELOADED_ONLY)')
 
     def __iter__(self):
         if os.path.isdir(self.path):
@@ -89,6 +93,8 @@ class PrototypeCache(object):
             with open(cache_path, 'rb') as cache_pkl:
                 prototypes = pickle.load(cache_pkl)
         except (OSError, IOError, EOFError):
+            if self.preloaded_only:
+                yield None
             # clean up broken pickles
             if os.path.exists(cache_path):
                 os.unlink(cache_path)
