@@ -17,6 +17,52 @@ class Decorator(object):
         self._name = name
         self._last_event_counts = None
 
+    @staticmethod
+    def from_name(name):
+        if "anomaly" in name:
+            from assess.decorators.anomalydecorator import AnomalyDecorator
+            # FIXME: how to pass parameter?
+            return AnomalyDecorator()
+        elif "compression" in name:
+            from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
+            return CompressionFactorDecorator()
+        elif "data" in name:
+            from assess.decorators.datadecorator import DataDecorator
+            return DataDecorator()
+        elif "normalized_distances" in name:
+            from assess.decorators.distancedecorator import DistanceDecorator
+            return DistanceDecorator(normalized=True)
+        elif "distances" in name:
+            from assess.decorators.distancedecorator import DistanceDecorator
+            return DistanceDecorator(normalized=False)
+        elif "normalized_matrix" in name:
+            from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+            return DistanceMatrixDecorator(normalized=True)
+        elif "matrix" in name:
+            from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+            return DistanceMatrixDecorator(normalized=False)
+        elif "accumulated_distance_performance" in name:
+            from assess.decorators.distanceperformancedecorator import DistancePerformanceDecorator
+            return DistancePerformanceDecorator(accumulated=True)
+        elif "distance_performance" in name:
+            from assess.decorators.distanceperformancedecorator import DistancePerformanceDecorator
+            return DistancePerformanceDecorator(accumulated=False)
+        elif "accumulated_performance" in name:
+            from assess.decorators.performancedecorator import PerformanceDecorator
+            return PerformanceDecorator(accumulated=True)
+        elif "performance" in name:
+            from assess.decorators.performancedecorator import PerformanceDecorator
+            return PerformanceDecorator(accumulated=False)
+        elif "accumulated_signature_performance" in name:
+            from assess.decorators.signatureperformancedecorator import SignaturePerformanceDecorator
+            return SignaturePerformanceDecorator(accumulated=True)
+        elif "signature_performance" in name:
+            from assess.decorators.signatureperformancedecorator import SignaturePerformanceDecorator
+            return SignaturePerformanceDecorator(accumulated=False)
+        elif "signature" in name:
+            from assess.decorators.signaturedecorator import SignatureDecorator
+            return SignatureDecorator()
+
     @property
     def algorithm(self):
         """
