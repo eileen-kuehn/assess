@@ -31,14 +31,14 @@ class DistanceMatrixDecorator(Decorator):
             Decorator.__init__(self, name="normalized_matrix")
         else:
             Decorator.__init__(self, name="matrix")
-        self._distance_matrix = None
+        self._data = None
         self._tmp_prototype_counts = None
         self._normalized = normalized
 
     def data(self):
-        if self._distance_matrix is not None:
+        if self._data is not None:
             results = []
-            for result in self._distance_matrix:
+            for result in self._data:
                 # on level of ensembles
                 results.append([])
                 for single in result:
@@ -48,16 +48,16 @@ class DistanceMatrixDecorator(Decorator):
         return None
 
     def _algorithm_updated(self):
-        self._distance_matrix = []
+        self._data = []
         self._tmp_prototype_counts = None
 
     def _tree_started(self):
         size = self._matrix_size()
-        if self._distance_matrix and size < len(self._distance_matrix) + 1:
-            raise MatrixDoesNotMatchBounds(size, size, len(self._distance_matrix) + 1)
+        if self._data and size < len(self._data) + 1:
+            raise MatrixDoesNotMatchBounds(size, size, len(self._data) + 1)
         # add a new row for a new algorithm for each ensemble
-        self._distance_matrix.append([[0 for _ in self.algorithm.prototypes]
-                                      for _ in range(self.algorithm.signature.count)])
+        self._data.append([[0 for _ in self.algorithm.prototypes]
+                           for _ in range(self.algorithm.signature.count)])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
 
@@ -66,22 +66,22 @@ class DistanceMatrixDecorator(Decorator):
         # TODO: might be changed to _tree_finished
         size = self._matrix_size()
         if size < len(result[0]):
-            raise MatrixDoesNotMatchBounds(size, len(result), len(self._distance_matrix))
+            raise MatrixDoesNotMatchBounds(size, len(result), len(self._data))
         event_counts = self._algorithm.event_counts()
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
                 if self._normalized:
-                    self._distance_matrix[-1][i][j] = result[i][j] / float(
+                    self._data[-1][i][j] = result[i][j] / float(
                         event_counts[i][j] + self._tmp_prototype_counts[i][j])
                 else:
-                    self._distance_matrix[-1][i][j] = result[i][j]
+                    self._data[-1][i][j] = result[i][j]
 
     def _matrix_size(self):
-        if self._distance_matrix is None:
-            self._distance_matrix = [[]]
-        if len(self._distance_matrix) > 0:
+        if self._data is None:
+            self._data = [[]]
+        if len(self._data) > 0:
             return len(self._algorithm.prototypes)
         return 0
 
     def _update(self, decorator):
-        self._distance_matrix.extend(decorator.data())
+        self._data.extend(decorator.data())

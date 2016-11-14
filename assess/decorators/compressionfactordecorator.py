@@ -31,23 +31,23 @@ class CompressionFactorDecorator(Decorator):
     """
     def __init__(self):
         Decorator.__init__(self, name="compression")
-        self._compressions = None
+        self._data = None
 
     def _algorithm_updated(self):
-        self._compressions = None
+        self._data = None
 
     def _tree_started(self):
-        if self._compressions is None:
-            self._compressions = {
+        if self._data is None:
+            self._data = {
                 "prototypes": self._compression_factor(),
                 "monitoring": [None],
                 "accumulated": self._accumulated_compression_factor()
             }
         else:
-            self._compressions["monitoring"].append(None)
+            self._data["monitoring"].append(None)
 
     def _tree_finished(self, result):
-        self._compressions["monitoring"][-1] = self._monitoring_compression_factor()
+        self._data["monitoring"][-1] = self._monitoring_compression_factor()
 
     def _monitoring_compression_factor(self):
         original = self._algorithm.tree.node_count()  # value
@@ -83,7 +83,7 @@ class CompressionFactorDecorator(Decorator):
         return [1.0 - compressed[i] / float(original[i]) for i in range(len(compressed))]
 
     def data(self):
-        return self._compressions
+        return self._data
 
     def _original_sizes(self):
         """
@@ -96,4 +96,4 @@ class CompressionFactorDecorator(Decorator):
         return self._algorithm.prototype_node_counts(signature=True)
 
     def _update(self, decorator):
-        self._compressions["monitoring"].extend(decorator.data()["monitoring"])
+        self._data["monitoring"].extend(decorator.data()["monitoring"])
