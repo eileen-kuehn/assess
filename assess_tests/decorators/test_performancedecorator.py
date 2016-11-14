@@ -113,7 +113,7 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
 
     def test_update(self):
         decorator = PerformanceDecorator(accumulated=True)
-        decorator._performances = {
+        decorator._data = {
             "children's system time": [[0.0, 0.0]],
             "children's user time": [[0.0, 0.0]],
             'elapsed real time': [[6.919999837875366, 3.8499999046325684]],
@@ -121,7 +121,7 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
             'user time': [[0.05999999999949068, 0.03999999999996362]]
         }
         second_decorator = PerformanceDecorator(accumulated=True)
-        second_decorator._performances = {
+        second_decorator._data = {
             "children's system time": [[1.0, 1.0]],
             "children's user time": [[0.0, 0.0]],
             'elapsed real time': [[7.9, 3.8]],
@@ -138,7 +138,7 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         })
 
         decorator = PerformanceDecorator(accumulated=False)
-        decorator._performances = {
+        decorator._data = {
             "children's system time": [[0.0, 0.0]],
             "children's user time": [[0.0, 0.0]],
             'elapsed real time': [[6.919999837875366, 3.8499999046325684]],
@@ -146,7 +146,7 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
             'user time': [[0.05999999999949068, 0.03999999999996362]]
         }
         second_decorator = PerformanceDecorator(accumulated=False)
-        second_decorator._performances = {
+        second_decorator._data = {
             "children's system time": [[1.0, 1.0]],
             "children's user time": [[0.0, 0.0]],
             'elapsed real time': [[7.9, 3.8]],

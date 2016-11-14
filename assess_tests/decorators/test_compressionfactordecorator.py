@@ -73,13 +73,13 @@ class TestCompressionFactorDecorator(unittest.TestCase):
 
     def test_update(self):
         decorator = CompressionFactorDecorator()
-        decorator._compressions = {
+        decorator._data = {
             "prototypes": [.1, .2, .5],
             "monitoring": [.2],
             "accumulated": .3
         }
         second_decorator = CompressionFactorDecorator()
-        second_decorator._compressions = {
+        second_decorator._data = {
             "prototypes": [.1, .2, .5],
             "monitoring": [.3],
             "accumulated": .3

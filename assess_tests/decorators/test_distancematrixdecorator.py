@@ -93,15 +93,15 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
 
     def test_update(self):
         decorator = DistanceMatrixDecorator(normalized=True)
-        decorator._distance_matrix = [[[1], [2], [3], [4], [5]]]
+        decorator._data = [[[1], [2], [3], [4], [5]]]
         second_decorator = DistanceMatrixDecorator(normalized=True)
-        second_decorator._distance_matrix = [[[6], [7], [8], [9], [10]]]
+        second_decorator._data = [[[6], [7], [8], [9], [10]]]
         decorator.update(second_decorator)
         self.assertEqual(decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])
 
         decorator = DistanceMatrixDecorator(normalized=False)
-        decorator._distance_matrix = [[[1], [2], [3], [4], [5]]]
+        decorator._data = [[[1], [2], [3], [4], [5]]]
         second_decorator = DistanceMatrixDecorator(normalized=False)
-        second_decorator._distance_matrix = [[[6], [7], [8], [9], [10]]]
+        second_decorator._data = [[[6], [7], [8], [9], [10]]]
         decorator.update(second_decorator)
         self.assertEqual(decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])
