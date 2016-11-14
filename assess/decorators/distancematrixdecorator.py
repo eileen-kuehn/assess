@@ -85,3 +85,26 @@ class DistanceMatrixDecorator(Decorator):
 
     def _update(self, decorator):
         self._data.extend(decorator.data())
+
+    def __iadd__(self, other):
+        """
+        [                           [
+            [                           [                               tree_idx
+                [p1t1e1, p2t1e1],           [p3t1e1, ..., pnt1e1],      ensemble_idx
+                ...,                        ...,
+                [p1t1en, p2t1en]            [p3t1en, ..., pnt1en]
+            ],                          ],
+            ...                         ...
+            [                           [
+                [p1tne1, p2tne1],           [p3tne1, ..., pntne1],
+                ...                         ...,
+                [p1tnen, p2tnen]            [p3tnen, ..., pntnen]
+            ]                           ]
+        ]                           ]
+        :param other:
+        :return:
+        """
+        for tree_idx, tree_values in enumerate(other._data):
+            for ensemble_idx, ensemble_values in enumerate(tree_values):
+                self._data[tree_idx][ensemble_idx].extend(ensemble_values)
+        return self
