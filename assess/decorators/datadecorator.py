@@ -56,3 +56,6 @@ class DataDecorator(Decorator):
             decorator.data()["monitoring"].get("original", []))
         self._data["monitoring"].setdefault("converted", []).extend(
             decorator.data()["monitoring"].get("converted", []))
+
+    def __iadd__(self, other):
+        return NotImplemented

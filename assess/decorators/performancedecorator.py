@@ -80,3 +80,6 @@ class PerformanceDecorator(Decorator):
             else:
                 self._data[key].extend(decorator.data()[key])
 
+    def __iadd__(self, other):
+        return NotImplemented
+

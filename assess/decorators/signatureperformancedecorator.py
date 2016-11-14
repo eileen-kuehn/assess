@@ -84,3 +84,6 @@ class SignaturePerformanceDecorator(Decorator):
                 self._data[key] = self._data[key] + decorator.data()[key]
             else:
                 self._data[key].extend(decorator.data()[key])
+
+    def __iadd__(self, other):
+        return NotImplemented

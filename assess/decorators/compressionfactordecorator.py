@@ -97,3 +97,6 @@ class CompressionFactorDecorator(Decorator):
 
     def _update(self, decorator):
         self._data["monitoring"].extend(decorator.data()["monitoring"])
+
+    def __iadd__(self, other):
+        return NotImplemented
