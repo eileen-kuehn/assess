@@ -8,10 +8,10 @@ class SignatureDecorator(Decorator):
 
     The format looks like:
     [
-        [
+        [                           <--- new tree start
             [v1e1t1, ..., vne1t1],
             ...,
-            [v1ent1, ..., vnent1]
+            [v1ent1, ..., vnent1]   <--- events per signature
         ],
         ...,
         [
@@ -47,3 +47,7 @@ class SignatureDecorator(Decorator):
 
     def _update(self, decorator):
         self._data.extend(decorator.data())
+
+    def __iadd__(self, other):
+        # values are equal for each prototype, so just return self
+        return self
