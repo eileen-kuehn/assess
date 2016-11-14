@@ -97,3 +97,26 @@ class AnomalyDecorator(Decorator):
                           for count in self._tmp_prototype_counts[ensemble_index]])
         result = [zip(lower[index], upper[index]) for index in range(len(lower))]
         return result
+
+    def __iadd__(self, other):
+        """
+        [                                       [
+            [                                       [ <- start of a tree
+                [                                       [ <- start of an ensemble
+                    [v1p1e1t1, ..., vnp1e1t1],              [v1p3e1t1], ..., [vnp3e1t1],
+                    [v1p2e1t1, ..., vnp2e1t1]               [v1p4e1t1], ..., [vnp4e1t1]
+                ]                                       ]
+                ...                                     ...
+                [                                       [
+                    [v1p1ent1, ..., vnpnent1],              [v1p3ent1], ..., [vnp3ent1],
+                    [v1p2ent1, ..., vnp2ent1]               [v1p4ent1], ..., [vnp4ent1]
+                ]                                       ]
+            ]                                       ]
+        ]                                       ]
+        :param other:
+        :return:
+        """
+        for tree_idx, tree_values in enumerate(other._data):
+            for ensemble_idx, ensemble_values in enumerate(tree_values):
+                self[tree_idx][ensemble_idx].extend(ensemble_values)
+        return self
