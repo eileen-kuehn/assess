@@ -23,13 +23,15 @@ class TreeDistanceAlgorithm(object):
     * _add_event, and
     * _update_distance
     """
-    def __init__(self, signature=Signature()):
+    def __init__(self, signature=Signature(), cache_statistics=None):
         if not isinstance(signature, EnsembleSignature):
             self._signature = EnsembleSignature(signatures=[signature])
         else:
             self._signature = signature
         # signature caches
-        self._signature_prototypes = self._signature.prototype_signature_cache_class()
+        self._cache_statistics = cache_statistics
+        self._signature_prototypes = self._signature.prototype_signature_cache_class(
+            statistics_cls=self._cache_statistics)
 
         self._prototypes = []
         self._tree = Tree()
@@ -74,7 +76,8 @@ class TreeDistanceAlgorithm(object):
         :param value: List of prototypes
         """
         # clean old prototypes first...
-        self._signature_prototypes = self._signature.prototype_signature_cache_class()
+        self._signature_prototypes = self._signature.prototype_signature_cache_class(
+            statistics_cls=self._cache_statistics)
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             prototype.to_prototype(
@@ -158,7 +161,8 @@ class TreeDistanceAlgorithm(object):
         :return: List of event counts per prototype
         """
         try:
-            event_counts = self.distance.node_count(prototypes=self._prototypes, signature_prototypes=self._signature_prototypes)
+            event_counts = self.distance.node_count(prototypes=self._prototypes,
+                                                    signature_prototypes=self._signature_prototypes)
         except AttributeError:
             return self._prototype_event_counts()
         return [list(element) for element in zip(*event_counts)]
