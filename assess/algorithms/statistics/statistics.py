@@ -5,6 +5,64 @@ representatitives. Currently only MeanVariance is supported.
 import math
 
 
+class Statistics(object):
+    """
+    The Statistics Class provides the interface for different statistics implementations.
+
+    .. describe:: __add__(other)
+
+       Method returns a new statistics object that contains all data that is contained by the
+       statistic itself and the *other* given statistics object.
+
+       If the types under consideration are not equal, a :py:exc:`TypeError` is raised.
+
+    .. describe:: __iadd__(other)
+
+       Method implements the addition of another statistics object. The current statistic is
+       updated with the given *other* statistic.
+
+       If the types under consideration are not equal, a :py:exc:`TypeError` is raised.
+
+    .. describe:: __iter__()
+
+       Method iterates over the different values or calculated values that have been stored by
+       the given statistic. The given objects do not necessarily have to be the values that were
+       originally inserted into the statistics object.
+
+    .. describe:: add(value)
+
+       Method adds another object to the statistics.
+
+    .. describe:: distance(value)
+
+       Returns for a given *value* the distance to the stored objects. A distance of 0 means,
+       equality for the given distance. For maximum distance 1 is returned.
+
+    .. describe:: count
+
+       Returns the number of values that have been added to the statistic.
+
+    """
+    def __add__(self, other):
+        return NotImplemented
+
+    def __iadd__(self, other):
+        return NotImplemented
+
+    def __iter__(self):
+        return NotImplemented
+
+    def add(self, value):
+        return NotImplemented
+
+    @property
+    def count(self):
+        return NotImplemented
+
+    def distance(self, value):
+        return NotImplemented
+
+
 class MeanVariance(object):
     """
     Supported kind of statistic that can be utilised in SignatureCache to store signatures.
