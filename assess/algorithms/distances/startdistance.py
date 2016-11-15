@@ -13,7 +13,8 @@ class StartDistance(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache() for _ in range(self.signature_count)]
+        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls)
+                                 for _ in range(self.signature_count)]
         for prototype in prototypes:
             node_count = prototype.node_count()
             for index in range(self.signature_count):

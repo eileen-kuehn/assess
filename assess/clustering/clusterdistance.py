@@ -33,6 +33,10 @@ class PrototypeWrapper(object):
         self._signature_cache = signature_cache
         self._prototype_name = prototype_name
 
+    @property
+    def statistics_cls(self):
+        return self._signature_cache.statistics_cls
+
     def __iter__(self):
         return iter(self._signature_cache)
 
