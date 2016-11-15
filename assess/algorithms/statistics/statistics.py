@@ -53,13 +53,31 @@ class Statistics(object):
         return NotImplemented
 
     def add(self, value):
+        """
+        Add a given value to the current statistics.
+
+        :param value: Value to be added
+        """
         return NotImplemented
 
     @property
     def count(self):
+        """
+        Returns the count of objects that went into statistics.
+
+        :return: Current statistics count
+        """
         return NotImplemented
 
     def distance(self, value):
+        """
+        Returns the distance from the given value to the current statistics. The distance value
+        is intended to be in the range [0, 1]. A distance of 0 means the objects are equal. A
+        distance of 1 means the biggest possible distance.
+
+        :param value: Value to return distance to.
+        :return: Distance in the range [0, 1]
+        """
         return NotImplemented
 
 
