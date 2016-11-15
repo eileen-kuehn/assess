@@ -4,10 +4,10 @@ the underlying data for distance measurement.
 """
 import bisect
 
-from assess.algorithms.statistics.statistics import MeanVariance
+from assess.algorithms.statistics.statistics import Statistics, MeanVariance
 
 
-class SplittedStatistics(object):
+class SplittedStatistics(Statistics):
     """
     The class SplittedStatistics takes different values and incrementally clusters given values
     while summarising using a specified statistic type. The clustering concept is based on
