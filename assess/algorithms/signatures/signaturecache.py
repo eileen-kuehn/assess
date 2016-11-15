@@ -14,13 +14,14 @@ class SignatureCache(object):
     The SignatureCache takes care of managing statistics for based on the signature. Different
     statistics, e.g. MeanVariance can be supported.
     """
-    def __init__(self, supported=None):
+    def __init__(self, supported=None, statistics_cls=None):
         self._prototype_dict = FrequencyCacheMap()
         self.supported = supported or {
             ProcessStartEvent: True,
             ProcessExitEvent: False,
             TrafficEvent: False
         }
+        self.statistics_cls = statistics_cls or SplittedStatistics
 
     def __setitem__(self, key, value):
         try:
@@ -54,8 +55,7 @@ class SignatureCache(object):
         current_value = self._prototype_dict.get(signature, {})
         if value:
             for key in value:
-                current_value.setdefault(
-                    key, SplittedStatistics(statistics_type=MeanVariance)).add(value[key])
+                current_value.setdefault(key, self.statistics_cls()).add(value[key])
         try:
             current_value["count"] += 1
         except KeyError:
@@ -182,8 +182,7 @@ class PrototypeSignatureCache(SignatureCache):
         current_value = prototype_dictionary.setdefault(prototype, {})
         if value:
             for key in value:
-                current_value.setdefault(
-                    key, SplittedStatistics(statistics_type=MeanVariance)).add(value=value[key])
+                current_value.setdefault(key, self.statistics_cls()).add(value=value[key])
         try:
             current_value["count"] += 1
         except KeyError:

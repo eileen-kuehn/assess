@@ -11,13 +11,14 @@ class EnsembleSignatureCache(object):
     The EnsembleSignatureCache holds a list of SignatureCache objects to enable the approach to
     handle different kinds of signatures in parallel.
     """
-    def __init__(self, supported=None):
+    def __init__(self, supported=None, statistics_cls=None):
         self._signature_dicts = []
         self.supported = supported or {
             ProcessStartEvent: True,
             ProcessExitEvent: False,
             TrafficEvent: False
         }
+        self.statistics_cls = statistics_cls
 
     def add_signature(self, signature=None, value=None):
         """
@@ -30,8 +31,8 @@ class EnsembleSignatureCache(object):
             try:
                 self._signature_dicts[index].add_signature(signature=token, value=value)
             except IndexError:
-                self._signature_dicts = [SignatureCache(self.supported) for _ in range(
-                    len(signature))]
+                self._signature_dicts = [SignatureCache(self.supported, self.statistics_cls)
+                                         for _ in range(len(signature))]
                 self._signature_dicts[index].add_signature(signature=token, value=value)
 
     def get(self, signature):
@@ -112,7 +113,8 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
                                                           prototype=prototype,
                                                           value=value)
             except IndexError:
-                self._prototype_dict = [PrototypeSignatureCache() for _ in range(len(signature))]
+                self._prototype_dict = [PrototypeSignatureCache(
+                    self.supported, self.statistics_cls) for _ in range(len(signature))]
                 self._prototype_dict[index].add_signature(signature=token,
                                                           prototype=prototype,
                                                           value=value)
