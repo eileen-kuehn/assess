@@ -76,7 +76,7 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
             matching_prototypes = prototypes_cache.get(signature=signature)
             for statistic in second.get(signature)["duration"]:
                 count = statistic.count
-                value = statistic.mean
+                value = statistic.value
                 for _ in range(count):
                     if self.distance.supported[ProcessStartEvent]:
                         self.distance.update_distance(
