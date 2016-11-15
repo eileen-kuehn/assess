@@ -1,7 +1,19 @@
 import math
 import collections
 
-from assess.algorithms.statistics.statistics import Statistics
+from assess.algorithms.statistics.statistics import Statistic, Statistics
+
+
+class SetStatistic(Statistic):
+    def __init__(self, value, count):
+        self._count = count
+        self._value = value
+
+    def count(self):
+        return self._count
+
+    def value(self):
+        return self._value
 
 
 class SetStatistics(Statistics):
@@ -17,8 +29,9 @@ class SetStatistics(Statistics):
         return self
 
     def __iter__(self):
-        for item in self._data:
-            yield item
+        for key, count in self._data.iteritems():
+            statistic = SetStatistic(key, count)
+            yield statistic
 
     def add(self, value):
         self._data.update([self._convert(value)])
