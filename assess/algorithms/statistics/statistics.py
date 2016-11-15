@@ -81,7 +81,17 @@ class Statistics(object):
         return NotImplemented
 
 
-class MeanVariance(object):
+class Statistic(object):
+    @property
+    def count(self):
+        return NotImplemented
+
+    @property
+    def value(self):
+        return NotImplemented
+
+
+class MeanVariance(Statistic):
     """
     Supported kind of statistic that can be utilised in SignatureCache to store signatures.
     The MeanVariance class offers a running mean and variance for inserted signatures and their
@@ -125,6 +135,10 @@ class MeanVariance(object):
 
         :return: running mean
         """
+        return self._mean
+
+    @property
+    def value(self):
         return self._mean
 
     @property
