@@ -32,22 +32,30 @@ class SetStatistics(Statistics):
 
     def __iter__(self):
         for key, count in self._data.items():
-            statistic = SetStatistic(key, count)
+            statistic = SetStatistic(self._unconvert(key), count)
             yield statistic
 
     def add(self, value):
         self._data.update([self._convert(value)])
 
-    @property
-    def count(self):
+    def count(self, value=None):
+        if value is not None:
+            converted = self._convert(value)
+            return self._data.get(converted, 0)
         return sum(self._data.values())
 
-    def distance(self, value):
+    def distance(self, value, count=0):
         if value is None:
             return None
-        if self._convert(value) in self._data:
-            return 0
+        converted = self._convert(value)
+        if converted in self._data:
+            # also ensure count
+            if count < self._data.get(converted, 0):
+                return 0
         return 1
 
     def _convert(self, value):
         return int(round(math.sqrt(value)))
+
+    def _unconvert(self, value):
+        return value**2

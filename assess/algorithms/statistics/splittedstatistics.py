@@ -119,19 +119,23 @@ class SplittedStatistics(Statistics):
             return self._statistics[lower].object_distance(self._statistics[upper])
         return float("inf")
 
-    @property
-    def count(self):
+    def count(self, value=None):
         """
         Get the number of values that went into the statistics calculation.
 
         :return: Count of considered values
         """
         result = 0
-        for statistic in self._statistics:
-            result += statistic.count
+        if value is not None:
+            distance, index = self._closest_value_and_index(value)
+            if distance < 1:
+                result = self._statistics[index].count
+        else:
+            for statistic in self._statistics:
+                result += statistic.count
         return result
 
-    def distance(self, value=None):
+    def distance(self, value=None, count=0):
         """
         Check the current distance for a given value.
         If no value is given, None is returned.
@@ -142,7 +146,11 @@ class SplittedStatistics(Statistics):
         # return distance to closest match
         distance = None
         if value is not None:
-            distance, _ = self._closest_value_and_index(value=value)
+            distance, index = self._closest_value_and_index(value=value)
+            if count >= self._statistics[index].count:
+                distance = 1
+        if distance == float("inf"):
+            distance = 1
         return distance
 
     def _closest_value_and_index(self, value):
