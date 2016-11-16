@@ -32,7 +32,7 @@ class SetStatistics(Statistics):
 
     def __iter__(self):
         for key, count in self._data.items():
-            statistic = SetStatistic(key, count)
+            statistic = SetStatistic(self._unconvert(key), count)
             yield statistic
 
     def add(self, value):
@@ -53,3 +53,6 @@ class SetStatistics(Statistics):
 
     def _convert(self, value):
         return int(round(math.sqrt(value)))
+
+    def _unconvert(self, value):
+        return value**2
