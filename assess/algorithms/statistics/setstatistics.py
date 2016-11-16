@@ -38,8 +38,10 @@ class SetStatistics(Statistics):
     def add(self, value):
         self._data.update([self._convert(value)])
 
-    @property
-    def count(self):
+    def count(self, value=None):
+        if value is not None:
+            converted = self._convert(value)
+            return self._data.get(converted, 0)
         return sum(self._data.values())
 
     def distance(self, value):

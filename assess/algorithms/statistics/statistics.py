@@ -60,11 +60,12 @@ class Statistics(object):
         """
         return NotImplemented
 
-    @property
-    def count(self):
+    def count(self, value=None):
         """
-        Returns the count of objects that went into statistics.
+        If value is not given, returns the count of objects that went into statistics. Otherwise
+        the count for given value is returned.
 
+        :param value: Value to check the count for
         :return: Current statistics count
         """
         return NotImplemented
