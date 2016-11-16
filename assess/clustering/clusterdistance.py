@@ -57,7 +57,7 @@ class PrototypeWrapper(object):
 
 
 class ClusterDistance(dengraph.distance.IncrementalDistance):
-    def __init__(self, threshold=0, distance=None):
+    def __init__(self, distance, threshold=0):
         self.threshold = threshold
         self.distance = distance
 
