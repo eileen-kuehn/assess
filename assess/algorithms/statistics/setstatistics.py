@@ -9,9 +9,11 @@ class SetStatistic(Statistic):
         self._count = count
         self._value = value
 
+    @property
     def count(self):
         return self._count
 
+    @property
     def value(self):
         return self._value
 
@@ -41,6 +43,8 @@ class SetStatistics(Statistics):
         return sum(self._data.values())
 
     def distance(self, value):
+        if value is None:
+            return None
         if self._convert(value) in self._data:
             return 0
         return 1
