@@ -135,7 +135,7 @@ class SplittedStatistics(Statistics):
                 result += statistic.count
         return result
 
-    def distance(self, value=None):
+    def distance(self, value=None, count=0):
         """
         Check the current distance for a given value.
         If no value is given, None is returned.
@@ -146,7 +146,11 @@ class SplittedStatistics(Statistics):
         # return distance to closest match
         distance = None
         if value is not None:
-            distance, _ = self._closest_value_and_index(value=value)
+            distance, index = self._closest_value_and_index(value=value)
+            if count >= self._statistics[index].count:
+                distance = 1
+        if distance == float("inf"):
+            distance = 1
         return distance
 
     def _closest_value_and_index(self, value):

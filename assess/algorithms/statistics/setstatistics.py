@@ -44,11 +44,14 @@ class SetStatistics(Statistics):
             return self._data.get(converted, 0)
         return sum(self._data.values())
 
-    def distance(self, value):
+    def distance(self, value, count=0):
         if value is None:
             return None
-        if self._convert(value) in self._data:
-            return 0
+        converted = self._convert(value)
+        if converted in self._data:
+            # also ensure count
+            if count < self._data.get(converted, 0):
+                return 0
         return 1
 
     def _convert(self, value):
