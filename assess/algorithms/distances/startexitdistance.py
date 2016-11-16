@@ -53,8 +53,11 @@ class StartExitDistance(Distance):
                     node_signature=signature,
                     value=value
                 )
-            # FIXME: this should be within for, shouldn't it?!
+        if event_type == ProcessStartEvent:
             self._signature_cache[index].add_signature(signature=signature)
+        else:
+            self._signature_cache[index].add_signature(signature=signature,
+                                                       value={"duration": value})
         return [match.keys()[0] for match in matches]
 
     def node_count(self, prototypes=None, signature_prototypes=None):
@@ -65,31 +68,44 @@ class StartExitDistance(Distance):
     def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None,
                           node_signature=None, value=None):
         weight = 2 * self._weight  # two times, because looking at start and exit
-        if event_type == ProcessStartEvent:
-            # because we have to consider signatures from start and exit, we need to deal with
-            # the half of the given weight here
-            base = weight / 2.0
-        else:
+        # because we have to consider signatures from start and exit, we need to deal with
+        # the half of the given weight here
+        base = weight / 2.0
+        node_base = base
+        if event_type != ProcessStartEvent:
             property_base = 2 - weight
-            base = weight / 2.0 + property_base
+            base += property_base
         result_dict = dict(zip(prototypes, [base] * len(prototypes)))
 
         for prototype_node in prototype_nodes:
             if prototype_nodes[prototype_node] is None:
                 continue
+            result = 0
             if self._signature_cache[index].get_count(signature=node_signature) < \
                             prototype_nodes[prototype_node]["count"]:
-                distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
-                # distance is none when start event or properties are 0
-                result_dict[prototype_node] = -base
-                if distance is not None:
-                    # start element is first considered matching, so -.5
-                    # if end element is also matching, [-.5, 0] is added
-                    # else ]0, .5] is added to correct the former matching behaviour
-                    # FIXME: distance can be infinite, so bound it here
-                    if distance == float("inf"):
-                        distance = 1 * property_base
-                    result_dict[prototype_node] += distance
+                result -= node_base
+            else:
+                result += node_base
+            if event_type != ProcessStartEvent:
+                try:
+                    signature_count = self._signature_cache[index].get(
+                        signature=node_signature)["duration"].count(value=value)
+                except KeyError:
+                    # no data has been saved for duration, first exit event
+                    signature_count = 0
+                except ValueError:
+                    # no data has been saved for node_signature
+                    signature_count = 0
+                distance = prototype_nodes[prototype_node]["duration"].distance(
+                    value=value,
+                    count=signature_count
+                )
+                if distance > 0:
+                    # partial or full mismatch
+                    result += distance * property_base
+                else:
+                    result -= property_base
+            result_dict[prototype_node] = result
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
             index=index,
