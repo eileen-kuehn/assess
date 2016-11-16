@@ -29,7 +29,7 @@ class SetStatistics(Statistics):
         return self
 
     def __iter__(self):
-        for key, count in self._data.iteritems():
+        for key, count in self._data.items():
             statistic = SetStatistic(key, count)
             yield statistic
 

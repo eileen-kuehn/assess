@@ -279,7 +279,7 @@ class OrderedTree(object):
         # OrderedTree is finalized AFTER the nodes. We need to trigger a post-
         # finalization step where nodes may look up siblings in the tree.
         self.__dict__ = state
-        for node in self._nodes_dict.itervalues():
+        for node in self._nodes_dict.values():
             node.resolve_siblings()
 
 

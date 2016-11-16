@@ -6,7 +6,7 @@ import os
 import logging
 try:
     import cPickle as pickle
-except NameError:
+except ImportError:
     import pickle
 
 from gnmutils.sources.filedatasource import FileDataSource
