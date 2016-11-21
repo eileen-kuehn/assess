@@ -34,3 +34,7 @@ class EnsembleSignature(Signature):
         for signature in self._signatures:
             result.append(signature.get_signature(node, parent))
         return result
+
+    def __repr__(self):
+        return "%s (%s)" % (self.__class__.__name__, ", ".join(
+            [repr(signature) for signature in self._signatures]))
