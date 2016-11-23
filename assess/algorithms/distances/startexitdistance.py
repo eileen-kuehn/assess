@@ -100,11 +100,13 @@ class StartExitDistance(Distance):
                     value=value,
                     count=signature_count
                 )
-                if distance > 0:
+                if distance > 0.5:
                     # partial or full mismatch
                     result += distance * property_base
                 else:
-                    result -= property_base
+                    if distance is None:
+                        distance = 0
+                    result -= (1 - distance) * property_base
             result_dict[prototype_node] = result
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
