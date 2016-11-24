@@ -2,6 +2,7 @@
 Module implements possible methods to represent statistics that might be used for e.g. cluster
 representatitives. Currently only MeanVariance is supported.
 """
+from __future__ import division
 import math
 
 
@@ -104,7 +105,7 @@ class MeanVariance(Statistic):
         self._mean = 0.0
         # remember for faster calculation
         self._second_part = None
-        self._temporal = 0.0
+        self.variance = 0.0
         if value is not None:
             self.add(value=value)
 
@@ -115,19 +116,29 @@ class MeanVariance(Statistic):
 
         :param statistics: object which values are merged
         """
+        variance_a = self.variance * (self._count - 1)
+        variance_b = statistics.variance * (statistics.count - 1)
+
         count = self._count + statistics.count
-        delta = statistics.mean - self.mean
+        delta = statistics.mean - self._mean
+
         self._mean += delta * (statistics.count / count)
-        self._temporal += statistics._temporal + (
-            delta * delta * self._count * statistics.count / count)
+        self.variance = variance_a + variance_b + (delta * delta * (self._count * statistics.count) / count)
         self._count = count
+        self.variance /= self._count - 1
         return self
 
     def add(self, value=.0):
+        if self._count > 1:
+            self.variance *= self._count - 1
         self._count += 1
         delta = value - self._mean
         self._mean += delta / self._count
-        self._temporal += delta * (value - self._mean)
+        self.variance += delta * (value - self._mean)
+        if self._count < 2:
+            self.variance = 0
+        else:
+            self.variance /= self._count - 1
 
     @property
     def mean(self):
@@ -141,30 +152,6 @@ class MeanVariance(Statistic):
     @property
     def value(self):
         return self._mean
-
-    @property
-    def variance(self):
-        """
-        Variance is None, when not enough values have been collected.
-
-        :return: running variance
-        """
-        if self._count < 2:
-            return None
-        return self._temporal / (self._count - 1)
-
-    # def add(self, value=0.0):
-    #     """
-    #     Method to add a specific value for a given signature to its cache value.
-    #     :param value: New value to add
-    #     """
-    #     self._overall_count += 1
-    #     if value != 0:
-    #         self._count += 1
-    #         new_mean = self._mean + (value - self._mean) / float(self._count)
-    #         self._variance += (value - self._mean) * (value - new_mean)
-    #         self._mean = new_mean
-    #         self._second_part = None
 
     def _get_second_part(self):
         """
@@ -206,16 +193,12 @@ class MeanVariance(Statistic):
 
     def object_distance(self, other=None):
         """
-        Object distance is currently the ratio of the both means and the width of both variances.
+        Returns the distance between the two objects.
 
         :param other: Other MeanVariance object to check
         :return: distance
         """
-        try:
-            return abs(self.mean - other.mean) / \
-                   ((self.all_valid_variance + other.all_valid_variance) / 2)
-        except ZeroDivisionError:
-            return float("inf")
+        return self._height_distance(other)
 
     @property
     def count(self):
@@ -225,3 +208,50 @@ class MeanVariance(Statistic):
         :return: Count of considered values
         """
         return self._count
+
+    def _mean_distance(self, other=None):
+        """
+        Object distance is currently the ratio of the both means and the width of both variances.
+
+        :param other: Other MeanVariance object to check
+        :return: distance
+        """
+        try:
+            return abs(self.mean - other.mean) / \
+                   ((self.all_valid_variance + other.all_valid_variance) / 2.0)
+        except ZeroDivisionError:
+            return float("inf")
+
+    def _height_distance(self, other=None):
+        merged = self._merge_pdfs(self, other)
+        left_pdf = self._pdf(self.mean, self.mean, variance=self.all_valid_variance) * self.count
+        right_pdf = self._pdf(other.mean, other.mean, variance=other.all_valid_variance) * other.count
+        merged_pdf_left = self._pdf(self.mean, merged["mean"], variance=merged["variance"]) * merged["count"]
+        merged_pdf_right = self._pdf(other.mean, merged["mean"], variance=merged["variance"]) * merged["count"]
+        try:
+            left_distance = left_pdf / merged_pdf_left
+            right_distance = right_pdf / merged_pdf_right
+        except ZeroDivisionError:
+            return 0
+        return min(left_distance, right_distance)
+
+    @staticmethod
+    def _merge_pdfs(first, other):
+        variance_a = first.all_valid_variance * (first.count - 1)
+        variance_b = other.all_valid_variance * (other.count - 1)
+
+        count = first.count + other.count
+        delta = other.mean - first.mean
+        mean = first.mean + delta * (other.count / count)
+        variance = variance_a + variance_b + (delta * delta * (count * other.count / count))
+        return {"count": count, "mean": mean, "variance": variance/(count - 1)}
+
+    def _pdf(self, x_value, mean, variance=None):
+        return 1 / math.sqrt(2 * variance * math.pi) * math.exp(
+            -(x_value - mean)**2 / (2.0 * float(variance)))
+
+    def height(self, x_value):
+        return self._pdf(x_value, self.mean, self.all_valid_variance) * self.count
+
+    def __repr__(self):
+        return '%s(mean=%s,variance=%s,count=%s)' % (self.__class__.__name__, self.mean, self.variance, self.count)
