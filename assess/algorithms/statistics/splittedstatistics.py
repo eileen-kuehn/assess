@@ -20,10 +20,12 @@ class SplittedStatistics(Statistics):
 
     Attention: the attraction factor is currently not in use.
     """
-    def __init__(self, statistics_type=MeanVariance, threshold=.5, attraction_factor=None):
+    def __init__(self, statistics_type=MeanVariance, threshold=.5, distribution_threshold=1.2,
+                 attraction_factor=None):
         self._statistics_type = statistics_type
         self._statistics = []
         self._threshold = threshold
+        self._distribution_threshold = distribution_threshold
         self._attraction_factor = attraction_factor
 
     def __add__(self, other):
@@ -103,11 +105,11 @@ class SplittedStatistics(Statistics):
         merged = True
         while merged:
             merged = False
-            if self._distribution_distance(index, index + 1) <= 1:
+            if self._distribution_distance(index, index + 1) <= self._distribution_threshold:
                 self._statistics[index] += self._statistics[index + 1]
                 del self._statistics[index + 1]
                 merged = True
-            if self._distribution_distance(index - 1, index) <= 1:
+            if self._distribution_distance(index - 1, index) <= self._distribution_threshold:
                 self._statistics[index - 1] += self._statistics[index]
                 del self._statistics[index]
                 index -= 1
@@ -129,7 +131,7 @@ class SplittedStatistics(Statistics):
         if value is not None:
             distance, index = self._closest_value_and_index(value)
             if distance < 1:
-                result = self._statistics[index].count
+                result = self._statistics[index].height(value)
         else:
             for statistic in self._statistics:
                 result += statistic.count
@@ -147,8 +149,10 @@ class SplittedStatistics(Statistics):
         distance = None
         if value is not None:
             distance, index = self._closest_value_and_index(value=value)
-            if count >= self._statistics[index].count:
+            if count >= self._statistics[index].height(value):
                 distance = 1
+            elif distance < 1:
+                distance = 0
         if distance == float("inf"):
             distance = 1
         return distance
