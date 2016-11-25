@@ -35,3 +35,15 @@ class TestPQGramSignatureFunctionalities(unittest.TestCase):
         for node in simple_prototype().nodes():
             signatures.add(signature.get_signature(node, node.parent()))
         self.assertEqual(len(signatures), 5)
+
+    def test_pqgram_empty_nodes(self):
+        signature = PQGramSignature(height=2, width=2)
+        signatures = set()
+        for node in simple_prototype().nodes(include_marker=True):
+            try:
+                signatures.add(signature.get_signature(node, node.parent()))
+            except AttributeError:
+                signatures.update(signature.finish_node(node.parent()))
+        self.assertEqual(
+            set(['__root__', '_root_test__', '_root_muh_test_', '_root_test_muh_test',
+                 '_root_muh_test_muh', '_root__test_muh', '_root__muh_']), signatures)
