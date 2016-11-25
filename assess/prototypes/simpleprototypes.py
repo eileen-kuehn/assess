@@ -319,7 +319,6 @@ class Tree(object):
             node = nodes_to_be_removed.pop()
             self.remove_node(node=node)
 
-
     def add_node(self, name, parent=None, parent_node_id=None, **kwargs):
         """
         Method to add a new node to the tree. If given parent is None, and there is currently no
@@ -356,7 +355,7 @@ class Tree(object):
         return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
-    def nodes(self, node=None, depth_first=True, order_first=False):
+    def nodes(self, node=None, depth_first=True, order_first=False, include_marker=False):
         """
         Method that returns a generator yielding all nodes inside the tree, either in
         depth first or width first order.
@@ -364,13 +363,29 @@ class Tree(object):
         :param node: The node to start at
         :param depth_first: Depth first order if True, otherwise width first.
         :param order_first: Returns nodes by order they have been added.
+        :param include_marker: Defines if empty nodes for marking end of children are included.
         :return: Generator for tree nodes.
         """
         def ofs(root):
-            yield root
-            while root.next_node is not None:
-                root = root.next_node
+            """
+            Method follows links to next nodes to generate node order.
+
+            :param root: Where to start node traversal
+            :return: Order first node generator
+            """
+            while root is not None:
                 yield root
+                if include_marker:
+                    # check if current node is the last in children
+                    try:
+                        if len(root.children_list()) == 0:
+                            yield EmptyNode(parent=root)
+                        if root == root.parent().children_list()[-1]:
+                            yield EmptyNode(parent=root.parent())
+                    except AttributeError:
+                        # there is no parent
+                        pass
+                root = root.next_node
 
         def dfs(root):
             """
@@ -385,6 +400,8 @@ class Tree(object):
                 for child in root.children():
                     for new_node in dfs(child):
                         yield new_node
+                if include_marker:
+                    yield EmptyNode(parent=root)
             except TypeError:
                 pass
             except AttributeError:
@@ -392,7 +409,7 @@ class Tree(object):
 
         def wfs(root):
             """
-            Method recursively implements a width first gneerator for nodes of the tree.
+            Method recursively implements a width first generator for nodes of the tree.
             The given node defines which subtree is used for traversal.
 
             :param root: Where to start node traversal
@@ -402,8 +419,22 @@ class Tree(object):
             while to_visit:
                 root = to_visit.pop(0)
                 yield root
-                for child in root.children():
-                    to_visit.append(child)
+                if include_marker:
+                    # check if current node is the last in children
+                    try:
+                        if root == root.parent().children_list()[-1]:
+                            yield EmptyNode(parent=root.parent())
+                        if len(root.children_list()) == 0:
+                            to_visit.append(EmptyNode(parent=root))
+                    except AttributeError:
+                        # there is no parent
+                        pass
+                    except IndexError:
+                        pass
+                try:
+                    to_visit.extend(root.children_list())
+                except AttributeError:
+                    pass
 
         base_node = node or self._graph.root
         if base_node is not None:
@@ -601,3 +632,11 @@ class Prototype(Tree):
 
     def node_iter(self):
         return self.nodes(order_first=True)
+
+
+class EmptyNode(object):
+    def __init__(self, parent):
+        self._parent = parent
+
+    def parent(self):
+        return self._parent
