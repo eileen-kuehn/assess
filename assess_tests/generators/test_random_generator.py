@@ -33,7 +33,7 @@ class TestRandomGenerator(unittest.TestCase):
 
         vector_decorator.start_tree()
         for event in rg:
-            distance = vector_decorator.add_event(event)
+            distance = vector_decorator.add_event(event)[0]
         vector_decorator.finish_tree()
         self.assertEqual(distance[0], [96])
 
@@ -47,7 +47,7 @@ class TestRandomGenerator(unittest.TestCase):
 
         decorator.start_tree()
         for event in rg:
-            distance = decorator.add_event(event)
+            distance = decorator.add_event(event)[0]
         decorator.finish_tree()
         self.assertEqual(distance[0], [0])
 

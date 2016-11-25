@@ -158,9 +158,11 @@ class Decorator(object):
             # info about current progress
             event_counts = self._algorithm.event_counts()
             if self._last_event_counts is None or event_counts[0] > self._last_event_counts[0]:
-                self._event_added(event, result[:])
-                # FIXME: current test
-                # self._last_event_counts = event_counts
+                # Functionality has been changed to a list of results, so for each result the
+                # internal method :py:meth:_event_added is called
+                # TODO: maybe inform internal method about the actual event difference per step?
+                for single_result in result[:]:
+                    self._event_added(event, single_result)
         return result
 
     def update(self, decorator):
