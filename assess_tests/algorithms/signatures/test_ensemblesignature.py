@@ -2,8 +2,9 @@ import unittest
 
 from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
+from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 
-from assess_tests.basedata import simple_monitoring_tree
+from assess_tests.basedata import simple_monitoring_tree, simple_prototype
 
 
 class TestEnsembleSignature(unittest.TestCase):
@@ -29,3 +30,12 @@ class TestEnsembleSignature(unittest.TestCase):
             self.assertIsNotNone(token)
             self.assertEqual(2, len(token))
             self.assertIsNot(token[0], token[1])
+
+    def test_empty_nodes(self):
+        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentCountedChildrenByNameTopologySignature(count=2)])
+        algorithm = IncrementalDistanceAlgorithm(signature=signature)
+        algorithm.prototypes = [simple_prototype()]
+
+        for event in simple_monitoring_tree().event_iter():
+            distance = algorithm.add_event(event)
+        self.assertEqual([[1], [7]], distance[-1])
