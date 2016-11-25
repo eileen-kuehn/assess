@@ -600,8 +600,11 @@ class Prototype(Tree):
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
                 })
-        for node in self.node_iter():
-            current_signature = signature.get_signature(node, node.parent())
+        for node in self.node_iter(include_marker=True):
+            try:
+                current_signature = signature.get_signature(node, node.parent())
+            except AttributeError:
+                continue
             if start_support:
                 cache.add_signature(current_signature, self)
             if exit_support:
