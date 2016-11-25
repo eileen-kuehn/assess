@@ -613,7 +613,7 @@ class Prototype(Tree):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
 
-        for node in self.node_iter():
+        for node in self.node_iter(include_marker=False):
             now = node.tme
             events += 1
 
@@ -630,8 +630,8 @@ class Prototype(Tree):
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 
-    def node_iter(self):
-        return self.nodes(order_first=True)
+    def node_iter(self, include_marker=False):
+        return self.nodes(order_first=True, include_marker=include_marker)
 
 
 class EmptyNode(object):
