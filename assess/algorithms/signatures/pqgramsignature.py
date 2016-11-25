@@ -29,12 +29,12 @@ class PQGramSignature(Signature):
             # take the last node to initialize the generators
             anchor = node.children_list()[-1]
             parent_generator = self.parent_generator(anchor)
-            parents = reversed([next(parent_generator) for _ in range(self._height)])
+            parents = list(reversed([next(parent_generator) for _ in range(self._height)]))
             siblings = node.children_list()[-self._width:]
 
             for _ in range(self._width):
                 algorithm_id = "_".join(parents) + ("_%s_" % "") + \
-                               "_".join(sibling if sibling is not None else "" for sibling in siblings)
+                               "_".join(str(sibling.name) if sibling is not None else "" for sibling in siblings)
                 result.append(algorithm_id)
                 if len(siblings) >= self._width:
                     siblings.pop(0)
