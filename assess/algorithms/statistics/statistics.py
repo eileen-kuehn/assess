@@ -125,7 +125,10 @@ class MeanVariance(Statistic):
         self._mean += delta * (statistics.count / count)
         self.variance = variance_a + variance_b + (delta * delta * (self._count * statistics.count) / count)
         self._count = count
-        self.variance /= self._count - 1
+        try:
+            self.variance /= self._count - 1
+        except ZeroDivisionError:
+            self.variance = 0.0
         return self
 
     def add(self, value=.0):

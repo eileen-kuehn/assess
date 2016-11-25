@@ -220,10 +220,14 @@ class TreeDistanceAlgorithm(object):
 
         Format that can be expected: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
 
+        Attention: This format is put into a list, because of empty nodes that might be required to
+        put into the current tree.
+
         :param event: The event to be added to the current distance measurement.
         :param kwargs:
         :return: Returns the current distances after the event has been applied.
         """
+        result = []
         self._event_counter += 1
         if isinstance(event, ProcessStartEvent):
             if self.supported.get(ProcessStartEvent, False):
@@ -232,21 +236,33 @@ class TreeDistanceAlgorithm(object):
                 signature = self.create_signature(node, parent)
                 # added to keep information related signature for event
                 event.signature = signature
-                return self.update_distance(event, signature, **kwargs)
+                result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, ProcessExitEvent):
+            # finish node to take care on empty nodes
+            node, parent = self.finish_node(event, **kwargs)
+            signatures = self._signature.finish_node(node)
+            for signature in signatures:
+                if self.supported.get(ProcessStartEvent, False):
+                    start_event = ProcessStartEvent(event.tme, 0, event.pid)
+                    start_event.signature = signature
+                    result.append(self.update_distance(start_event, signature, **kwargs))
+                if self.supported.get(ProcessExitEvent, False):
+                    exit_event = ProcessExitEvent(event.tme, 0, event.pid, event.tme)
+                    exit_event.signature = signature
+                    result.append(self.update_distance(exit_event, signature, **kwargs))
+
             if self.supported.get(ProcessExitEvent, False):
-                # finish node
-                node, parent = self.finish_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
                 # added to keep information related signature for event
                 event.signature = signature
-                return self.update_distance(event, signature, **kwargs)
+                result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, TrafficEvent):
             if self.supported.get(TrafficEvent, False) or True:
                 # add traffic
                 raise EventNotSupportedException(event)
         else:
             raise EventNotSupportedException(event)
+        return result
 
     def _event_count(self):
         """

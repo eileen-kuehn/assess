@@ -3,6 +3,8 @@ import unittest
 from assess.algorithms.signatures.signatures import *
 from assess.prototypes.simpleprototypes import Prototype
 
+from assess_tests.basedata import simple_prototype
+
 
 class TestSignatureFunctionalities(unittest.TestCase):
     def setUp(self):
@@ -130,3 +132,19 @@ class TestSignatureFunctionalities(unittest.TestCase):
         self.assertEqual(ParentChildOrderTopologySignature, signature.__class__)
         signature = Signature("ParentChildOrderByNameTopologySignature")
         self.assertEqual(ParentChildOrderByNameTopologySignature, signature.__class__)
+
+    def test_empty_nodes(self):
+        signature = ParentCountedChildrenByNameTopologySignature(count=2)
+
+        signatures = set()
+        for node in simple_prototype().nodes(include_marker=True):
+            try:
+                signatures.add(signature.get_signature(node, node.parent()))
+            except AttributeError:
+                signatures.update(signature.finish_node(node.parent()))
+        self.assertEqual(
+            set(['_root_-5995064038896156292', '_test_-6157006611854717364',
+                 'test_muh_-6157006611854717364', 'test_muh_test_-6157006611854717364',
+                 'muh_test_muh_-6157006611854717364', 'test_muh__-6157006611854717364',
+                 'muh___-6157006611854717364']), signatures)
+        print(signatures)

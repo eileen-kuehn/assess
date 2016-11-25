@@ -178,7 +178,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm = algorithm(signature=signature)
         algorithm.prototypes = [prototype]
 
-        return self._add_events(algorithm=algorithm, events=events)
+        return self._add_events(algorithm=algorithm, events=events)[0]
 
     def _test_symmetry(self, algorithm=None, signature=None, prototype=None, tree=None):
         if prototype is None:
@@ -1195,7 +1195,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.start_tree()
         base_distance = 2
         for event in Event.from_tree(simple_prototype()):
-            self.assertEqual([[base_distance]], algorithm.add_event(event))
+            self.assertEqual([[base_distance]], algorithm.add_event(event)[0])
             if base_distance > 0:
                 base_distance -= 1
         algorithm.finish_tree()
@@ -1205,7 +1205,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.start_tree()
         base_distance = 2
         for event in Event.from_tree(simple_prototype()):
-            self.assertEqual([[base_distance, base_distance]], algorithm.add_event(event))
+            self.assertEqual([[base_distance, base_distance]], algorithm.add_event(event)[0])
             if base_distance > 0:
                 base_distance -= 1
         algorithm.finish_tree()

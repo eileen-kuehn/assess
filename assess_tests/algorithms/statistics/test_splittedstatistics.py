@@ -11,13 +11,13 @@ class TestSplittedStatistics(unittest.TestCase):
         statistics.add(value=0)
         for statistic in statistics._statistics:
             print "mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count)
-        self.assertEqual(statistics.distance(value=1), float("inf"))
+        self.assertEqual(statistics.distance(value=1), 1)
         # distance should stay the same, also with more 0 values
         for _ in xrange(1000):
             statistics.add(value=0)
         for statistic in statistics._statistics:
             print "mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count)
-        self.assertEqual(statistics.distance(value=1), float("inf"))
+        self.assertEqual(statistics.distance(value=1), 1)
 
     def test_all_valid_variance(self):
         statistics = SplittedStatistics(statistics_type=MeanVariance)
@@ -53,5 +53,5 @@ class TestSplittedStatistics(unittest.TestCase):
         for statistic in statistics._statistics:
             self.assertTrue(statistic.mean > last)
             last = statistic.mean
-        self.assertEqual(len(statistics._statistics), 872)  # number of clusters wo attraction
+        self.assertEqual(len(statistics._statistics), 849)  # number of clusters wo attraction
 

@@ -96,7 +96,7 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         self.assertEqual(statistic.count, 1)
         self.assertEqual(statistic.mean, 5)
         self.assertEqual(statistic.count, 1)
-        self.assertEqual(statistic.variance, None)
+        self.assertEqual(statistic.variance, 0)
         self.assertEqual(statistic.all_valid_variance, 1)
         self.assertEqual(statistic.distance(value=5), 0)
         self.assertAlmostEqual(statistic.distance(value=3), .86, 2)

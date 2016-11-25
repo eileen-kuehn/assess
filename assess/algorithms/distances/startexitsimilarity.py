@@ -48,7 +48,7 @@ class StartExitSimilarity(Distance):
         result_dict = dict(zip(prototypes, [0] * len(prototypes)))
         for prototype_node in prototype_nodes:
             if self._signature_cache[index].get_count(signature=node_signature) < \
-                            2*prototype_nodes[prototype_node]["duration"].count:
+                            2*prototype_nodes[prototype_node]["duration"].count():
                 distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
                 if distance is None:
                     result_dict[prototype_node] = 1

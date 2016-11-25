@@ -56,6 +56,9 @@ class Signature(object):
             self.prepare_signature(node, parent)
             return node.signature_id[self]
 
+    def finish_node(self, node):
+        return []
+
     def __repr__(self):
         return self.__class__.__name__
 
@@ -139,12 +142,31 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         position = node.node_number()
         neighbors = parent.children_list()[-((len(parent.children_list())-position) +
                                              self._count):position] if parent is not None else []
-        algorithm_id = "%s_%s_%s" %(
+        algorithm_id = "%s_%s_%s" % (
             "_".join(str(node.name) for node in neighbors),
             node.name,
             hash(self.get_signature(parent, None) if parent is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
+
+    def finish_node(self, node):
+        result = []
+        if len(node.children_list()) > 0:
+            # we need to consider the insertion of empty nodes
+            parent = node
+            neighbors = parent.children_list()[-self._count:]
+            for _ in range(self._count):
+                algorithm_id = "%s_%s_%s" % (
+                    "_".join(str(node.name) if node is not None else "" for node in neighbors),
+                    "",
+                    hash(self.get_signature(parent, None))
+                )
+                result.append(algorithm_id)
+                # it might happen that we do not have a sufficient amount of nodes, so leave them
+                if len(neighbors) >= self._count:
+                    neighbors.pop(0)
+                neighbors.append(None)
+        return result
 
     def __repr__(self):
         return self.__class__.__name__ + " (count: %d)" % self._count
