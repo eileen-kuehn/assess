@@ -13,10 +13,10 @@ def simple_prototype():
 
 def simple_monitoring_tree():
     test_tree = Prototype()
-    tree_root = test_tree.add_node("root", tme=0, exit_tme=3, pid=1, ppid=0)
-    tree_root.add_node("test", tme=0, exit_tme=1, pid=2, ppid=1)
-    tree_root.add_node("test", tme=1, exit_tme=2, pid=3, ppid=1)
-    tree_root.add_node("muh", tme=1, exit_tme=3, pid=4, ppid=1)
+    tree_root = test_tree.add_node("root", tme=0, exit_tme=3, pid=1, ppid=0, traffic=[])
+    tree_root.add_node("test", tme=0, exit_tme=1, pid=2, ppid=1, traffic=[])
+    tree_root.add_node("test", tme=1, exit_tme=2, pid=3, ppid=1, traffic=[])
+    tree_root.add_node("muh", tme=1, exit_tme=3, pid=4, ppid=1, traffic=[])
     return test_tree
 
 
