@@ -103,14 +103,24 @@ class EnsembleSignatureCache(object):
         return self._signature_dicts
 
 
-class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
+class EnsemblePrototypeSignatureCache(object):
     """
     The EnsemblePrototypeSignatureCache holds a list of PrototypeSignatureCaches to enable
     ensemble methods for distance measurements.
     """
-    def __init__(self, **kwargs):
-        PrototypeSignatureCache.__init__(self, **kwargs)
+    def __init__(self, supported=None, statistics_cls=None):
         self._prototype_dict = []
+        self.supported = supported or {
+            ProcessStartEvent: True,
+            ProcessExitEvent: False,
+            TrafficEvent: False
+        }
+        self.statistics_cls = statistics_cls
+
+    @property
+    def signature_cache_count(self):
+        return EnsemblePrototypeSignatureCacheList(
+            cache.signature_cache_count for cache in self._prototype_dict)
 
     def add_signature(self, signature=None, prototype=None, value=None):
         """
