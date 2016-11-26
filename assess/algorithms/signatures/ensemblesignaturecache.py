@@ -6,6 +6,16 @@ from assess.algorithms.signatures.signaturecache import SignatureCache, Prototyp
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
+class EnsembleSignatureCacheList(list):
+    def __repr__(self):
+        return "%s%s" % (self.__class__.__name__, list.__repr__(self))
+
+
+class EnsemblePrototypeSignatureCacheList(list):
+    def __repr__(self):
+        return "%s%s" % (self.__class__.__name__, list.__repr__(self))
+
+
 class EnsembleSignatureCache(object):
     """
     The EnsembleSignatureCache holds a list of SignatureCache objects to enable the approach to
@@ -44,10 +54,11 @@ class EnsembleSignatureCache(object):
         :return: List of current count for tokens, otherwise []
         """
         try:
-            return [self._signature_dicts[index].get(signature=token) for index, token in
-                    enumerate(signature)]
+            return EnsembleSignatureCacheList(
+                self._signature_dicts[index].get(signature=token) for index, token in
+                enumerate(signature))
         except IndexError:
-            return []
+            return EnsembleSignatureCacheList()
 
     def get_count(self, signature):
         """
@@ -58,10 +69,11 @@ class EnsembleSignatureCache(object):
         :return: List of current count for tokens, otherwise []
         """
         try:
-            return [self._signature_dicts[index].get_count(signature=token) for index, token in
-                    enumerate(signature)]
+            return EnsembleSignatureCacheList(
+                self._signature_dicts[index].get_count(signature=token) for index, token in
+                enumerate(signature))
         except IndexError:
-            return []
+            return EnsembleSignatureCacheList()
 
     def node_count(self, **kwargs):
         """
@@ -70,7 +82,8 @@ class EnsembleSignatureCache(object):
         :param kwargs:
         :return: List of count of tokens
         """
-        return [cache.node_count(**kwargs) for cache in self._signature_dicts]
+        return EnsembleSignatureCacheList(
+            cache.node_count(**kwargs) for cache in self._signature_dicts)
 
     def frequency(self):
         """
@@ -79,7 +92,7 @@ class EnsembleSignatureCache(object):
 
         :return: List of accumulated count for all signatures
         """
-        return [cache.frequency() for cache in self._signature_dicts]
+        return EnsembleSignatureCacheList(cache.frequency() for cache in self._signature_dicts)
 
     def internal(self):
         """
@@ -128,7 +141,8 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         :param prototype: Prototype to get the number of signatures for
         :return: List of numbers of tokens for prototype
         """
-        return [cache.node_count(prototype=prototype) for cache in self._prototype_dict]
+        return EnsemblePrototypeSignatureCacheList(
+            cache.node_count(prototype=prototype) for cache in self._prototype_dict)
 
     def get(self, signature=None):
         """
@@ -139,19 +153,21 @@ class EnsemblePrototypeSignatureCache(PrototypeSignatureCache):
         :return: List of dictionaries of prototypes with statistics as value
         """
         try:
-            return [self._prototype_dict[index].get(signature=token) for index, token in
-                    enumerate(signature)]
+            return EnsembleSignatureCacheList(
+                self._prototype_dict[index].get(signature=token) for index, token in
+                enumerate(signature))
         except IndexError:
-            return []
+            return EnsemblePrototypeSignatureCacheList()
 
     def frequency(self, prototype=None):
         """
         Returns a list of frequencies of added objects. If no prototype is given, it considers the
         frequency of all elements. Otherwise only the frequency per prototype is given.
 
-        Format returned is like this: [p1e1, ..., pnen]
+        Format returned is like this: [p1e1, ..., p1en]
 
         :param prototype: Prototype to determine frequency from
         :return: List of frequency of tokens
         """
-        return [cache.frequency(prototype=prototype) for cache in self._prototype_dict]
+        return EnsemblePrototypeSignatureCacheList(
+            cache.frequency(prototype=prototype) for cache in self._prototype_dict)
