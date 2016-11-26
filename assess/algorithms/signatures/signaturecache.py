@@ -122,9 +122,14 @@ class PrototypeSignatureCache(SignatureCache):
     do a count on signatures but also introduces a MeanVariance statistic on a given value for
     signatures.
     """
+    def __init__(self, supported=None, statistics_cls=None):
+        self.signature_cache_count = 1
+        SignatureCache.__init__(self, supported=supported, statistics_cls=statistics_cls)
+
     @staticmethod
     def from_signature_caches(signature_caches, prototype=None, threshold=.1):
         result = PrototypeSignatureCache(signature_caches[0].supported)
+        result.signature_cache_count = len(signature_caches)
         token_set = set()
         for signature_cache in signature_caches:
             token_set.update(signature_cache.internal().keys())
