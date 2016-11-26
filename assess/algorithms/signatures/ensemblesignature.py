@@ -9,6 +9,11 @@ from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatur
     EnsemblePrototypeSignatureCache
 
 
+class EnsembleSignatureList(list):
+    def __repr__(self):
+        return "%s%s" % (self.__class__.__name__, list.__repr__(self))
+
+
 class EnsembleSignature(Signature):
     signature_cache_class = EnsembleSignatureCache
     prototype_signature_cache_class = EnsemblePrototypeSignatureCache
@@ -32,16 +37,16 @@ class EnsembleSignature(Signature):
         :param parent:
         :return: List of token in signature order
         """
-        result = []
+        result = EnsembleSignatureList()
         for signature in self._signatures:
             result.append(signature.get_signature(node, parent))
         return result
 
     def finish_node(self, node):
-        result = []
+        result = EnsembleSignatureList()
         for signature in self._signatures:
             result.append(signature.finish_node(node))
-        return [list(element) for element in izip_longest(*result)]
+        return [EnsembleSignatureList(element) for element in izip_longest(*result)]
 
     def __repr__(self):
         return "%s (%s)" % (self.__class__.__name__, ", ".join(
