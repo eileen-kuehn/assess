@@ -6,6 +6,7 @@ from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
 from assess.algorithms.signatures.signatures import *
+from assess.events.events import ProcessExitEvent, ProcessStartEvent
 
 from gnmutils.sources.filedatasource import FileDataSource
 
@@ -288,3 +289,19 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(1, index.get_count("root_-5995064038896156292"))
         self.assertEqual(2, index.get_count("test_703899357396914538"))
         self.assertEqual(2, index.get_count("muh_703899357396914538"))
+
+    def test_parent_child_event_iter(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=1, ppid=0, tme=0, exit_tme=3, traffic=[])
+        one = root.add_node("one", pid=2, ppid=1, tme=0, exit_tme=1, traffic=[])
+        one.add_node("one.one", pid=3, ppid=2, tme=1, exit_tme=1, traffic=[])
+        one.add_node("one.two", pid=5, ppid=2, tme=1, exit_tme=1, traffic=[])
+        root.add_node("two", pid=4, ppid=1, tme=1, exit_tme=2, traffic=[])
+        finished = set()
+        for event in prototype.event_iter():
+            if isinstance(event, ProcessStartEvent):
+                self.assertTrue(event.ppid not in finished, "Node with pid %s is already gone..." % event.ppid)
+            if isinstance(event, ProcessExitEvent):
+                self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
+                finished.add(event.pid)
+        self.assertTrue(False)
