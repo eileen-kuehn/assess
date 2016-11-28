@@ -621,7 +621,7 @@ class Prototype(Tree):
             events += 1
 
             # yield any exit events that should have happened so far
-            while exit_event_queue and exit_event_queue[-1][0] >= -now:
+            while exit_event_queue and exit_event_queue[-1][0] > -now:
                 yield exit_event_queue.pop()[2]
             # create the events for the current process
             start_event, exit_event, traffic_events = Event.events_from_process(node)
