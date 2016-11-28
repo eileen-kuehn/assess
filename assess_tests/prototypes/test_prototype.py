@@ -293,9 +293,9 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_parent_child_event_iter(self):
         prototype = Prototype()
         root = prototype.add_node("root", pid=1, ppid=0, tme=0, exit_tme=3, traffic=[])
-        one = root.add_node("one", pid=2, ppid=1, tme=0, exit_tme=1, traffic=[])
-        one.add_node("one.one", pid=3, ppid=2, tme=1, exit_tme=1, traffic=[])
-        one.add_node("one.two", pid=5, ppid=2, tme=1, exit_tme=1, traffic=[])
+        one = root.add_node("one", pid=2, ppid=1, tme=0, exit_tme=2, traffic=[])
+        one.add_node("one.one", pid=3, ppid=2, tme=1, exit_tme=2, traffic=[])
+        one.add_node("one.two", pid=5, ppid=2, tme=2, exit_tme=2, traffic=[])
         root.add_node("two", pid=4, ppid=1, tme=1, exit_tme=2, traffic=[])
         finished = set()
         for event in prototype.event_iter():
@@ -304,4 +304,3 @@ class TestPrototypeFunctions(unittest.TestCase):
             if isinstance(event, ProcessExitEvent):
                 self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
                 finished.add(event.pid)
-        self.assertTrue(False)
