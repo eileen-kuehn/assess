@@ -9,7 +9,7 @@ class PQGramSignature(Signature):
     The PQGramSignature implements the pq-gram from literature but takes some adaptations to make
     it usable on streamed tree data.
     """
-    def __init__(self, height=1, width=1):
+    def __init__(self, height=1, width=0):
         Signature.__init__(self)
         self._height = height
         self._width = width
