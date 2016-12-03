@@ -73,3 +73,6 @@ class PQGramSignature(Signature):
             yield neighbor.name
         while True:
             yield ""
+
+    def __repr__(self):
+        return self.__class__.__name__ + " (p=%d, q=%d)" % (self._height, self._width)
