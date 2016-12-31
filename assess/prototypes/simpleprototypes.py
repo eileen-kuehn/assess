@@ -636,6 +636,9 @@ class Prototype(Tree):
     def node_iter(self, include_marker=False):
         return self.nodes(order_first=True, include_marker=include_marker)
 
+    def __iter__(self):
+        return self.node_iter()
+
 
 class EmptyNode(object):
     def __init__(self, parent):
