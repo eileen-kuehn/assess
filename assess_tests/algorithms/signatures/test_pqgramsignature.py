@@ -13,7 +13,7 @@ class TestPQGramSignatureFunctionalities(unittest.TestCase):
         prototype = simple_prototype()
         for node in prototype.nodes():
             signatures.add(signature.get_signature(node, node.parent()))
-        self.assertEqual(len(signatures), 4)
+        self.assertEqual(len(signatures), 3)
 
     def test_zero_pqgram_signature(self):
         signature = PQGramSignature(height=0, width=0)
