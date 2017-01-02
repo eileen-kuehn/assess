@@ -69,7 +69,7 @@ class Distance(object):
         """
         pass
 
-    def node_count(self, prototypes=None, signature_prototypes=None):
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
         """
         Returns the count of nodes considered for the actual distance measurement. This count is
         important to calculate the normalised distance with regard to the used distance.
@@ -78,6 +78,10 @@ class Distance(object):
 
         This method always at least returns a count of 0. Also if the distance itself was not
         initialised, still 0 is returned.
+
+        FIXME:
+        If signature is true, then the frequency of nodes is ignored and only the actual count is
+        returned. This is a dirty fix for now...
 
         :return: Count of nodes considered from distance
         """
