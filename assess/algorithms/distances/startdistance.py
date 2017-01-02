@@ -36,7 +36,7 @@ class StartDistance(Distance):
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
         if prototypes is not None:
-            return [signature_prototypes.node_count(prototype=prototype) for prototype in prototypes]
+            return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
         if signature:
             return [signature_cache.node_count() for signature_cache in self._signature_cache]
         return [signature_cache.frequency() for signature_cache in self._signature_cache]
