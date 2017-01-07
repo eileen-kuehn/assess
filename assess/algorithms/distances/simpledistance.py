@@ -29,6 +29,8 @@ class SimpleDistance(Distance):
                         **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
                 if signature not in self._measured_nodes[index]:
                     self._update_distances(
                         prototypes=prototypes,
@@ -66,6 +68,8 @@ class SimpleDistance2(Distance):
                         **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
                 if signature not in self._measured_nodes[index]:
                     self._update_distances(
                         prototypes=prototypes,

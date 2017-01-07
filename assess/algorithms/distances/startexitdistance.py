@@ -45,6 +45,8 @@ class StartExitDistance(Distance):
                         value=None, **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
                 self._update_distances(
                     prototypes=prototypes,
                     event_type=event_type,

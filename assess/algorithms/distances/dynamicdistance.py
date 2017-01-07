@@ -56,6 +56,8 @@ class DynamicDistance(Distance):
 
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
                 result = self._wrapped_distance.update_distance(
                     prototypes=prototypes,
                     signature=signature,

@@ -27,6 +27,8 @@ class AdditionalMissingDistance(Distance):
                         **kwargs):
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
                 if signature not in self._measured_nodes:
                     self._update_additional_distances(
                         prototypes=prototypes,
