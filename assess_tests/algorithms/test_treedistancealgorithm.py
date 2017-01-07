@@ -4,7 +4,6 @@ from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 from assess.events.events import TrafficEvent
 from assess.prototypes.simpleprototypes import Prototype
 from assess.exceptions.exceptions import EventNotSupportedException
-from assess.events.events import Event
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
