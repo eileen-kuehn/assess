@@ -55,11 +55,11 @@ class StartExitDistance(Distance):
                     node_signature=signature,
                     value=value
                 )
-        if event_type == ProcessStartEvent:
-            self._signature_cache[index].add_signature(signature=signature)
-        else:
-            self._signature_cache[index].add_signature(signature=signature,
-                                                       value={"duration": value})
+                if event_type == ProcessStartEvent:
+                    self._signature_cache[index].add_signature(signature=signature)
+                else:
+                    self._signature_cache[index].add_signature(signature=signature,
+                                                               value={"duration": value})
         return [match.keys()[0] for match in matches]
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
