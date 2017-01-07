@@ -5,8 +5,8 @@ from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.prototypes.simpleprototypes import Prototype
-from assess.events.events import Event, TrafficEvent
-from assess.exceptions.exceptions import EventNotSupportedException
+from assess.events.events import Event, TrafficEvent, ProcessStartEvent
+from assess.exceptions.exceptions import EventNotSupportedException, TreeNotStartedException
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
@@ -163,6 +163,12 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         for i in range(10):
             child.add_node(i, tme=0, pid=pid_count, ppid=3, exit_tme=0)
             pid_count += 1
+
+    def test_start_tree(self):
+        algorithm = IncrementalDistanceAlgorithm()
+        algorithm.prototypes = [simple_prototype()]
+        with self.assertRaises(TreeNotStartedException):
+            algorithm.add_event(ProcessStartEvent(0, 1, 0, name="root"))
 
     def _add_events(self, algorithm=None, events=None):
         algorithm.start_tree()
