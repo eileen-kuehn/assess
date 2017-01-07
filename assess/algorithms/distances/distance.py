@@ -39,6 +39,15 @@ class Distance(object):
         for prototype in prototypes:
             yield [result.setdefault(prototype, 0) for result in self._monitoring_results_dict]
 
+    def distance_for_prototypes(self, prototypes):
+        """
+        Format is like [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
+
+        :return: formatted distance
+        """
+        result = [value for value in self.iter_on_prototypes(prototypes)]
+        return [list(element) for element in zip(*result)]
+
     def current_distance(self):
         return self._monitoring_results_dict.copy()
 
