@@ -45,7 +45,7 @@ class TestEnsembleSignature(unittest.TestCase):
 
         for event in simple_monitoring_tree().event_iter():
             distance = algorithm.add_event(event)
-        self.assertEqual([[1], [7]], distance[-1])
+        self.assertEqual([[0], [7]], distance[-1])
 
     def test_ensemble_result(self):
         """
