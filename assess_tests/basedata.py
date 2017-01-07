@@ -1,3 +1,8 @@
+import os
+
+import assess_tests
+
+from assess.generators.gnm_importer import CSVTreeBuilder
 from assess.prototypes.simpleprototypes import Prototype, Tree
 
 
@@ -50,3 +55,9 @@ def simple_additional_monitoring_tree():
     tree_root.add_node("muh", tme=0, exit_tme=2, pid=5, ppid=1)
     tree_root.add_node("test", tme=1, exit_tme=3, pid=6, ppid=1)
     return test_tree
+
+
+def real_tree():
+    return CSVTreeBuilder().build(
+        os.path.join(os.path.dirname(assess_tests.__file__), "data/c01-007-102/1/1-process.csv")
+    )
