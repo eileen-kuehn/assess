@@ -43,8 +43,10 @@ class TestEnsembleSignature(unittest.TestCase):
         algorithm = IncrementalDistanceAlgorithm(signature=signature)
         algorithm.prototypes = [simple_prototype()]
 
+        algorithm.start_tree()
         for event in simple_monitoring_tree().event_iter():
             distance = algorithm.add_event(event)
+        algorithm.finish_tree()
         self.assertEqual([[0], [7]], distance[-1])
 
     def test_ensemble_result(self):
