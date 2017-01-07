@@ -6,7 +6,7 @@ from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
-from assess.exceptions.exceptions import EventNotSupportedException
+from assess.exceptions.exceptions import EventNotSupportedException, TreeNotStartedException
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException
@@ -34,7 +34,7 @@ class TreeDistanceAlgorithm(object):
             statistics_cls=self._cache_statistics)
 
         self._prototypes = []
-        self._tree = Tree()
+        self._tree = None
         self._tree_dict = ObjectCache()
 
         self._event_counter = 0
@@ -124,9 +124,15 @@ class TreeDistanceAlgorithm(object):
             try:
                 return self.distance.node_count()
             except AttributeError:
-                count = self._tree.node_count()
+                try:
+                    count = self._tree.node_count()
+                except AttributeError:
+                    count = 0
         else:
-            count = self._tree.node_count()
+            try:
+                count = self._tree.node_count()
+            except AttributeError:
+                count = 0
         return [count for _ in range(self._signature.count)] if count > 0 else []
 
     def prototype_node_counts(self, signature=False):
@@ -156,7 +162,10 @@ class TreeDistanceAlgorithm(object):
         try:
             event_counts = self.distance.node_count()
         except AttributeError:
-            event_counts = self._tree.node_count()
+            try:
+                event_counts = self._tree.node_count()
+            except AttributeError:
+                event_counts = 0
         return [event_counts for _ in range(self._signature.count)] if event_counts > 0 else []
 
     def prototype_event_counts(self):
@@ -303,13 +312,16 @@ class TreeDistanceAlgorithm(object):
             parent = self._tree_dict.get_data(value=event.tme, key=event.ppid)
         except DataNotInCacheException:
             parent = None
-        node = self._tree.add_node(
-            event.name,
-            parent=parent,
-            tme=event.tme,
-            pid=event.pid,
-            ppid=event.ppid
-        )
+        try:
+            node = self._tree.add_node(
+                event.name,
+                parent=parent,
+                tme=event.tme,
+                pid=event.pid,
+                ppid=event.ppid
+            )
+        except AttributeError:
+            raise TreeNotStartedException()
         self._tree_dict.add_data(data=node, key=event.pid, value=event.tme)
         return node, parent
 
@@ -325,6 +337,8 @@ class TreeDistanceAlgorithm(object):
             parent = self._tree_dict.get_data(value=event.tme, key=event.ppid)
         except DataNotInCacheException:
             parent = None
+        except AttributeError:
+            raise TreeNotStartedException()
         node = self._tree_dict.get_data(value=event.tme, key=event.pid)
         return node, parent
 
