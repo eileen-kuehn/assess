@@ -31,6 +31,15 @@ class TreeInvalidatedException(BasicException):
         )
 
 
+class TreeNotStartedException(BasicException):
+    """ Thrown when event is added to algorithm and tree is not started"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "Event was added without correct initialisation of algorithm (tree not started)"
+        )
+
+
 class NodeNotEmptyException(BasicException):
     """Thrown when trying to remove a node that still has children"""
     def __init__(self):
