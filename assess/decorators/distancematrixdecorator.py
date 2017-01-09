@@ -56,7 +56,9 @@ class DistanceMatrixDecorator(Decorator):
         if self._data and size < len(self._data) + 1:
             raise MatrixDoesNotMatchBounds(size, size, len(self._data) + 1)
         # add a new row for a new algorithm for each ensemble
-        self._data.append([[0 for _ in self.algorithm.prototypes]
+        # FIXME: when _prototypes differs in length with prototypes, then we are skipping parts
+        # of the matrix, try to show this in initialisation process!
+        self._data.append([[0 for _ in self.algorithm._prototypes]
                            for _ in range(self.algorithm.signature.count)])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
@@ -79,16 +81,21 @@ class DistanceMatrixDecorator(Decorator):
     def _tree_finished(self, result):
         distance_data = self.algorithm.distance.distance_for_prototypes(self.algorithm.prototypes)
         size = self._matrix_size()
-        if size < len(distance_data[0]):
-            raise MatrixDoesNotMatchBounds(size, len(result), len(self._data))
-        event_counts = self._algorithm.event_counts()
-        for i, ensemble_result in enumerate(distance_data):
-            for j, prototype_result in enumerate(ensemble_result):
-                if self._normalized:
-                    self._data[-1][i][j] = distance_data[i][j] / float(
-                        event_counts[i][j] + self._tmp_prototype_counts[i][j])
-                else:
-                    self._data[-1][i][j] = distance_data[i][j]
+        try:
+            if size < len(distance_data[0]):
+                raise MatrixDoesNotMatchBounds(size, len(result), len(self._data))
+        except IndexError:
+            # apparently, nothing has been added to tree, so we assume a distance of prototype size
+            pass
+        else:
+            event_counts = self._algorithm.event_counts()
+            for i, ensemble_result in enumerate(distance_data):
+                for j, prototype_result in enumerate(ensemble_result):
+                    if self._normalized:
+                        self._data[-1][i][j] = distance_data[i][j] / float(
+                            event_counts[i][j] + self._tmp_prototype_counts[i][j])
+                    else:
+                        self._data[-1][i][j] = distance_data[i][j]
 
     def _matrix_size(self):
         if self._data is None:
