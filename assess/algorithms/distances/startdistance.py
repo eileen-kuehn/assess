@@ -4,7 +4,7 @@ from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEve
 
 
 class StartDistance(Distance):
-    supported = {ProcessStartEvent: TrafficEvent, ProcessExitEvent: False, TrafficEvent: False}
+    supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
 
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
