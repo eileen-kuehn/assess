@@ -110,6 +110,20 @@ class DistanceMatrixDecorator(Decorator):
         :param other:
         :return:
         """
+        try:
+            if other.row_idx[0] > self.row_idx[0]:
+                # append new trees
+                self._data.extend(other._data)
+                self.row_idx[0] = other.row_idx[0]
+            elif other.row_idx[0] == self.row_idx[0] and other.col_idx[0] > self.col_idx[0]:
+                # append new prototypes
+                for tree_idx, tree_values in enumerate(other._data):
+                    for ensemble_idx, ensemble_values in enumerate(tree_values):
+                        self._data[-(len(other._data) - tree_idx)][ensemble_idx].extend(ensemble_values)
+                self.col_idx[0] = other.col_idx[0]
+            return self
+        except AttributeError:
+            pass
         for tree_idx, tree_values in enumerate(other._data):
             for ensemble_idx, ensemble_values in enumerate(tree_values):
                 self._data[tree_idx][ensemble_idx].extend(ensemble_values)
