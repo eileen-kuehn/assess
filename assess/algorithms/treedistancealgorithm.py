@@ -150,8 +150,8 @@ class TreeDistanceAlgorithm(object):
                 *[self._signature_prototypes.node_count(prototype=prototype) for
                   prototype in self._prototypes])]
         try:
-            return [[prototype.node_count() for prototype in self._prototypes]] * \
-                   self._signature.count
+            return [[prototype.node_count() for prototype in self._prototypes] for _ in
+                    range(self._signature.count)]
         except AttributeError:
             # working a Cluster Representative
             # TODO: clean this up a bit...
