@@ -1,9 +1,15 @@
 import unittest
 
 from assess.algorithms.signatures.signatures import *
+from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.prototypes.simpleprototypes import Prototype
+from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
+from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+from assess.decorators.datadecorator import DataDecorator
+from assess.exceptions.exceptions import EventNotSupportedException
+from assess.algorithms.distances.simpledistance import SimpleDistance
 
-from assess_tests.basedata import simple_prototype
+from assess_tests.basedata import simple_prototype, real_tree
 
 
 class TestSignatureFunctionalities(unittest.TestCase):
@@ -142,9 +148,44 @@ class TestSignatureFunctionalities(unittest.TestCase):
                 signatures.add(signature.get_signature(node, node.parent()))
             except AttributeError:
                 signatures.update(signature.finish_node(node.parent()))
+        print(signatures)
         self.assertEqual(
             set(['_root_-5995064038896156292', '_test_-6157006611854717364',
                  'test_muh_-6157006611854717364', 'test_muh_test_-6157006611854717364',
                  'muh_test_muh_-6157006611854717364', 'test_muh__-6157006611854717364',
-                 'muh___-6157006611854717364']), signatures)
-        print(signatures)
+                 'muh__-6157006611854717364']), signatures)
+
+    def test_count_signature_for_correct_zero_distance(self):
+        signature = ParentCountedChildrenByNameTopologySignature(count=3)
+        algorithm = IncrementalDistanceAlgorithm(signature=signature)
+        decorator = DistanceMatrixDecorator(normalized=False)
+        decorator.wrap_algorithm(algorithm)
+        algorithm.prototypes = [real_tree()]
+
+        algorithm.start_tree()
+        for event in real_tree().event_iter():
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        self.assertEqual([[[0]]], decorator.data())
+
+    def test_node_count_for_correct_zero_distance(self):
+        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(),
+                                                  ParentCountedChildrenByNameTopologySignature(count=3)])
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        data_decorator = DataDecorator()
+        data_decorator.wrap_algorithm(algorithm)
+        algorithm.prototypes = [real_tree()]
+
+        algorithm.start_tree()
+        for event in real_tree().event_iter():
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        self.assertEqual([tree_value for values in data_decorator.data().get("prototypes", {}).get("converted", []) for tree_value in values],
+                         [tree_value for values in data_decorator.data().get("monitoring", {}).get("converted", []) for tree_value in values])
+
