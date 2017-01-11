@@ -175,7 +175,7 @@ class PrototypeSignatureCache(SignatureCache):
                 signature_cache.add_signature(signature=element["name"], prototype=cluster)
         return signature_cache
 
-    def add_signature(self, signature=None, prototype=None, value=None):
+    def add_signature(self, signature, prototype=None, value=None):
         """
         Add a signature and its current value for a given prototype.
 
@@ -183,17 +183,18 @@ class PrototypeSignatureCache(SignatureCache):
         :param prototype: Prototype the signature belongs to
         :param value: Value for signature
         """
-        prototype_dictionary = self._prototype_dict.get(signature, dict())
-        current_value = prototype_dictionary.setdefault(prototype, {})
-        if value:
-            for key in value:
-                current_value.setdefault(key, self.statistics_cls()).add(value=value[key])
-        try:
-            current_value["count"] += 1
-        except KeyError:
-            current_value["count"] = 1
-        # bumps the current count and sets current values
-        self._prototype_dict[signature] = prototype_dictionary
+        if signature is not None:
+            prototype_dictionary = self._prototype_dict.get(signature, dict())
+            current_value = prototype_dictionary.setdefault(prototype, {})
+            if value:
+                for key in value:
+                    current_value.setdefault(key, self.statistics_cls()).add(value=value[key])
+            try:
+                current_value["count"] += 1
+            except KeyError:
+                current_value["count"] = 1
+            # bumps the current count and sets current values
+            self._prototype_dict[signature] = prototype_dictionary
 
     def node_count(self, prototype=None):
         """
