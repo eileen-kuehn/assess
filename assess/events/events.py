@@ -55,11 +55,14 @@ class Event(object):
 
         # prepare traffic events
         traffic_list = []
-        for traffic in process.traffic:
-            traffic_dict = vars(traffic).copy()
-            # FIXME: here should happen something else... not that specific!
-            traffic_dict["value"] = traffic_dict["out_rate"]
-            traffic_list.append(TrafficEvent(**traffic_dict))
+        try:
+            for traffic in process.traffic:
+                traffic_dict = vars(traffic).copy()
+                # FIXME: here should happen something else... not that specific!
+                traffic_dict["value"] = traffic_dict["out_rate"]
+                traffic_list.append(TrafficEvent(**traffic_dict))
+        except AttributeError:
+            pass
         return ProcessStartEvent(**process_dict), ProcessExitEvent(**process_exit_dict), \
             traffic_list
 
