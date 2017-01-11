@@ -174,9 +174,14 @@ class Decorator(object):
             if self._compatible(decorator):
                 self._update(decorator)
             else:
-                try:
-                    self.decorator.update(decorator)
-                except AttributeError:
+                current_decorator = self.decorator
+                while current_decorator is not None:
+                    if current_decorator._compatible(decorator):
+                        current_decorator._update(decorator)
+                        break
+                    else:
+                        current_decorator = current_decorator.decorator
+                if current_decorator is None:
                     raise DecoratorNotFoundException(decorator=decorator)
             decorator = decorator.decorator
 
