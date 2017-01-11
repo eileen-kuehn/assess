@@ -136,8 +136,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
     """
     def __init__(self, count=20):
         Signature.__init__(self)
-        assert count >= 1
-        self._count = count - 1
+        self._count = count
 
     def prepare_signature(self, node, parent):
         position = node.node_number()
@@ -170,4 +169,4 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         return result
 
     def __repr__(self):
-        return self.__class__.__name__ + " (count: %d)" % (self._count + 1)
+        return self.__class__.__name__ + " (count: %d)" % self._count
