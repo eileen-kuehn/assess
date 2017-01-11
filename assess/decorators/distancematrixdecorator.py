@@ -42,7 +42,7 @@ class DistanceMatrixDecorator(Decorator):
                 # on level of ensembles
                 results.append([])
                 for single in result:
-                    adapted = [value if value >= 0 else 0 for value in single]
+                    adapted = [value if value >= 0 else None for value in single]
                     results[-1].append(adapted)
             return results
         return None
