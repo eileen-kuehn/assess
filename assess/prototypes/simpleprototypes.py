@@ -604,13 +604,24 @@ class Prototype(Tree):
             try:
                 current_signature = signature.get_signature(node, node.parent())
             except AttributeError:
+                if type(node) == EmptyNode:
+                    current_signature = signature.finish_node(node.parent())
+                    for ensemble_signature in current_signature:
+                        self._handle_ensemble_signature_list(
+                            node, ensemble_signature, cache, start_support, exit_support
+                        )
                 continue
-            if start_support:
-                cache.add_signature(current_signature, self)
-            if exit_support:
-                cache.add_signature(current_signature, self, {
-                    "duration": node.exit_tme - node.tme})
+            self._handle_ensemble_signature_list(
+                node, current_signature, cache, start_support, exit_support)
         return cache
+
+    def _handle_ensemble_signature_list(self, node, ensemble_signature_list, cache, start_support, exit_support):
+        if start_support:
+            cache.add_signature(ensemble_signature_list, self)
+        if exit_support:
+            cache.add_signature(ensemble_signature_list, self, {
+                "duration": node.__dict__.get("exit_tme", 0) - node.__dict__.get("tme", 0)
+            })
 
     def event_iter(self):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
