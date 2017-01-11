@@ -58,25 +58,10 @@ class DistanceMatrixDecorator(Decorator):
         # add a new row for a new algorithm for each ensemble
         # FIXME: when _prototypes differs in length with prototypes, then we are skipping parts
         # of the matrix, try to show this in initialisation process!
-        self._data.append([[0 for _ in self.algorithm._prototypes]
+        self._data.append([[None for _ in self.algorithm.prototypes]
                            for _ in range(self.algorithm.signature.count)])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
-
-    # def _event_added(self, event, result):
-    #     # Format of result: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
-    #     # TODO: might be changed to _tree_finished
-    #     size = self._matrix_size()
-    #     if size < len(result[0]):
-    #         raise MatrixDoesNotMatchBounds(size, len(result), len(self._data))
-    #     event_counts = self._algorithm.event_counts()
-    #     for i, ensemble_result in enumerate(result):
-    #         for j, prototype_result in enumerate(ensemble_result):
-    #             if self._normalized:
-    #                 self._data[-1][i][j] = result[i][j] / float(
-    #                     event_counts[i][j] + self._tmp_prototype_counts[i][j])
-    #             else:
-    #                 self._data[-1][i][j] = result[i][j]
 
     def _tree_finished(self, result):
         distance_data = self.algorithm.distance.distance_for_prototypes(self.algorithm.prototypes)
