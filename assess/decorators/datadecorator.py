@@ -58,4 +58,17 @@ class DataDecorator(Decorator):
             decorator.data()["monitoring"].get("converted", []))
 
     def __iadd__(self, other):
+        try:
+            if other.col_idx[0] not in self.col_idx:
+                for key in ["original", "converted"]:
+                    for index, ensemble_values in enumerate(other._data["prototypes"][key]):
+                        self._data["prototypes"][key][index].extend(ensemble_values)
+                self.col_idx.extend(other.col_idx)
+            if other.row_idx[0] not in self.row_idx:
+                for key in ["original", "converted"]:
+                    self._data["monitoring"][key].extend(other._data["monitoring"][key])
+                self.row_idx.extend(other.row_idx)
+            return self
+        except AttributeError:
+            pass
         return NotImplemented
