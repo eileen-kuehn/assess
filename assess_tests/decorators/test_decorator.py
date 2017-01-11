@@ -43,7 +43,7 @@ class TestDecorator(unittest.TestCase):
         decorator.update(second_decorator)
 
         decorator = Decorator()
-        second_decorator.decorator = CompressionFactorDecorator()
+        second_decorator = CompressionFactorDecorator()
         self.assertRaises(DecoratorNotFoundException, decorator.update, second_decorator)
 
     def test_decorator_from_name(self):

@@ -39,7 +39,7 @@ class TestEnsembleSignature(unittest.TestCase):
             self.assertIsNot(token[0], token[1])
 
     def test_empty_nodes(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentCountedChildrenByNameTopologySignature(count=2)])
+        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentCountedChildrenByNameTopologySignature(count=3)])
         algorithm = IncrementalDistanceAlgorithm(signature=signature)
         algorithm.prototypes = [simple_prototype()]
 

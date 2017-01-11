@@ -172,8 +172,11 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
 
     def _add_events(self, algorithm=None, events=None):
         algorithm.start_tree()
-        for event in Event.from_tree(events):
-            result = algorithm.add_event(event)
+        for event in events.event_iter():
+            try:
+                result = algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
         algorithm.finish_tree()
         return result
 
@@ -184,7 +187,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm = algorithm(signature=signature)
         algorithm.prototypes = [prototype]
 
-        return self._add_events(algorithm=algorithm, events=events)[0]
+        return self._add_events(algorithm=algorithm, events=events)[-1]
 
     def _test_symmetry(self, algorithm=None, signature=None, prototype=None, tree=None):
         if prototype is None:
@@ -279,32 +282,32 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=2),
                 events=self.modified_prototype_position
-        )[0], [26])
+        )[0], [34])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=3),
                 events=self.modified_prototype_position
-        )[0], [28])
+        )[0], [36])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=4),
                 events=self.modified_prototype_position
-        )[0], [30])
+        )[0], [38])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=5),
                 events=self.modified_prototype_position
-        )[0], [30])
+        )[0], [38])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=10),
                 events=self.modified_prototype_position
-        )[0], [30])
+        )[0], [36])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100),
                 events=self.modified_prototype_position
-        )[0], [30])
+        )[0], [34])
 
     def test_another_child2(self):
         self.assertEqual(self._test_signature(
@@ -331,37 +334,37 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1),
                 events=self.modified_prototype_position2
-        )[0], [24])
+        )[0], [28])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=2),
                 events=self.modified_prototype_position2
-        )[0], [26])
+        )[0], [34])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=3),
                 events=self.modified_prototype_position2
-        )[0], [28])
+        )[0], [36])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=4),
                 events=self.modified_prototype_position2
-        )[0], [30])
+        )[0], [38])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=5),
                 events=self.modified_prototype_position2
-        )[0], [30])
+        )[0], [38])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=10),
                 events=self.modified_prototype_position2
-        )[0], [30])
+        )[0], [36])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100),
                 events=self.modified_prototype_position2
-        )[0], [30])
+        )[0], [34])
 
     def test_another_name(self):
         self.assertEqual(self._test_signature(
@@ -438,57 +441,57 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=11),
                 events=self.modified_prototype_name
-        )[0], [31]) # TODO: check
+        )[0], [33]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=12),
                 events=self.modified_prototype_name
-        )[0], [32]) # TODO: check
+        )[0], [36]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=13),
                 events=self.modified_prototype_name
-        )[0], [33]) # TODO: check
+        )[0], [37]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=14),
                 events=self.modified_prototype_name
-        )[0], [34]) # TODO: check
+        )[0], [38]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=15),
                 events=self.modified_prototype_name
-        )[0], [35]) # TODO: check
+        )[0], [39]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=16),
                 events=self.modified_prototype_name
-        )[0], [36]) # TODO: check
+        )[0], [40]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=17),
                 events=self.modified_prototype_name
-        )[0], [37]) # TODO: check
+        )[0], [41]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=18),
                 events=self.modified_prototype_name
-        )[0], [38]) # TODO: check
+        )[0], [42]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=19),
                 events=self.modified_prototype_name
-        )[0], [39]) # TODO: check
+        )[0], [43]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=20),
                 events=self.modified_prototype_name
-        )[0], [40]) # TODO: check
+        )[0], [44]) # TODO: check
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100),
                 events=self.modified_prototype_name
-        )[0], [40]) # TODO: check
+        )[0], [42]) # TODO: check
 
     def test_another_frequency(self):
         self.assertEqual(self._test_signature(
@@ -660,12 +663,12 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=31),
                 events=self.modified_prototype_frequency
-        )[0], [42])
+        )[0], [44])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100),
                 events=self.modified_prototype_frequency
-        )[0], [42])
+        )[0], [44])
 
     def test_another_skipped(self):
         self.assertEqual(self._test_signature(
@@ -692,37 +695,37 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1),
                 events=self.modified_prototype_skipped
-        )[0], [2])
+        )[0], [3])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=2),
                 events=self.modified_prototype_skipped
-        )[0], [3])
+        )[0], [5])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=3),
                 events=self.modified_prototype_skipped
-        )[0], [4])
+        )[0], [6])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=4),
                 events=self.modified_prototype_skipped
-        )[0], [5])
+        )[0], [7])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=5),
                 events=self.modified_prototype_skipped
-        )[0], [5])
+        )[0], [7])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=10),
                 events=self.modified_prototype_skipped
-        )[0], [5])
+        )[0], [6])
         self.assertEqual(self._test_signature(
                 algorithm=IncrementalDistanceAlgorithm,
                 signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100),
                 events=self.modified_prototype_skipped
-        )[0], [5])
+        )[0], [6])
 
     def test_symmetry_zero(self):
         self._test_symmetry(
@@ -738,11 +741,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentChildOrderByNameTopologySignature(),
-            tree=self.prototype
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
             tree=self.prototype
         )
         self._test_symmetry(
@@ -789,11 +787,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         )
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
-            tree=self.modified_prototype_position
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1),
             tree=self.modified_prototype_position
         )
@@ -832,11 +825,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentChildOrderByNameTopologySignature(),
-            tree=self.modified_prototype_position2
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
             tree=self.modified_prototype_position2
         )
         self._test_symmetry(
@@ -883,11 +871,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         )
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
-            tree=self.modified_prototype_name
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1),
             tree=self.modified_prototype_name
         )
@@ -930,11 +913,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         )
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
-            tree=self.modified_prototype_frequency
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1),
             tree=self.modified_prototype_frequency
         )
@@ -973,11 +951,6 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         self._test_symmetry(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentChildOrderByNameTopologySignature(),
-            tree=self.modified_prototype_skipped
-        )
-        self._test_symmetry(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=0),
             tree=self.modified_prototype_skipped
         )
         self._test_symmetry(
@@ -1026,87 +999,87 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=1)
-        )[0], [18])
+        )[0], [21])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=2)
-        )[0], [22])
+        )[0], [28])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=3)
-        )[0], [26])
+        )[0], [32])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=4)
-        )[0], [30])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=5)
-        )[0], [33])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=6)
         )[0], [36])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=7)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=5)
         )[0], [39])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=6)
+        )[0], [41])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=7)
+        )[0], [44])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=8)
-        )[0], [42])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=9)
-        )[0], [45])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=10)
-        )[0], [46])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=11)
         )[0], [47])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=12)
-        )[0], [48])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=13)
-        )[0], [49])
-        self.assertEqual(self._test_prototype_count(
-            algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=14)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=9)
         )[0], [50])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=15)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=10)
         )[0], [51])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=16)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=11)
+        )[0], [51])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=12)
         )[0], [52])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=17)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=13)
         )[0], [53])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=18)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=14)
         )[0], [54])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=19)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=15)
         )[0], [55])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
-            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=20)
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=16)
         )[0], [56])
         self.assertEqual(self._test_prototype_count(
             algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=17)
+        )[0], [57])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=18)
+        )[0], [58])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=19)
+        )[0], [59])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
+            signature=lambda: ParentCountedChildrenByNameTopologySignature(count=20)
+        )[0], [60])
+        self.assertEqual(self._test_prototype_count(
+            algorithm=IncrementalDistanceAlgorithm,
             signature=lambda: ParentCountedChildrenByNameTopologySignature(count=100)
-        )[0], [56])
+        )[0], [59])
 
     def test_representation(self):
         signature = ParentChildByNameTopologySignature()

@@ -34,7 +34,7 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
 
         self.assertEqual(decorator.descriptive_data(), {"matrix": []})
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[0]]]})
+        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[None]]]})
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"matrix": [[[3]]]})
 
@@ -66,7 +66,7 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0]]]})
+        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[None]]]})
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[1]]]})
 
