@@ -115,6 +115,8 @@ class DistanceMatrixDecorator(Decorator):
                 # append new trees
                 self._data.extend(other._data)
                 self.row_idx[0] = other.row_idx[0]
+                # as we are starting a new row, we can also take col index
+                self.col_idx[0] = other.col_idx[0]
             elif other.row_idx[0] == self.row_idx[0] and other.col_idx[0] > self.col_idx[0]:
                 # append new prototypes
                 for tree_idx, tree_values in enumerate(other._data):
