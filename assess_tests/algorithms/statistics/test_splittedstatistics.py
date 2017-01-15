@@ -30,7 +30,7 @@ class TestSplittedStatistics(unittest.TestCase):
 
     def test_adding_with_zero(self):
         statistics = SplittedStatistics(statistics_type=MeanVariance)
-        self.assertEqual(len(statistics._statistics), 0)
+        self.assertEqual(len(statistics._statistics), 1)
         statistics.add(value=0)
         self.assertEqual(len(statistics._statistics), 1)
         statistics.add(value=1)
@@ -53,5 +53,5 @@ class TestSplittedStatistics(unittest.TestCase):
         for statistic in statistics._statistics:
             self.assertTrue(statistic.mean > last)
             last = statistic.mean
-        self.assertEqual(len(statistics._statistics), 849)  # number of clusters wo attraction
+        self.assertEqual(len(statistics._statistics), 850)  # number of clusters wo attraction
 

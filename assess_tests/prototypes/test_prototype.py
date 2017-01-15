@@ -281,7 +281,7 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(4, index.get_count("test_703899357396914538"))
         self.assertEqual(4, index.get_count("muh_703899357396914538"))
         self.assertEqual(3, index.node_count())
-        self.assertEqual(2, index["muh_703899357396914538"]["duration"]._statistics[0].mean)
+        self.assertEqual(2, index["muh_703899357396914538"]["duration"]._statistics[1].mean)
         self.assertEqual(0, index["muh_703899357396914538"]["duration"].distance(2))
 
         index = prototype.to_index(signature=ParentChildByNameTopologySignature(), exit_support=False)
