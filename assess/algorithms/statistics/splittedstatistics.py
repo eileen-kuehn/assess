@@ -50,6 +50,8 @@ class SplittedStatistics(Statistics):
         if self._statistics_type != other._statistics_type:
             return TypeError
         for statistic in other._statistics:
+            if statistic.count == 0:
+                continue
             if len(self._statistics) > 0:
                 value = statistic.mean
                 distance, index = self._closest_value_and_index(value)
@@ -112,11 +114,13 @@ class SplittedStatistics(Statistics):
                 self._statistics[index] += self._statistics[index + 1]
                 del self._statistics[index + 1]
                 merged = True
-            if self._distribution_distance(index - 1, index) <= self._distribution_threshold:
-                self._statistics[index - 1] += self._statistics[index]
-                del self._statistics[index]
-                index -= 1
-                merged = True
+            # don't look at index 0, because there 0 objects are dumped
+            if index > 1:
+                if self._distribution_distance(index - 1, index) <= self._distribution_threshold:
+                    self._statistics[index - 1] += self._statistics[index]
+                    del self._statistics[index]
+                    index -= 1
+                    merged = True
 
     def _distribution_distance(self, lower, upper):
         assert lower < upper
