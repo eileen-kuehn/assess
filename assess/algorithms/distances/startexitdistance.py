@@ -79,7 +79,7 @@ class StartExitDistance(Distance):
         if event_type != ProcessStartEvent:
             property_base = 2 - weight
             base += property_base
-        result_dict = dict(zip(prototypes, [base] * len(prototypes)))
+        result_dict = dict(zip(prototypes, [base for _ in range(len(prototypes))]))
 
         for prototype_node in prototype_nodes:
             if prototype_nodes[prototype_node] is None:
