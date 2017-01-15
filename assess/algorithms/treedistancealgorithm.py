@@ -377,7 +377,7 @@ class TreeDistanceAlgorithm(object):
 
     def __repr__(self):
         return "%s (cache_statistics=%s)" % (self.__class__.__name__,
-                                             self._cache_statistics.__name__)
+                                             self._cache_statistics.__name__ if self._cache_statistics else None)
 
     def __getstate__(self):
         obj_dict = self.__dict__.copy()

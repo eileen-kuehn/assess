@@ -83,5 +83,5 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
 
     def __repr__(self):
         return "%s (cache_statistics=%s, distance=%s)" %(self.__class__.__name__,
-                                                         self._cache_statistics.__name__,
+                                                         self._cache_statistics.__name__ if self._cache_statistics else None,
                                                          self.distance)
