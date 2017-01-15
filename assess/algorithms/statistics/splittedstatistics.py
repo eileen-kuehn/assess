@@ -23,7 +23,7 @@ class SplittedStatistics(Statistics):
     def __init__(self, statistics_type=MeanVariance, threshold=.5, distribution_threshold=1.2,
                  attraction_factor=None):
         self._statistics_type = statistics_type
-        self._statistics = []
+        self._statistics = [statistics_type()]
         self._threshold = threshold
         self._distribution_threshold = distribution_threshold
         self._attraction_factor = attraction_factor
@@ -83,6 +83,9 @@ class SplittedStatistics(Statistics):
 
         :param value: New value to add
         """
+        if value == 0:
+            self._statistics[0].add(value)
+            return
         if len(self._statistics) > 0:
             # look for closest statistics_type dataset
             distance, index = self._closest_value_and_index(value=value)
