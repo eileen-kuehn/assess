@@ -118,3 +118,6 @@ class StartExitDistance(Distance):
             to_add=[result_dict],
             base=self._monitoring_results_dict
         )
+
+    def __repr__(self):
+        return "%s (weight=%s)" % (self.__class__.__name__, self._weight)
