@@ -126,3 +126,6 @@ class Distance(object):
         # FIXME: maybe this needs to be something else here...
         obj_dict["_measured_nodes"] = [set()] * self.signature_count
         return obj_dict
+
+    def __repr__(self):
+        return "%s" % self.__class__.__name__
