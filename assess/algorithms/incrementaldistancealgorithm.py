@@ -82,4 +82,6 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         return self.distance.finish_distance(self.prototypes, self.signature_prototypes)
 
     def __repr__(self):
-        return "%s (%s)" %(self.__class__.__name__, self.distance.__class__.__name__)
+        return "%s (cache_statistics=%s, distance=%s)" %(self.__class__.__name__,
+                                                         self._cache_statistics.__name__,
+                                                         self.distance)

@@ -376,7 +376,8 @@ class TreeDistanceAlgorithm(object):
         raise NotImplementedError
 
     def __repr__(self):
-        return self.__class__.__name__
+        return "%s (cache_statistics=%s)" % (self.__class__.__name__,
+                                             self._cache_statistics.__name__)
 
     def __getstate__(self):
         obj_dict = self.__dict__.copy()
