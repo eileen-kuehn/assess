@@ -39,6 +39,11 @@ class OrderedTreeNode(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+    def __eq__(self, other):
+        if type(self) != type(other):
+            return False
+        return self.dao() == other.dao()
+
     def dao(self):
         def check_keys(key):
             return not ("signature_id" in key or "position" in key or "previous_node" in key or
@@ -600,33 +605,39 @@ class Prototype(Tree):
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
                 })
-        for node in self.node_iter(include_marker=True):
-            try:
-                current_signature = signature.get_signature(node, node.parent())
-            except AttributeError:
-                if type(node) == EmptyNode:
-                    current_signature = signature.finish_node(node.parent())
-                    for ensemble_signature in current_signature:
-                        self._handle_ensemble_signature_list(
-                            node, ensemble_signature, cache, start_support, exit_support
-                        )
-                continue
-            self._handle_ensemble_signature_list(
-                node, current_signature, cache, start_support, exit_support)
+        for event in self.event_iter():
+            if cache.supported.get(type(event), False):
+                try:
+                    current_signature = signature.get_signature(event.node, event.node.parent())
+                except AttributeError:
+                    if type(event.node) == EmptyNode:
+                        current_signature = signature.finish_node(event.node.parent())
+                        for ensemble_signature in current_signature:
+                            self._handle_ensemble_signature_list(
+                                event.node, ensemble_signature, cache
+                            )
+                    continue
+                self._handle_ensemble_signature_list(
+                    event, current_signature, cache)
         return cache
 
-    def _handle_ensemble_signature_list(self, node, ensemble_signature_list, cache, start_support, exit_support):
-        if start_support:
+    def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache):
+        if type(event) == ProcessStartEvent:
             cache.add_signature(ensemble_signature_list, self)
-        if exit_support:
+        if type(event) == ProcessExitEvent:
             cache.add_signature(ensemble_signature_list, self, {
-                "duration": node.__dict__.get("exit_tme", 0) - node.__dict__.get("tme", 0)
+                "duration": event.value
+            })
+        if type(event) == TrafficEvent:
+            cache.add_signature(ensemble_signature_list, self, {
+                "duration": event.value  # FIXME: what is expected here?
             })
 
     def event_iter(self):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
 
+        # FIXME: this might be wrong here... it should depend on signature if true or false
         for node in self.node_iter(include_marker=False):
             now = node.tme
             events += 1
@@ -636,11 +647,24 @@ class Prototype(Tree):
                 yield exit_event_queue.pop()[2]
             # create the events for the current process
             start_event, exit_event, traffic_events = Event.events_from_process(node)
+            # create reference to node
+            start_event.node = exit_event.node = node
+            # for traffic we first need to append the required nodes (if not existent)
+            existing_nodes = {}
+            for traffic_event in traffic_events:
+                try:
+                    current_node = existing_nodes[traffic_event.name]
+                except KeyError:
+                    existing_nodes[traffic_event.name] = OrderedTreeNode(1, **traffic_event.__dict__)
+                    current_node = existing_nodes[traffic_event.name]
+                    current_node._parent = node
+                traffic_event.node = current_node
             # process starts NOW, exits LATER
             yield start_event
             bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
             for traffic in traffic_events:
-                bisect.insort_right(exit_event_queue, (-(traffic.tme + 20), events, traffic))
+                events += 1
+                bisect.insort_right(exit_event_queue, (-(traffic.tme), events, traffic))
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 
