@@ -5,7 +5,7 @@ on their start and exit events.
 
 from assess.algorithms.distances.distance import Distance
 from assess.algorithms.signatures.signaturecache import SignatureCache
-from assess.events.events import ProcessStartEvent
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
 class StartExitDistance(Distance):
@@ -71,13 +71,18 @@ class StartExitDistance(Distance):
 
     def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None,
                           node_signature=None, value=None):
-        weight = 2 * self._weight  # two times, because looking at start and exit
+        if event_type == TrafficEvent:
+            factor = 1.0
+        else:
+            factor = 2.0
+        weight = factor * self._weight  # two times, because looking at start and exit
         # because we have to consider signatures from start and exit, we need to deal with
         # the half of the given weight here
-        base = weight / 2.0
+        base = self._weight
         node_base = base
+        property_base = 0
         if event_type != ProcessStartEvent:
-            property_base = 2 - weight
+            property_base = factor - weight
             base += property_base
         result_dict = dict(zip(prototypes, [base for _ in range(len(prototypes))]))
 
@@ -90,14 +95,14 @@ class StartExitDistance(Distance):
                 result -= node_base
             else:
                 result += node_base
-            if event_type != ProcessStartEvent:
+            if property_base > 0:
                 try:
                     signature_count = self._signature_cache[index].get(
                         signature=node_signature)["duration"].count(value=value)
                 except KeyError:
                     # no data has been saved for duration, first exit event
                     signature_count = 0
-                except ValueError:
+                except (ValueError, TypeError):
                     # no data has been saved for node_signature
                     signature_count = 0
                 distance = prototype_nodes[prototype_node]["duration"].distance(
