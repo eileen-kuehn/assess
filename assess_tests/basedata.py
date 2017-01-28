@@ -57,7 +57,12 @@ def simple_additional_monitoring_tree():
     return test_tree
 
 
-def real_tree():
-    return CSVTreeBuilder().build(
-        os.path.join(os.path.dirname(assess_tests.__file__), "data/c01-007-102/1/1-process.csv")
+def real_tree(path=None, absolute=False):
+    if path is None:
+        path = "data/c01-007-102/1/1-process.csv"
+    csv_builder = CSVTreeBuilder()
+    if absolute:
+        return csv_builder.build(path)
+    return csv_builder.build(
+        os.path.join(os.path.dirname(assess_tests.__file__), path)
     )
