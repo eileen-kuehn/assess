@@ -280,6 +280,8 @@ class TreeDistanceAlgorithm(object):
                 # added to keep information related signature for event
                 event.signature = signature
                 result.append(self.update_distance(event, signature, **kwargs))
+            else:
+                raise EventNotSupportedException(event)
         else:
             raise EventNotSupportedException(event)
         return result
