@@ -5,6 +5,7 @@ Module offers functionality to execute an incremental distance measurement for d
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.algorithms.signatures.signatures import Signature
+from assess.algorithms.statistics.splittedstatistics import SplittedStatistics
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
 
@@ -12,7 +13,8 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     """
     The IncrementalDistanceAlgorithm takes care to adapt distance calculation for dynamic trees.
     """
-    def __init__(self, signature=Signature(), distance=SimpleDistance, cache_statistics=None, **kwargs):
+    def __init__(self, signature=Signature(), distance=SimpleDistance,
+                 cache_statistics=SplittedStatistics, **kwargs):
         TreeDistanceAlgorithm.__init__(self, signature=signature,
                                        cache_statistics=cache_statistics, **kwargs)
         self._distance = None
@@ -29,10 +31,13 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         """
         if self._distance is None:
             self._distance = self._distance_builder(signature_count=self.signature.count)
+            self.supported = self._distance.supported
         return self._distance
 
     @TreeDistanceAlgorithm.prototypes.setter
     def prototypes(self, value=None):
+        # initialise distance
+        self.distance
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
         self.distance.init_distance(prototypes=self.prototypes,
                                     signature_prototypes=self.signature_prototypes)
@@ -64,7 +69,7 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
                 event_type=type(event),
                 matches=[{token: matching_prototypes[index]}
                          for index, token in enumerate(signature)],
-                value=float(event.tme)-float(event.start_tme),
+                value=event.value,
             )
         except AttributeError:
             self.distance.update_distance(
