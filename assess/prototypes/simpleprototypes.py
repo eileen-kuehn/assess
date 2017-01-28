@@ -6,7 +6,7 @@ import bisect
 
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException
-from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent
+from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent, EmptyProcessEvent
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 
 from gnmutils.objectcache import ObjectCache
@@ -605,20 +605,21 @@ class Prototype(Tree):
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
                 })
-        for event in self.event_iter():
+        cache.supported[EmptyProcessEvent] = True
+        for event in self.event_iter(include_marker=True):
             if cache.supported.get(type(event), False):
-                try:
-                    current_signature = signature.get_signature(event.node, event.node.parent())
-                except AttributeError:
-                    if type(event.node) == EmptyNode:
-                        current_signature = signature.finish_node(event.node.parent())
-                        for ensemble_signature in current_signature:
-                            self._handle_ensemble_signature_list(
-                                event.node, ensemble_signature, cache
-                            )
+                if isinstance(event.node, EmptyNode):
+                    current_signature = signature.finish_node(event.node.parent())
+                    for ensemble_signature in current_signature:
+                        self._handle_ensemble_signature_list(
+                            event, ensemble_signature, cache
+                        )
                     continue
+                else:
+                    current_signature = signature.get_signature(event.node, event.node.parent())
                 self._handle_ensemble_signature_list(
                     event, current_signature, cache)
+        del cache.supported[EmptyProcessEvent]
         return cache
 
     def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache):
@@ -632,23 +633,35 @@ class Prototype(Tree):
             cache.add_signature(ensemble_signature_list, self, {
                 "duration": event.value  # FIXME: what is expected here?
             })
+        if type(event) == EmptyProcessEvent:
+            cache.add_signature(ensemble_signature_list, self, {
+                "duration": 0
+            })
 
-    def event_iter(self):
+    def event_iter(self, include_marker=True):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
         events = 0  # used to push parent events at same tme to the left
 
-        # FIXME: this might be wrong here... it should depend on signature if true or false
-        for node in self.node_iter(include_marker=False):
-            now = node.tme
+        for node in self.node_iter(include_marker=include_marker):
+            try:
+                now = node.tme
+                # create the events for the current process
+                start_event, exit_event, traffic_events = Event.events_from_process(node)
+                exit_event.node = node
+            except AttributeError:
+                # received an EmptyNode Marker, it only needs to be forwarded
+                last_node = node.parent()
+                now = last_node.tme
+                start_event = EmptyProcessEvent()
+                exit_event = None
+                traffic_events = []
+            # create reference to node
+            start_event.node = node
             events += 1
 
             # yield any exit events that should have happened so far
             while exit_event_queue and exit_event_queue[-1][0] > -now:
                 yield exit_event_queue.pop()[2]
-            # create the events for the current process
-            start_event, exit_event, traffic_events = Event.events_from_process(node)
-            # create reference to node
-            start_event.node = exit_event.node = node
             # for traffic we first need to append the required nodes (if not existent)
             existing_nodes = {}
             for traffic_event in traffic_events:
@@ -661,7 +674,10 @@ class Prototype(Tree):
                 traffic_event.node = current_node
             # process starts NOW, exits LATER
             yield start_event
-            bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
+            try:
+                bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
+            except AttributeError:
+                pass
             for traffic in traffic_events:
                 events += 1
                 bisect.insort_right(exit_event_queue, (-(traffic.tme), events, traffic))
