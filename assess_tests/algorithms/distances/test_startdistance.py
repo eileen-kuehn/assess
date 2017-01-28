@@ -37,9 +37,9 @@ class TestStartDistance(unittest.TestCase):
         self.assertEqual(result, distance._monitoring_results_dict)
 
     def test_repeated(self):
-        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature())
-        algorithm.prototypes = [simple_prototype()]
+        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature(), distance=StartDistance)
         distance = StartDistance(signature_count=algorithm.signature.count)
+        algorithm.prototypes = [simple_prototype()]
         distance.init_distance(prototypes=algorithm.prototypes, signature_prototypes=algorithm.signature_prototypes)
 
         for index, dist in enumerate(distance.iter_on_prototypes(algorithm.prototypes)):

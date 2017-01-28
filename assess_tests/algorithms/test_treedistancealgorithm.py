@@ -11,7 +11,7 @@ from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 class TestTreeDistanceAlgorithm(unittest.TestCase):
     def test_representation(self):
         algorithm = TreeDistanceAlgorithm()
-        self.assertEqual(algorithm.__repr__(), "TreeDistanceAlgorithm (cache_statistics=None)")
+        self.assertEqual(algorithm.__repr__(), "TreeDistanceAlgorithm (cache_statistics=None, supported=['ProcessStartEvent'])")
 
     def test_update_distance(self):
         algorithm = TreeDistanceAlgorithm()

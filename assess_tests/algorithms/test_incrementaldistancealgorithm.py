@@ -1086,7 +1086,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
         algorithm.prototypes = [self.prototype]
         algorithm.start_tree()
-        self.assertEqual(algorithm.__repr__(), "IncrementalDistanceAlgorithm (cache_statistics=None, distance=SimpleDistance)")
+        self.assertEqual(algorithm.__repr__(), "IncrementalDistanceAlgorithm (cache_statistics=SplittedStatistics, distance=SimpleDistance, supported=['ProcessStartEvent', 'ProcessExitEvent'])")
 
     def test_traffic_event(self):
         signature = ParentChildByNameTopologySignature()

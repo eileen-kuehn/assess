@@ -45,7 +45,10 @@ class TestEnsembleSignature(unittest.TestCase):
 
         algorithm.start_tree()
         for event in simple_monitoring_tree().event_iter():
-            distance = algorithm.add_event(event)
+            try:
+                distance = algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
         algorithm.finish_tree()
         self.assertEqual([[0], [7]], distance[-1])
 

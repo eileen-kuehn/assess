@@ -163,12 +163,13 @@ class TestSignatureFunctionalities(unittest.TestCase):
         algorithm.prototypes = [real_tree()]
 
         algorithm.start_tree()
-        for event in real_tree().event_iter():
+        for event in real_tree().event_iter(include_marker=True):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
+        print(algorithm._signature_prototypes._prototype_dict[0]._prototype_dict.keys())
         self.assertEqual([[[0]]], decorator.data())
 
     def test_node_count_for_correct_zero_distance(self):
@@ -180,7 +181,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
         algorithm.prototypes = [real_tree()]
 
         algorithm.start_tree()
-        for event in real_tree().event_iter():
+        for event in real_tree().event_iter(include_marker=True):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:

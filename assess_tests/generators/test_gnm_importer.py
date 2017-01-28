@@ -7,7 +7,7 @@ from assess.generators.gnm_importer import CSVTreeBuilder, GNMCSVEventStreamer, 
     EventStreamer, EventStreamPruner, EventStreamBranchPruner, EventStreamRelabeler, \
     EventStreamBranchRelabeler, EventStreamDuplicator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import TrafficEvent
+from assess.events.events import TrafficEvent, EmptyProcessEvent
 from assess.exceptions.exceptions import EventNotSupportedException
 from assess.algorithms.signatures.signatures import *
 
@@ -17,6 +17,10 @@ class TestGNMImporter(unittest.TestCase):
         self.file_path = os.path.join(
             os.path.dirname(assess_tests.__file__),
             "data/c01-007-102/1/1-process.csv"
+        )
+        self.small_file = os.path.join(
+            os.path.dirname(assess_tests.__file__),
+            "data/c01-007-102/2/1136-3-process.csv"
         )
         self.old_file_path = os.path.join(
             os.path.dirname(assess_tests.__file__),
@@ -41,12 +45,15 @@ class TestGNMImporter(unittest.TestCase):
                 pass
         alg.finish_tree()
 
-        self.assertEqual(index + 1, (9109 * 2) + 3155)  # number processes + traffic
+        #self.assertEqual(index + 1, (9109 * 3) + (3155 * 2))  # number processes + traffic
+        self.assertEqual(33605, index + 1)
         self.assertEqual(distance[0], [0])
 
     def test_correct_order(self):
         last_tme = 0
         for index, event in enumerate(EventStreamer(streamer=GNMCSVEventStreamer(self.file_path))):
+            if type(event) == EmptyProcessEvent:
+                continue
             self.assertTrue(
                 last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
                 "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
@@ -64,6 +71,8 @@ class TestGNMImporter(unittest.TestCase):
         csv_event_streamer = GNMCSVEventStreamer(csv_path=self.file_path)
         last_tme = 0
         for index, event in enumerate(EventStreamer(streamer=csv_event_streamer)):
+            if type(event) == EmptyProcessEvent:
+                continue
             self.assertTrue(
                 last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
                 "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
@@ -172,7 +181,7 @@ class TestGNMImporter(unittest.TestCase):
                 self.assertEqual(node.ppid, parent.pid)
 
     def test_correct_parents(self):
-        csv_event_streamer = GNMCSVEventStreamer(csv_path=self.file_path)
+        csv_event_streamer = GNMCSVEventStreamer(csv_path=self.small_file)
         node_stream_pruner = EventStreamPruner(
             signature=ParentChildByNameTopologySignature(),
             chance=.1,
