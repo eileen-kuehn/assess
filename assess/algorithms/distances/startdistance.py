@@ -45,12 +45,12 @@ class StartDistance(Distance):
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None):
-        result_dict = dict(zip(prototypes, [1] * len(prototypes)))
+        result_dict = dict(zip(prototypes, [1 for _ in range(len(prototypes))]))
 
         for prototype_node in prototype_nodes:
             # reduce distance as long as the expected node count has not been reached
             if self._signature_cache[index].get_count(signature=node_signature) < \
-                            prototype_nodes[prototype_node]["duration"].count():
+                            prototype_nodes[prototype_node]["count"]:
                 result_dict[prototype_node] = -1
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
