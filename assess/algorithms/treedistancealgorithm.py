@@ -77,7 +77,7 @@ class TreeDistanceAlgorithm(object):
         """
         # clean old prototypes first...
         self._signature_prototypes = self._signature.prototype_signature_cache_class(
-            statistics_cls=self._cache_statistics)
+            statistics_cls=self._cache_statistics, supported=self.supported)
         for prototype in value:
             # store links to nodes based on node_ids into dictionary
             prototype.to_prototype(
@@ -273,9 +273,13 @@ class TreeDistanceAlgorithm(object):
                 event.signature = signature
                 result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, TrafficEvent):
-            if self.supported.get(TrafficEvent, False) or True:
-                # add traffic
-                raise EventNotSupportedException(event)
+            if self.supported.get(TrafficEvent, False):
+                # create or reuse node
+                node, parent = self.create_or_reuse_node(event, **kwargs)
+                signature = self.create_signature(node, parent)
+                # added to keep information related signature for event
+                event.signature = signature
+                result.append(self.update_distance(event, signature, **kwargs))
         else:
             raise EventNotSupportedException(event)
         return result
@@ -323,6 +327,40 @@ class TreeDistanceAlgorithm(object):
         except AttributeError:
             raise TreeNotStartedException()
         self._tree_dict.add_data(data=node, key=event.pid, value=event.tme)
+        return node, parent
+
+    def create_or_reuse_node(self, event, **kwargs):
+        """
+        Method to create a new node or reuse an existing node in the monitoring tree based on event
+        data that was received.
+
+        :param event: Event that was received
+        :param kwargs: Additional parameters
+        :return: Tuple of created node and its parent
+        """
+        try:
+            parent = self._tree_dict.get_data(value=event.tme, key=event.ppid)
+            while parent.ppid == event.pid:
+                parent = parent.parent()
+        except DataNotInCacheException:
+            parent = None
+        try:
+            for child in parent.children():
+                if child.name == event.name:
+                    # node does already exist and does not have to be created, reuse
+                    node = child
+                    break
+            else:
+                node = self._tree.add_node(
+                    event.name,
+                    parent=parent,
+                    tme=event.tme,
+                    pid=event.pid,
+                    ppid=event.ppid
+                )
+                # nodes don't have to be remembered to be loaded from cache, so skip this
+        except AttributeError:
+            raise TreeNotStartedException()
         return node, parent
 
     def finish_node(self, event, **kwargs):
