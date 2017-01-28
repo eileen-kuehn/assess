@@ -126,6 +126,14 @@ class Event(object):
         )
 
 
+class EmptyProcessEvent(object):
+    """
+    Class that represents the event for an empty node
+    """
+    def __init__(self, **kwargs):
+        pass
+
+
 class ProcessStartEvent(Event):
     """
     Class that represents a start event.
