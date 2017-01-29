@@ -4,6 +4,7 @@ Generators for event streams for GNM monitoring files
 import random
 import os
 import logging
+import filelock
 try:
     import cPickle as pickle
 except ImportError:
@@ -55,6 +56,9 @@ class PrototypeCache(object):
 
     `DISS_PROTOTYPE_CACHE_REFRESH`
       Ignore all existing caches and recreate them.
+
+    `DISS_PROTOTYPE_CACHE_PRELOADED_ONLY`
+      Only use prototypes that have already been cached
     """
     def __init__(self, path, data_source=FileDataSource()):
         self.path = path
@@ -95,18 +99,28 @@ class PrototypeCache(object):
         except (OSError, IOError, EOFError):
             if self.preloaded_only:
                 yield None
-            # clean up broken pickles
-            if os.path.exists(cache_path):
-                os.unlink(cache_path)
-                self._logger.warning('Refreshing existing cache %r', cache_path)
-            data_source = self.data_source
-            prototypes = []
-            for job in data_source.jobs(path=csv_path):
-                job.prepare_traffic()
-                prototype = Prototype.from_job(job)
-                prototypes.append(prototype)
-            with open(cache_path, 'wb') as cache_pkl:
-                pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
+            # serialize pickle creation in case multiple processes use the same prototype
+            cache_prototype_lock = filelock.FileLock(os.path.splitext(cache_path)[0] + '.lock')
+            try:
+                # try to become the writer and create the pickle
+                with cache_prototype_lock.acquire(timeout=0):
+                    # clean up broken pickles
+                    if os.path.exists(cache_path):
+                        os.unlink(cache_path)
+                        self._logger.warning('Refreshing existing cache %r', cache_path)
+                    data_source = self.data_source
+                    prototypes = []
+                    for job in data_source.jobs(path=csv_path):
+                        job.prepare_traffic()
+                        prototype = Prototype.from_job(job)
+                        prototypes.append(prototype)
+                    with open(cache_path, 'wb') as cache_pkl:
+                        pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
+            except filelock.Timeout:
+                # we are NOT the writer - acquire the lock to see when the writer is done
+                with cache_prototype_lock:
+                    with open(cache_path, 'rb') as cache_pkl:
+                        prototypes = pickle.load(cache_pkl)
         for prototype in prototypes:
             yield prototype
 
@@ -127,10 +141,15 @@ class PrototypeCache(object):
                 for prototype in self._prototypes_from_csv(job_csv_path):
                     yield prototype
         except (OSError, IOError, EOFError):
-            # clean up broken pickles
-            if os.path.exists(cache_path):
-                os.unlink(cache_path)
-                self._logger.warning('Refreshing existing cache %r', cache_path)
+            dir_prototype_lock = filelock.FileLock(os.path.splitext(cache_path)[0] + '.lock')
+            try:
+                with dir_prototype_lock.acquire(timeout=0):
+                    # clean up broken pickles
+                    if os.path.exists(cache_path):
+                        os.unlink(cache_path)
+                        self._logger.warning('Refreshing existing cache %r', cache_path)
+            except filelock.Timeout:
+                pass
             data_source = self.data_source
             job_files = []
             for job in data_source.jobs(path=dir_path):
@@ -139,12 +158,22 @@ class PrototypeCache(object):
                 yield prototype
                 assert job.path not in job_files, \
                     "Job file may not contain multiple jobs (%r)" % job.path
-                # store the job individually, just remember its file
-                with open(job.path, 'wb') as job_cache_pkl:
-                    pickle.dump([prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
+                job_cache_path = self._cache_path(job.path)
+                cache_prototype_lock = filelock.FileLock(os.path.splitext(job_cache_path)[0] + '.lock')
+                try:
+                    with cache_prototype_lock.acquire(timeout=0):
+                        # store the job individually, just remember its file
+                        with open(job_cache_path, 'wb') as job_cache_pkl:
+                            pickle.dump([prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
+                except filelock.Timeout:
+                    pass
                 job_files.append(job.path)
-            with open(cache_path, 'wb') as cache_pkl:
-                pickle.dump(job_files, cache_pkl, pickle.HIGHEST_PROTOCOL)
+            try:
+                with dir_prototype_lock.acquire(timeout=0):
+                    with open(cache_path, 'wb') as cache_pkl:
+                        pickle.dump(job_files, cache_pkl, pickle.HIGHEST_PROTOCOL)
+            except filelock.Timeout:
+                pass
 
 
 class CSVTreeBuilder(GNMImporter):
