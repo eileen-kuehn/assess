@@ -579,32 +579,27 @@ class Prototype(Tree):
         return result
 
     def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False,
-                 cache=None):
+                 cache=None, statistics_cls=None):
         if cache is None:
             cache = SignatureCache(
                 {
                     ProcessStartEvent: start_support,
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
-                })
-        for node in self.node_iter():
-            current_signature = signature.get_signature(node, node.parent())
-            if start_support:
-                cache.add_signature(current_signature)
-            if exit_support:
-                cache.add_signature(current_signature, {
-                    "duration": node.exit_tme - node.tme})
-        return cache
+                }, statistics_cls=statistics_cls)
+        return self.to_prototype(signature=signature, start_support=start_support,
+                                 exit_support=exit_support, traffic_support=traffic_support,
+                                 cache=cache, statistics_cls=statistics_cls)
 
     def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False,
-                     cache=None):
+                     cache=None, statistics_cls=None):
         if cache is None:
             cache = PrototypeSignatureCache(
                 {
                     ProcessStartEvent: start_support,
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
-                })
+                }, statistics_cls=statistics_cls)
         cache.supported[EmptyProcessEvent] = True
         for event in self.event_iter(include_marker=True):
             if cache.supported.get(type(event), False):
