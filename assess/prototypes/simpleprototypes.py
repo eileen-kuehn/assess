@@ -589,10 +589,10 @@ class Prototype(Tree):
                 }, statistics_cls=statistics_cls)
         return self.to_prototype(signature=signature, start_support=start_support,
                                  exit_support=exit_support, traffic_support=traffic_support,
-                                 cache=cache, statistics_cls=statistics_cls)
+                                 cache=cache, statistics_cls=statistics_cls, _is_prototype=False)
 
     def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False,
-                     cache=None, statistics_cls=None):
+                     cache=None, statistics_cls=None, _is_prototype=True):
         if cache is None:
             cache = PrototypeSignatureCache(
                 {
@@ -600,24 +600,41 @@ class Prototype(Tree):
                     ProcessExitEvent: exit_support,
                     TrafficEvent: traffic_support
                 }, statistics_cls=statistics_cls)
+        if _is_prototype:
+            add_signature = self._handle_prototype_ensemble_signature_list
+        else:
+            add_signature = self._handle_ensemble_signature_list
         cache.supported[EmptyProcessEvent] = True
         for event in self.event_iter(include_marker=True):
             if cache.supported.get(type(event), False):
                 if isinstance(event.node, EmptyNode):
                     current_signature = signature.finish_node(event.node.parent())
                     for ensemble_signature in current_signature:
-                        self._handle_ensemble_signature_list(
-                            event, ensemble_signature, cache
-                        )
+                        add_signature(event, ensemble_signature, cache)
                     continue
                 else:
                     current_signature = signature.get_signature(event.node, event.node.parent())
-                self._handle_ensemble_signature_list(
-                    event, current_signature, cache)
+                add_signature(event, current_signature, cache)
         del cache.supported[EmptyProcessEvent]
         return cache
 
     def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache):
+        if type(event) == ProcessStartEvent:
+            cache.add_signature(ensemble_signature_list)
+        if type(event) == ProcessExitEvent:
+            cache.add_signature(ensemble_signature_list, {
+                "duration": event.value
+            })
+        if type(event) == TrafficEvent:
+            cache.add_signature(ensemble_signature_list, {
+                "duration": event.value  # FIXME: what is expected here?
+            })
+        if type(event) == EmptyProcessEvent:
+            cache.add_signature(ensemble_signature_list, {
+                "duration": 0
+            })
+
+    def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache):
         if type(event) == ProcessStartEvent:
             cache.add_signature(ensemble_signature_list, self)
         if type(event) == ProcessExitEvent:
