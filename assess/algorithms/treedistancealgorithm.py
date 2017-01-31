@@ -107,7 +107,11 @@ class TreeDistanceAlgorithm(object):
         :param prototypes: Cluster name per cluster representative
         """
         # FIXME: here might be another implementation
-        self._signature_prototypes = signature_prototypes
+        if isinstance(signature_prototypes, list):
+            self._signature_prototypes = self._signature.prototype_signature_cache_class.\
+                from_prototype_signature_caches(signature_prototypes)
+        else:
+            self._signature_prototypes = signature_prototypes
         self._prototypes = prototypes
 
     def tree_node_counts(self, signature=False):
