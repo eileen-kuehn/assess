@@ -26,10 +26,13 @@ class SetStatistics(Statistics):
 
     def __add__(self, other):
         result = type(self._data)()
-        return result.update(other._data)
+        if other is not None:
+            result.update(other._data)
+        return result
 
     def __iadd__(self, other):
-        self._data.update(other._data)
+        if other is not None:
+            self._data.update(other._data)
         return self
 
     def __iter__(self):
