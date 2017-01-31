@@ -126,9 +126,9 @@ class PrototypeSignatureCache(SignatureCache):
         self.signature_cache_count = 1
         SignatureCache.__init__(self, supported=supported, statistics_cls=statistics_cls)
 
-    @staticmethod
-    def from_signature_caches(signature_caches, prototype=None, threshold=.1):
-        result = PrototypeSignatureCache(signature_caches[0].supported)
+    @classmethod
+    def from_signature_caches(cls, signature_caches, prototype=None, threshold=.1):
+        result = cls(signature_caches[0].supported)
         result.signature_cache_count = len(signature_caches)
         token_set = set()
         for signature_cache in signature_caches:
@@ -146,7 +146,8 @@ class PrototypeSignatureCache(SignatureCache):
                              signature_cache in signature_caches if token in signature_cache]
                 prototype_dictionary = result._prototype_dict.get(token, dict())
                 current_value = prototype_dictionary.setdefault(prototype, {})
-                current_value["duration"] = sum(durations[1:], durations[0])
+                # FIXME: warum von 1 bis Ende? Geht das mittlerweile auch von 0 bis Ende?
+                current_value["duration"] = sum(durations, durations[0])
                 current_value["count"] = int(round(counts / float(len(signature_caches))))
                 current_value["probability"] = probability
                 result[token] = prototype_dictionary
