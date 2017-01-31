@@ -117,6 +117,14 @@ class EnsemblePrototypeSignatureCache(object):
         }
         self.statistics_cls = statistics_cls
 
+    @classmethod
+    def from_prototype_signature_caches(cls, cache_list):
+        if cache_list is not None and 0 < len(cache_list):
+            result = cls(supported=cache_list[0].supported, statistics_cls=cache_list[0].statistics_cls)
+            result._prototype_dict = cache_list
+            return result
+        return None
+
     @property
     def signature_cache_count(self):
         return EnsemblePrototypeSignatureCacheList(
