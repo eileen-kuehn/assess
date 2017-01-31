@@ -1,5 +1,4 @@
 import dengraph.distance
-import time
 
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
@@ -98,14 +97,15 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
             first.frequency() + second.frequency())
         return result
 
-    def update(self, first, second, base_distance=0, default=None):
+    def update(self, static, dynamic, dynamic_changes, base_distance=0, default=None):
         pass
 
     def mean(self, *args, **kwargs):
+        prototype = kwargs.pop("prototype", 1)
         if len(args) == 1:
             args = args[0]
         return PrototypeSignatureCache.from_signature_caches(args,
-                                                             prototype=1,
+                                                             prototype=prototype,
                                                              threshold=self.threshold)
 
     def median(self, *args, **kwargs):
