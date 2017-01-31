@@ -25,9 +25,11 @@ class SetStatistics(Statistics):
         self._unconvert = unconvert
 
     def __add__(self, other):
-        result = type(self._data)()
+        result = type(self)(convert=self._convert, unconvert=self._unconvert)
+        result._data = type(self._data)()
+        result._data.update(self._data)
         if other is not None:
-            result.update(other._data)
+            result._data.update(other._data)
         return result
 
     def __iadd__(self, other):
