@@ -1,12 +1,15 @@
 import unittest
 
+from assess.algorithms.distances.startexitdistance import StartExitDistance
+from assess.algorithms.statistics.setstatistics import SetStatistics
 from assess.decorators.anomalydecorator import AnomalyDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.events.events import Event
+from assess.events.events import Event, TrafficEvent
+from assess.exceptions.exceptions import EventNotSupportedException
 
-from assess_tests.basedata import simple_monitoring_tree, simple_prototype, simple_unique_node_tree
+from assess_tests.basedata import simple_monitoring_tree, simple_prototype, real_tree
 
 
 class TestAnomalyDecorator(unittest.TestCase):
@@ -169,3 +172,43 @@ class TestAnomalyDecorator(unittest.TestCase):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [[[[False, False, False, False, True]]]])
+
+    def test_real_trees(self):
+        def distance_builder(**kwargs):
+            distance = StartExitDistance()
+            distance.supported[TrafficEvent] = True
+            return distance
+        tree_one = real_tree()
+        tree_two = real_tree(path="data/c01-007-102/2/1129-2-process.csv")
+        prototype_names = ["1", "2"]
+        prototype_caches = []
+        for index, tree in enumerate([tree_one, tree_two]):
+            prototype_caches.append(PrototypeSignatureCache.from_signature_caches(
+                [tree.to_index(signature=ParentChildByNameTopologySignature(),
+                               start_support=True,
+                               exit_support=True,
+                               traffic_support=True,
+                               statistics_cls=SetStatistics)],
+                prototype=prototype_names[index], threshold=0))
+
+        decorator = AnomalyDecorator()
+        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature(),
+                                                 distance=distance_builder,
+                                                 cache_statistics=SetStatistics)
+        prototype_cache = prototype_caches[0]
+        for cache in prototype_caches[1:]:
+            prototype_cache += cache
+        algorithm.cluster_representatives(
+            signature_prototypes=[prototype_cache], prototypes=prototype_names)
+        decorator.wrap_algorithm(algorithm)
+        for tree in [tree_one, tree_two]:
+            algorithm.start_tree()
+            for event in tree.event_iter():
+                try:
+                    algorithm.add_event(event)
+                except EventNotSupportedException:
+                    pass
+            algorithm.finish_tree()
+        self.assertFalse(decorator.data()[0][0][0][-1])
+        self.assertFalse(decorator.data()[0][0][1][0])
+        self.assertTrue(decorator.data()[0][0][1][-1])
