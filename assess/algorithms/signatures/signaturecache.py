@@ -126,6 +126,27 @@ class PrototypeSignatureCache(SignatureCache):
         self.signature_cache_count = 1
         SignatureCache.__init__(self, supported=supported, statistics_cls=statistics_cls)
 
+    def __iadd__(self, other):
+        if self.supported != other.supported:
+            return NotImplemented
+        if self.statistics_cls != other.statistics_cls:
+            return NotImplemented
+        for signature in other.internal().keys():
+            other_dict = other[signature]
+            for key in other_dict.keys():
+                try:
+                    for statistic in other_dict[key]["duration"]:
+                        for _ in range(statistic.count):
+                            self.add_signature(signature=signature,
+                                               prototype=key,
+                                               value={"duration": statistic.value})
+                    current_count = other_dict[key]["duration"].count()
+                except KeyError:
+                    current_count = 0
+                for _ in range(other_dict[key]["count"]-current_count):
+                    self.add_signature(signature=signature, prototype=key)
+        return self
+
     @classmethod
     def from_signature_caches(cls, signature_caches, prototype=None, threshold=.1):
         result = cls(signature_caches[0].supported)
