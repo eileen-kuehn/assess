@@ -3,6 +3,7 @@ import os
 import json
 
 import assess_tests
+from assess.algorithms.statistics.setstatistics import SetStatistics
 from assess_tests.basedata import simple_additional_monitoring_tree, simple_prototype
 
 from assess.algorithms.statistics.statistics import MeanVariance
@@ -155,3 +156,31 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         for token in validation_index:
             self.assertEqual(validation_index.get_count(signature=token),
                              prototype_index.get_count(signature=token, prototype=prototype))
+
+    def test_merging(self):
+        signature = ParentChildByNameTopologySignature()
+        one = simple_prototype()
+        two = simple_additional_monitoring_tree()
+        prototype_one = one.to_prototype(signature=signature, start_support=True, exit_support=False,
+                                         traffic_support=False, statistics_cls=SetStatistics)
+        prototype_two = two.to_prototype(signature=signature, start_support=True, exit_support=False,
+                                         traffic_support=False, statistics_cls=SetStatistics)
+        self.assertEqual(one.node_count(), prototype_one.frequency(one))
+        self.assertEqual(two.node_count(), prototype_two.frequency(two))
+        self.assertEqual(0, prototype_one.frequency(two))
+        prototype_one += prototype_two
+        self.assertEqual(one.node_count(), prototype_one.frequency(one))
+        self.assertEqual(two.node_count(), prototype_one.frequency(two))
+        self.assertEqual(one.node_count() + two.node_count(), prototype_one.frequency())
+
+        prototype_three = one.to_prototype(signature=signature, start_support=True, exit_support=True,
+                                         traffic_support=False, statistics_cls=SetStatistics)
+        prototype_four = two.to_prototype(signature=signature, start_support=True, exit_support=True,
+                                         traffic_support=False, statistics_cls=SetStatistics)
+        self.assertEqual(one.node_count()*2, prototype_three.frequency(one))
+        self.assertEqual(two.node_count()*2, prototype_four.frequency(two))
+        self.assertEqual(0, prototype_three.frequency(two))
+        prototype_three += prototype_four
+        self.assertEqual(one.node_count()*2, prototype_three.frequency(one))
+        self.assertEqual(two.node_count()*2, prototype_three.frequency(two))
+        self.assertEqual(one.node_count()*2 + two.node_count()*2, prototype_three.frequency())
