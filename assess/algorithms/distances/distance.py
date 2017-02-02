@@ -16,8 +16,6 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances it currently
     stores.
     """
-    supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
-
     def __init__(self, signature_count=1):
         """
         :param signature_count: The count of signatures that are processed
@@ -26,6 +24,7 @@ class Distance(object):
         self._measured_nodes = None
         self._based_on_original = False
         self.signature_count = signature_count
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
 
     def iter_on_prototypes(self, prototypes=None):
         """

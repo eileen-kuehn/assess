@@ -4,12 +4,11 @@ from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEve
 
 
 class StartDistance(Distance):
-    supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
-
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._based_on_original = True
         self._signature_cache = None
+        self.supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
