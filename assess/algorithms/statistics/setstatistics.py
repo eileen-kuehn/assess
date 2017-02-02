@@ -64,7 +64,7 @@ class SetStatistics(Statistics):
     def mean(cls, values):
         result = sum(values[1:], values[0])
         for key in result._data:
-            result._data[key] /= float(len(values))
+            result._data[key] /= int(math.ceil(float(len(values))))
         return result
 
     def __repr__(self):
