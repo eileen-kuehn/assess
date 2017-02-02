@@ -99,16 +99,16 @@ class StartExitDistance(Distance):
                 try:
                     signature_count = self._signature_cache[index].get(
                         signature=node_signature)["duration"].count(value=value)
-                except KeyError:
-                    # no data has been saved for duration, first exit event
-                    signature_count = 0
-                except (ValueError, TypeError):
+                except (KeyError, ValueError, TypeError):
                     # no data has been saved for node_signature
                     signature_count = 0
-                distance = prototype_nodes[prototype_node]["duration"].distance(
-                    value=value,
-                    count=signature_count
-                )
+                try:
+                    distance = prototype_nodes[prototype_node]["duration"].distance(
+                        value=value,
+                        count=signature_count
+                    )
+                except KeyError:
+                    distance = 1
                 if distance > 0.5:
                     # partial or full mismatch
                     result += distance * property_base
