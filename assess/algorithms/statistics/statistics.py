@@ -43,6 +43,10 @@ class Statistics(object):
 
        Returns the number of values that have been added to the statistic.
 
+    .. describe:: mean
+
+       Returns the mean representation of the given statistics.
+
     """
     def __add__(self, other):
         return NotImplemented
@@ -79,6 +83,17 @@ class Statistics(object):
 
         :param value: Value to return distance to.
         :return: Distance in the range [0, 1]
+        """
+        return NotImplemented
+
+    @classmethod
+    def mean(cls, values):
+        """
+        Returns the average representation of given statistics values by considering encapsulated
+        statistics as well as the length of values.
+
+        :param values: The statistics values to be averaged.
+        :return: New statistics object representing the given values.
         """
         return NotImplemented
 
