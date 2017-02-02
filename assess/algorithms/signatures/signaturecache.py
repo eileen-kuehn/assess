@@ -167,15 +167,14 @@ class PrototypeSignatureCache(SignatureCache):
                              signature_cache in signature_caches if token in signature_cache]
                 prototype_dictionary = result._prototype_dict.get(token, dict())
                 current_value = prototype_dictionary.setdefault(prototype, {})
-                # FIXME: warum von 1 bis Ende? Geht das mittlerweile auch von 0 bis Ende?
-                current_value["duration"] = sum(durations, durations[0])
+                current_value["duration"] = type(durations[0]).mean(durations)
                 current_value["count"] = int(round(counts / float(len(signature_caches))))
                 current_value["probability"] = probability
                 result[token] = prototype_dictionary
         return result
 
-    @staticmethod
-    def from_cluster_representatives(cluster_representatives):
+    @classmethod
+    def from_cluster_representatives(cls, cluster_representatives):
         """
         Method builds a PrototypeSignatureCache by a given dict describing Cluster Representatives
         that are currently calculated from R.
@@ -190,7 +189,7 @@ class PrototypeSignatureCache(SignatureCache):
         :param cluster_representatives: dict of cluster representatives
         :return: valid PrototypeSignatureCache object
         """
-        signature_cache = PrototypeSignatureCache()
+        signature_cache = cls()
         for cluster in cluster_representatives.keys():
             for element in cluster_representatives[cluster]:
                 # TODO: what about given probabilities? Can they be integrated?
