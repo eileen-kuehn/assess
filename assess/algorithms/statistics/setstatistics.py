@@ -26,7 +26,6 @@ class SetStatistics(Statistics):
 
     def __add__(self, other):
         result = type(self)(convert=self._convert, unconvert=self._unconvert)
-        result._data = type(self._data)()
         result._data.update(self._data)
         if other is not None:
             result._data.update(other._data)
@@ -60,3 +59,16 @@ class SetStatistics(Statistics):
             if count < self._data.get(converted, 0):
                 return 0
         return 1
+
+    @classmethod
+    def mean(cls, values):
+        result = sum(values[1:], values[0])
+        for key in result._data:
+            result._data[key] /= float(len(values))
+        return result
+
+    def __repr__(self):
+        values = [(key, value) for key, value in self._data.items()]
+        if len(values) > 3:
+            return "%s: %s..." % (self.__class__.__name__, values[0:3])
+        return "%s: %s" % (self.__class__.__name__, values)
