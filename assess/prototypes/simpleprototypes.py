@@ -604,51 +604,52 @@ class Prototype(Tree):
             add_signature = self._handle_prototype_ensemble_signature_list
         else:
             add_signature = self._handle_ensemble_signature_list
+        # FIXME: I should care about EmptyProcessEvent
         cache.supported[EmptyProcessEvent] = True
         for event in self.event_iter(include_marker=True):
-            if cache.supported.get(type(event), False):
-                if isinstance(event.node, EmptyNode):
-                    current_signature = signature.finish_node(event.node.parent())
-                    for ensemble_signature in current_signature:
-                        add_signature(event, ensemble_signature, cache)
-                    continue
-                else:
-                    current_signature = signature.get_signature(event.node, event.node.parent())
-                add_signature(event, current_signature, cache)
+            if isinstance(event.node, EmptyNode):
+                current_signature = signature.finish_node(event.node.parent())
+                for ensemble_signature in current_signature:
+                    add_signature(event, ensemble_signature, cache)  # FIXME: turn into ExitEvent
+                continue
+            else:
+                current_signature = signature.get_signature(event.node, event.node.parent())
+            add_signature(event, current_signature, cache)
         del cache.supported[EmptyProcessEvent]
         return cache
 
     def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache):
         if type(event) == ProcessStartEvent:
-            cache.add_signature(ensemble_signature_list)
+            cache[ensemble_signature_list, ProcessStartEvent] = {"count": 0}
         if type(event) == ProcessExitEvent:
-            cache.add_signature(ensemble_signature_list, {
-                "duration": event.value
-            })
+            cache[ensemble_signature_list, ProcessExitEvent] = {"count": 0,
+                                                                "duration": event.value}
         if type(event) == TrafficEvent:
-            cache.add_signature(ensemble_signature_list, {
-                "duration": event.value  # FIXME: what is expected here?
-            })
+            cache[ensemble_signature_list, TrafficEvent] = {"count": 0,
+                                                            "duration": event.value}
         if type(event) == EmptyProcessEvent:
-            cache.add_signature(ensemble_signature_list, {
-                "duration": 0
-            })
+            assert False
+            cache[ensemble_signature_list, EmptyProcessEvent] = {"count": 0,
+                                                                 "duration": 0}
 
     def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache):
         if type(event) == ProcessStartEvent:
-            cache.add_signature(ensemble_signature_list, self)
+            cache[ensemble_signature_list, self, ProcessStartEvent] = {"count": 0}
         if type(event) == ProcessExitEvent:
-            cache.add_signature(ensemble_signature_list, self, {
+            cache[ensemble_signature_list, self, ProcessExitEvent] = {
+                "count": 0,
                 "duration": event.value
-            })
+            }
         if type(event) == TrafficEvent:
-            cache.add_signature(ensemble_signature_list, self, {
+            cache[ensemble_signature_list, self, TrafficEvent] = {
+                "count": 0,
                 "duration": event.value  # FIXME: what is expected here?
-            })
+            }
         if type(event) == EmptyProcessEvent:
-            cache.add_signature(ensemble_signature_list, self, {
+            cache[ensemble_signature_list, self, EmptyProcessEvent] = {
+                "count": 0,
                 "duration": 0
-            })
+            }
 
     def event_iter(self, include_marker=True):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
@@ -701,6 +702,9 @@ class Prototype(Tree):
 
     def __iter__(self):
         return self.node_iter()
+
+    def __repr__(self):
+        return "%s (%s)" % (self.__class__.__name__, self.node_count())
 
 
 class EmptyNode(object):
