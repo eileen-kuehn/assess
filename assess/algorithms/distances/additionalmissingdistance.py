@@ -15,8 +15,8 @@ class AdditionalMissingDistance(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._additional_nodes_dict = [{}] * self.signature_count
-        self._missing_nodes_dict = [{}] * self.signature_count
+        self._additional_nodes_dict = [{} for _ in range(self.signature_count)]
+        self._missing_nodes_dict = [{} for _ in range(self.signature_count)]
         for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
