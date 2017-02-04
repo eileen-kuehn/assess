@@ -29,6 +29,7 @@ class AnomalyDecorator(Decorator):
         self._data = []
         self._last_event_counts = None
         self._tmp_prototype_counts = None
+        self._tmp_event_weights = None
         self._percentage = percentage
 
     def data(self):
@@ -38,12 +39,15 @@ class AnomalyDecorator(Decorator):
         self._data = []
         self._last_event_counts = None
         self._tmp_prototype_counts = None
+        self._tmp_event_weights = None
 
     def _tree_started(self):
         self._data.append([[[] for _ in self._algorithm.prototypes]
                            for _ in range(self._algorithm.signature.count)])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
+        if self._tmp_event_weights is None:
+            self._tmp_event_weights = self._algorithm.distance.weights()
 
     def _tree_finished(self, result):
         ranges = self._finished_range()
@@ -60,17 +64,16 @@ class AnomalyDecorator(Decorator):
 
     def _event_added(self, event, result):
         # Format for result: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
-        event_counts = self._algorithm.event_counts()
+        event_counts = self._algorithm.event_counts(by_event=True)
         # Format for event counts: [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
         # Format for prototype event counts: [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
 
         # the event differs from the last one, so take the values
         ranges = self._current_range(progress=[elem[0] for elem in event_counts])
         # Format for ranges: [(e1), ..., (en)]
-
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
-                self._data[-1][i][j].append(not ranges[i][j][0] <= result[i][j] <= ranges[i][j][1])
+                self._data[-1][i][j].append(not ranges[i][j][0] <= prototype_result <= ranges[i][j][1])
 
     def _update(self, decorator):
         self._data.extend(decorator.data())
@@ -83,14 +86,22 @@ class AnomalyDecorator(Decorator):
         return result
 
     def _current_range(self, progress):
-        # Format for progress: [ve1, ..., ven]
+        # from new format to old format
+        weighted_progress = []
+        try:
+            for elements in progress:
+                weighted_progress.append(sum([value * self._tmp_event_weights.get(key, 1)
+                                              for key, value in elements.items()]))
+        except AttributeError:
+            weighted_progress = progress
+        # Format for result: [ve1, ..., ven]
         # expected_distance = -progress + max(prototype)
 
         # lower bound
         # [[p1e1, p2e1], ..., [p1en, p2en]]
         lower = []
         upper = []
-        for ensemble_index, current_progress in enumerate(progress):
+        for ensemble_index, current_progress in enumerate(weighted_progress):
             lower.append([-current_progress + count
                           for count in self._tmp_prototype_counts[ensemble_index]])
             upper.append([-current_progress + count * (1 + self._percentage)

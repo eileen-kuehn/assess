@@ -209,6 +209,11 @@ class TestAnomalyDecorator(unittest.TestCase):
                 except EventNotSupportedException:
                     pass
             algorithm.finish_tree()
-        self.assertFalse(decorator.data()[0][0][0][-1])
-        self.assertFalse(decorator.data()[0][0][1][0])
-        self.assertTrue(decorator.data()[0][0][1][-1])
+        self.assertFalse(decorator.data()[0][0][0][0])  # First tree vs. first is False for start
+        self.assertFalse(decorator.data()[0][0][0][-1])  # ... and end
+        self.assertFalse(decorator.data()[0][0][1][0])  # First tree vs. second is False for start
+        self.assertTrue(decorator.data()[0][0][1][-1])  # and True for end
+        self.assertFalse(decorator.data()[1][0][0][0])  # Second tree vs. first is False for start
+        self.assertTrue(decorator.data()[1][0][0][-1])  # ... and True for end
+        self.assertFalse(decorator.data()[1][0][1][0])  # Second tree vs. second is False for start
+        self.assertFalse(decorator.data()[1][0][1][-1])  # ... and False for end
