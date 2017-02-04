@@ -12,7 +12,8 @@ class StartDistance(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls)
+        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls,
+                                                supported=self.supported)
                                  for _ in range(self.signature_count)]
         for prototype in prototypes:
             node_count = prototype.node_count()
@@ -32,15 +33,15 @@ class StartDistance(Distance):
                     node_signature=signature,
                     value=value
                 )
-                self._signature_cache[index].add_signature(signature=signature)
+                self._signature_cache[index][signature, event_type] = {"count": 0}
         return [match.keys() for match in matches]
 
-    def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes is not None:
             return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
         if signature:
             return [signature_cache.node_count() for signature_cache in self._signature_cache]
-        return [signature_cache.frequency() for signature_cache in self._signature_cache]
+        return [signature_cache.multiplicity() for signature_cache in self._signature_cache]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None):
@@ -48,8 +49,8 @@ class StartDistance(Distance):
 
         for prototype_node in prototype_nodes:
             # reduce distance as long as the expected node count has not been reached
-            if self._signature_cache[index].get_count(signature=node_signature) < \
-                            prototype_nodes[prototype_node]["count"]:
+            if self._signature_cache[index].multiplicity(signature=node_signature, event_type=ProcessStartEvent) < \
+                            prototype_nodes[prototype_node][ProcessStartEvent]["count"].count():
                 result_dict[prototype_node] = -1
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(

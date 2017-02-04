@@ -4,6 +4,7 @@ Module offers classes to determine Similarity measures based on start and exit e
 
 from assess.algorithms.distances.distance import Distance
 from assess.algorithms.signatures.signaturecache import SignatureCache
+from assess.events.events import ProcessExitEvent, ProcessStartEvent
 
 
 class StartExitSimilarity(Distance):
@@ -18,7 +19,8 @@ class StartExitSimilarity(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls)
+        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls,
+                                                supported=self.supported)
                                  for _ in range(len(self._monitoring_results_dict))]
         for prototype in prototypes:
             for index in range(self.signature_count):
@@ -36,11 +38,15 @@ class StartExitSimilarity(Distance):
                     prototype_nodes=matching_prototypes,
                     node_signature=signature,
                     value=value,
+                    event_type=event_type
                 )
-                self._signature_cache[index].add_signature(signature=signature)
+                if event_type == ProcessStartEvent:
+                    self._signature_cache[index][signature, event_type] = {"count": 0}
+                else:
+                    self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
         return [match.keys()[0] for match in matches]
 
-    def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes is not None:
             return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
         if signature:
@@ -48,12 +54,13 @@ class StartExitSimilarity(Distance):
         return [signature_cache.frequency() for signature_cache in self._signature_cache]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
-                          value=None):
+                          value=None, event_type=None):
         result_dict = dict(zip(prototypes, [0] * len(prototypes)))
         for prototype_node in prototype_nodes:
-            if self._signature_cache[index].get_count(signature=node_signature) < \
-                            2*prototype_nodes[prototype_node]["duration"].count():
-                distance = prototype_nodes[prototype_node]["duration"].distance(value=value)
+            # FIXME: Ich denke die 2* muss entfernt werden
+            if self._signature_cache[index].multiplicity(signature=node_signature, event_type=ProcessExitEvent) < \
+                            2*prototype_nodes[prototype_node][ProcessExitEvent]["duration"].count():
+                distance = prototype_nodes[prototype_node][ProcessExitEvent]["duration"].distance(value=value)
                 if distance is None:
                     result_dict[prototype_node] = 1
                 else:

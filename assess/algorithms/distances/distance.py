@@ -77,7 +77,22 @@ class Distance(object):
         """
         pass
 
-    def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
+    def weights(self):
+        """
+        This method returns a dict of weights for the different support keys being used internally.
+        Based on this weighting, the influence of different kinds of events can be evaluated.
+
+        Returned format looks like: {support_key: weight, ...}
+
+        :return: Dict of weights
+        """
+        # FIXME: implement me!
+        return NotImplemented
+
+    def event_count(self, by_event=False):
+        return [len(measured_nodes) for measured_nodes in self._measured_nodes]
+
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         """
         Returns the count of nodes considered for the actual distance measurement. This count is
         important to calculate the normalised distance with regard to the used distance.

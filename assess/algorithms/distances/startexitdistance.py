@@ -24,18 +24,20 @@ class StartExitDistance(Distance):
     """
     def __init__(self, weight=.5, **kwargs):
         Distance.__init__(self, **kwargs)
-        self._based_on_original = True
+        self._based_on_original = False
         self._signature_cache = None
         assert 0 <= weight <= 1
         self._weight = weight
+        self._cached_weights = None
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls)
+        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls,
+                                                supported=self.supported)
                                  for _ in range(self.signature_count)]
         for prototype in prototypes:
             for index in range(self.signature_count):
-                node_count = signature_prototypes.frequency(prototype)
+                node_count = signature_prototypes.multiplicity(prototype=prototype)
                 try:
                     self._monitoring_results_dict[index][prototype] = node_count[index]
                 except TypeError:
@@ -56,54 +58,64 @@ class StartExitDistance(Distance):
                     value=value
                 )
                 if event_type == ProcessStartEvent:
-                    self._signature_cache[index].add_signature(signature=signature)
+                    self._signature_cache[index][signature, ProcessStartEvent] = {"count": 0}
                 else:
-                    self._signature_cache[index].add_signature(signature=signature,
-                                                               value={"duration": value})
+                    self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
         return [match.keys()[0] for match in matches]
 
-    def node_count(self, prototypes=None, signature_prototypes=None, signature=False):
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes:
-            return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
+            return [signature_prototypes.multiplicity(prototype=prototype, by_event=by_event) for prototype in prototypes]
         if signature:
             return [signature_cache.node_count() for signature_cache in self._signature_cache]
-        return [signature_cache.frequency() for signature_cache in self._signature_cache]
+        return [signature_cache.multiplicity(by_event=by_event) for signature_cache in self._signature_cache]
+
+    def event_count(self, by_event=False):
+        return [signature_cache.multiplicity(by_event=by_event) for signature_cache in
+                self._signature_cache]
+
+    def weights(self):
+        if self._cached_weights is None:
+            self._cached_weights = {}
+            for support_key in self.supported:
+                if support_key == TrafficEvent:
+                    factor = 1.0
+                else:
+                    factor = 2.0
+                weight = factor * self._weight
+                base = self._weight
+                if support_key != ProcessStartEvent:
+                    property_base = factor - weight
+                    base += property_base
+                self._cached_weights[support_key] = base
+        return self._cached_weights
 
     def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None,
                           node_signature=None, value=None):
-        if event_type == TrafficEvent:
-            factor = 1.0
-        else:
-            factor = 2.0
-        weight = factor * self._weight  # two times, because looking at start and exit
-        # because we have to consider signatures from start and exit, we need to deal with
-        # the half of the given weight here
-        base = self._weight
-        node_base = base
-        property_base = 0
-        if event_type != ProcessStartEvent:
-            property_base = factor - weight
-            base += property_base
+        base = self.weights().get(event_type, 0)
+        node_base = self._weight
+        property_base = base - node_base
         result_dict = dict(zip(prototypes, [base for _ in range(len(prototypes))]))
 
         for prototype_node in prototype_nodes:
             if prototype_nodes[prototype_node] is None:
                 continue
             result = 0
-            if self._signature_cache[index].get_count(signature=node_signature) < \
-                            prototype_nodes[prototype_node]["count"]:
+            if self._signature_cache[index].multiplicity(signature=node_signature, event_type=event_type) < \
+                            prototype_nodes[prototype_node][event_type]["count"].count():
                 result -= node_base
             else:
                 result += node_base
             if property_base > 0:
                 try:
-                    signature_count = self._signature_cache[index].get(
-                        signature=node_signature)["duration"].count(value=value)
+                    signature_count = self._signature_cache[index].get_statistics(
+                        signature=node_signature, key="duration", event_type=event_type).count(
+                        value=value)
                 except (KeyError, ValueError, TypeError):
                     # no data has been saved for node_signature
                     signature_count = 0
                 try:
-                    distance = prototype_nodes[prototype_node]["duration"].distance(
+                    distance = prototype_nodes[prototype_node][event_type]["duration"].distance(
                         value=value,
                         count=signature_count
                     )
