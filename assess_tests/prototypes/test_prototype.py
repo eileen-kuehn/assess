@@ -277,18 +277,20 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_to_index(self):
         prototype = simple_prototype()
         index = prototype.to_index(signature=ParentChildByNameTopologySignature())
-        self.assertEqual(2, index.get_count("root_-5995064038896156292"))
-        self.assertEqual(4, index.get_count("test_703899357396914538"))
-        self.assertEqual(4, index.get_count("muh_703899357396914538"))
+        self.assertEqual(2, index.multiplicity(signature="root_-5995064038896156292"))
+        self.assertEqual(4, index.multiplicity(signature="test_703899357396914538"))
+        self.assertEqual(4, index.multiplicity(signature="muh_703899357396914538"))
         self.assertEqual(3, index.node_count())
-        self.assertEqual(2, index["muh_703899357396914538"]["duration"]._statistics[1].mean)
-        self.assertEqual(0, index["muh_703899357396914538"]["duration"].distance(2))
+        self.assertEqual(2, index.get_statistics(
+            signature="muh_703899357396914538", key="duration", event_type=ProcessExitEvent)._statistics[1].mean)
+        self.assertEqual(0, index.get_statistics(
+            signature="muh_703899357396914538", key="duration", event_type=ProcessExitEvent).distance(2))
 
         index = prototype.to_index(signature=ParentChildByNameTopologySignature(), exit_support=False)
         self.assertEqual(3, index.node_count())
-        self.assertEqual(1, index.get_count("root_-5995064038896156292"))
-        self.assertEqual(2, index.get_count("test_703899357396914538"))
-        self.assertEqual(2, index.get_count("muh_703899357396914538"))
+        self.assertEqual(1, index.multiplicity(signature="root_-5995064038896156292"))
+        self.assertEqual(2, index.multiplicity(signature="test_703899357396914538"))
+        self.assertEqual(2, index.multiplicity(signature="muh_703899357396914538"))
 
     def test_parent_child_event_iter(self):
         prototype = Prototype()

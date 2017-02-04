@@ -3,6 +3,7 @@ import unittest
 from assess.algorithms.distances.startdistance import StartDistance
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.signatures import *
+from assess.events.events import ProcessStartEvent
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree, \
     simple_repeated_monitoring_tree
@@ -10,9 +11,11 @@ from assess_tests.basedata import simple_prototype, simple_monitoring_tree, \
 
 class TestStartDistance(unittest.TestCase):
     def test_simple(self):
-        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature())
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=ParentChildByNameTopologySignature(),
+            distance=StartDistance)
         algorithm.prototypes = [simple_prototype()]
-        distance = StartDistance(signature_count=algorithm.signature.count)
+        distance = algorithm.distance
         distance.init_distance(prototypes=algorithm.prototypes, signature_prototypes=algorithm.signature_prototypes)
 
         for index, dist in enumerate(distance.iter_on_prototypes(algorithm.prototypes)):
@@ -56,6 +59,7 @@ class TestStartDistance(unittest.TestCase):
                 matches=[{token: matching_prototypes[index]} for index, token in
                          enumerate(node_signature)],
                 value=float(node.exit_tme)-float(node.tme),
+                event_type=ProcessStartEvent
             )
         for result in distance._monitoring_results_dict:
             self.assertEqual(result[algorithm.prototypes[0]], 4)

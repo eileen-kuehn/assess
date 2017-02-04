@@ -2,6 +2,7 @@ import unittest
 
 from assess.algorithms.distances.startexitsimilarity import StartExitSimilarity
 from assess.algorithms.signatures.signatures import *
+from assess.events.events import ProcessStartEvent
 from assess_tests.algorithms.distances.test_distance import algorithm, monitoring_tree
 
 
@@ -28,7 +29,8 @@ class TestStartExitSimilarity(unittest.TestCase):
                 prototypes=self.algorithm.prototypes,
                 signature_prototypes=self.algorithm.signature_prototypes,
                 matches=[{token: matching_prototypes[index]} for index, token in
-                         enumerate([node_signature])]
+                         enumerate([node_signature])],
+                event_type=ProcessStartEvent
             )
         for result in similarity._monitoring_results_dict:
             self.assertEqual(result[self.algorithm.prototypes[0]], 4)
@@ -36,7 +38,8 @@ class TestStartExitSimilarity(unittest.TestCase):
             prototypes=self.algorithm.prototypes,
             signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
-                     enumerate([node_signature])]
+                     enumerate([node_signature])],
+            event_type=ProcessStartEvent
         )
         for result in similarity._monitoring_results_dict:
             self.assertEqual(result[self.algorithm.prototypes[0]], 5)
@@ -44,19 +47,22 @@ class TestStartExitSimilarity(unittest.TestCase):
             prototypes=self.algorithm.prototypes,
             signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
-                     enumerate([node_signature])]
+                     enumerate([node_signature])],
+            event_type=ProcessStartEvent
         )
         similarity.update_distance(
             prototypes=self.algorithm.prototypes,
             signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
-                     enumerate([node_signature])]
+                     enumerate([node_signature])],
+            event_type=ProcessStartEvent
         )
         similarity.update_distance(
             prototypes=self.algorithm.prototypes,
             signature_prototypes=self.algorithm.signature_prototypes,
             matches=[{token: matching_prototypes[index]} for index, token in
-                     enumerate([node_signature])]
+                     enumerate([node_signature])],
+            event_type=ProcessStartEvent
         )
         for result in similarity._monitoring_results_dict:
-            self.assertEqual(result[self.algorithm.prototypes[0]], 7)
+            self.assertEqual(result[self.algorithm.prototypes[0]], 8)

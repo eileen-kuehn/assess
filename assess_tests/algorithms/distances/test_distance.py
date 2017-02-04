@@ -1,6 +1,7 @@
 import unittest
 
 from assess.algorithms.distances.distance import Distance
+from assess.events.events import ProcessExitEvent
 from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.algorithms.signatures.ensemblesignaturecache import EnsemblePrototypeSignatureCache
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
@@ -38,14 +39,10 @@ def additional_monitoring_tree():
 
 
 def prototype_signature(prototype=None, signature=None):
-    signature_prototype = EnsemblePrototypeSignatureCache()
+    signature_prototype = EnsemblePrototypeSignatureCache(supported={ProcessExitEvent: True})
     for node in prototype.nodes():
         node_signature = signature.get_signature(node, node.parent())
-        signature_prototype.add_signature(
-            signature=node_signature,
-            prototype=prototype,
-            value={"duration": (float(node.exit_tme)-float(node.tme))}
-        )
+        signature_prototype[node_signature, prototype, ProcessExitEvent] = {"duration": (float(node.exit_tme)-float(node.tme))}
     return signature_prototype
 
 
