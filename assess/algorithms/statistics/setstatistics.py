@@ -61,10 +61,10 @@ class SetStatistics(Statistics):
         return 1
 
     @classmethod
-    def mean(cls, values):
+    def mean(cls, values, length=None):
         result = sum(values[1:], values[0])
         for key in result._data:
-            result._data[key] /= int(math.ceil(float(len(values))))
+            result._data[key] /= float(len(values) if length is None else length)
         return result
 
     def __repr__(self):

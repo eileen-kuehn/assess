@@ -87,7 +87,7 @@ class Statistics(object):
         return NotImplemented
 
     @classmethod
-    def mean(cls, values):
+    def mean(cls, values, length=None):
         """
         Returns the average representation of given statistics values by considering encapsulated
         statistics as well as the length of values.

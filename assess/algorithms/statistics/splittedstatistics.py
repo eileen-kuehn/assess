@@ -178,3 +178,6 @@ class SplittedStatistics(Statistics):
             if index < len(self._statistics) else float("inf")
         return min(left_distance, right_distance), index \
             if right_distance < left_distance else index - 1
+
+    def __repr__(self):
+        return "%s (%s)" % (self.__class__.__name__, [{statistic.value: statistic.count} for statistic in self._statistics])
