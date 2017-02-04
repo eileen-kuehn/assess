@@ -2,6 +2,8 @@
 This module implements ensemble version of SignatureCache as well as PrototypeSignatureCache to
 enable ensemble based algorithms.
 """
+import logging
+
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 
@@ -30,24 +32,27 @@ class EnsembleSignatureCache(object):
         }
         self.statistics_cls = statistics_cls
 
-    def add_signature(self, signature=None, value=None):
-        """
-        Adding another occurence of a signature to the current cache. If signature is not in the
-        Cache so far, its count is set to 1, otherwise it is incremented.
-
-        :param signature: The signature to be added
-        """
+    def __setitem__(self, key, value):
+        signature, event_type = key
+        if not self.supported.get(event_type, False):
+            logging.getLogger(self.__class__.__name__).warning("Skipping %s (%s) for event %s" % (
+                signature, value, event_type))
+            return
         for index, token in enumerate(signature):
             try:
-                self._signature_dicts[index].add_signature(signature=token, value=value)
+                self._signature_dicts[index][token, event_type] = value
             except IndexError:
                 self._signature_dicts = [SignatureCache(self.supported, self.statistics_cls)
                                          for _ in range(len(signature))]
-                self._signature_dicts[index].add_signature(signature=token, value=value)
+                self._signature_dicts[index][token, event_type] = value
+
+    def __iter__(self):
+        for signature_dict in self._signature_dicts:
+            yield signature_dict
 
     def get(self, signature):
         """
-        Get the current counts for each signature of a given token. If token does not exist in
+        Get the current statistics for each signature of a given token. If token does not exist in
         cache, a count of 0 is returned.
 
         :param signature: Signature to get the count for
@@ -60,18 +65,26 @@ class EnsembleSignatureCache(object):
         except IndexError:
             return EnsembleSignatureCacheList()
 
-    def get_count(self, signature):
+    def multiplicity(self, signature=None, event_type=None, by_event=False):
         """
         Get the current counts for each signature of a given token. If token does not exist in
         cache, a count of 0 is returned.
+
+        If signature is None, the overall multiplicity for a given cache is given
 
         :param signature: Signature to get the count for
         :return: List of current count for tokens, otherwise []
         """
         try:
-            return EnsembleSignatureCacheList(
-                self._signature_dicts[index].get_count(signature=token) for index, token in
-                enumerate(signature))
+            if signature is None:
+                return EnsembleSignatureCacheList(cache.multiplicity(
+                    event_type=event_type, by_event=by_event) for cache in self._signature_dicts)
+            else:
+                result = EnsembleSignatureCacheList()
+                for index, token in enumerate(signature):
+                    result.append(self._signature_dicts[index].multiplicity(
+                        signature=token, event_type=event_type, by_event=by_event))
+                return result
         except IndexError:
             return EnsembleSignatureCacheList()
 
@@ -85,14 +98,14 @@ class EnsembleSignatureCache(object):
         return EnsembleSignatureCacheList(
             cache.node_count(**kwargs) for cache in self._signature_dicts)
 
-    def frequency(self):
-        """
-        Method returns the a list of the overall frequency of all tokens inside the signature
-        caches.
-
-        :return: List of accumulated count for all signatures
-        """
-        return EnsembleSignatureCacheList(cache.frequency() for cache in self._signature_dicts)
+    def get_statistics(self, signature, key, event_type):
+        try:
+            return EnsembleSignatureCacheList(
+                signature_dict.get_statistics(signature[index], key[index], event_type[index])
+                for index, signature_dict in enumerate(self._signature_dicts)
+            )
+        except IndexError:
+            return EnsembleSignatureCacheList()
 
     def internal(self):
         """
@@ -117,6 +130,24 @@ class EnsemblePrototypeSignatureCache(object):
         }
         self.statistics_cls = statistics_cls
 
+    def __iter__(self):
+        for prototype_dict in self._prototype_dict:
+            yield prototype_dict
+
+    def __setitem__(self, key, value):
+        signature, prototype, event_type = key
+        if not self.supported.get(event_type, False):
+            logging.getLogger(self.__class__.__name__).warning("Skipping %s (%s) for event %s" % (
+                signature, value, event_type))
+            return
+        for index, token in enumerate(signature):
+            try:
+                self._prototype_dict[index][token, prototype, event_type] = value
+            except IndexError:
+                self._prototype_dict = [PrototypeSignatureCache(
+                    self.supported, self.statistics_cls) for _ in range(len(signature))]
+                self._prototype_dict[index][token, prototype, event_type] = value
+
     @classmethod
     def from_prototype_signature_caches(cls, cache_list):
         if cache_list is not None and 0 < len(cache_list):
@@ -130,26 +161,6 @@ class EnsemblePrototypeSignatureCache(object):
         return EnsemblePrototypeSignatureCacheList(
             cache.signature_cache_count for cache in self._prototype_dict)
 
-    def add_signature(self, signature=None, prototype=None, value=None):
-        """
-        Add a list of tokens and its current values for a given prototype.
-
-        :param signature: List of tokens to add
-        :param prototype: Prototype the tokens belong to
-        :param value: Value for signatures
-        """
-        for index, token in enumerate(signature):
-            try:
-                self._prototype_dict[index].add_signature(signature=token,
-                                                          prototype=prototype,
-                                                          value=value)
-            except IndexError:
-                self._prototype_dict = [PrototypeSignatureCache(
-                    self.supported, self.statistics_cls) for _ in range(len(signature))]
-                self._prototype_dict[index].add_signature(signature=token,
-                                                          prototype=prototype,
-                                                          value=value)
-
     def node_count(self, prototype=None):
         """
         Returns the list of number of tokens stored for a given prototype.
@@ -162,7 +173,7 @@ class EnsemblePrototypeSignatureCache(object):
         return EnsemblePrototypeSignatureCacheList(
             cache.node_count(prototype=prototype) for cache in self._prototype_dict)
 
-    def get(self, signature=None):
+    def get(self, signature):
         """
         Returns a list of dictionaries of prototypes with their statistics for a given token.
         If the token does not exist, an empty dictionary is returned.
@@ -171,13 +182,13 @@ class EnsemblePrototypeSignatureCache(object):
         :return: List of dictionaries of prototypes with statistics as value
         """
         try:
-            return EnsembleSignatureCacheList(
+            return EnsemblePrototypeSignatureCacheList(
                 self._prototype_dict[index].get(signature=token) for index, token in
                 enumerate(signature))
         except IndexError:
             return EnsemblePrototypeSignatureCacheList()
 
-    def frequency(self, prototype=None):
+    def multiplicity(self, signature=None, prototype=None, event_type=None, by_event=False):
         """
         Returns a list of frequencies of added objects. If no prototype is given, it considers the
         frequency of all elements. Otherwise only the frequency per prototype is given.
@@ -187,5 +198,22 @@ class EnsemblePrototypeSignatureCache(object):
         :param prototype: Prototype to determine frequency from
         :return: List of frequency of tokens
         """
+        if signature is not None:
+            return EnsemblePrototypeSignatureCacheList(
+                self._prototype_dict[index].multiplicity(
+                    signature=token, prototype=prototype, event_type=event_type, by_event=by_event)
+                for index, token in enumerate(signature)
+            )
+        else:
+            return EnsemblePrototypeSignatureCacheList(
+                prototype_dict.multiplicity(prototype=prototype, event_type=event_type, by_event=by_event)
+                for prototype_dict in self._prototype_dict
+            )
+        return EnsemblePrototypeSignatureCacheList()
+
+    def get_statistics(self, signature, key, event_type, prototype):
         return EnsemblePrototypeSignatureCacheList(
-            cache.frequency(prototype=prototype) for cache in self._prototype_dict)
+            self._prototype_dict[index].get_statistics(
+                signature=token, key=key, event_type=event_type, prototype=prototype)
+            for index, token in enumerate(signature)
+        )
