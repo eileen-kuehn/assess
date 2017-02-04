@@ -53,12 +53,15 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         if self.distance.is_prototype_based_on_original():
             return [[prototype.node_count() for prototype in self._prototypes] for _ in range(
                 self._signature.count)]
-        result = [self._signature_prototypes.node_count(prototype=prototype)
+        result = [self._signature_prototypes.multiplicity(prototype=prototype)
                   for prototype in self._prototypes]
         return [[element[i] for element in result] for i in range(len(result[0]))]
 
-    def _event_count(self):
+    def _node_count(self):
         return [[count for _ in self.prototypes] for count in self.distance.node_count()]
+
+    def _event_count(self, by_event=False):
+        return [[count for _ in self.prototypes] for count in self.distance.event_count(by_event=by_event)]
 
     def _update_distances(self, event, signature, **kwargs):
         matching_prototypes = self._signature_prototypes.get(signature=signature)

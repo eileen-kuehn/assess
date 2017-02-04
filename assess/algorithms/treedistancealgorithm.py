@@ -172,7 +172,7 @@ class TreeDistanceAlgorithm(object):
                 event_counts = 0
         return [event_counts for _ in range(self._signature.count)] if event_counts > 0 else []
 
-    def prototype_event_counts(self):
+    def prototype_event_counts(self, by_event=False):
         """
         Method returns a list containing the events per prototype.
 
@@ -182,12 +182,16 @@ class TreeDistanceAlgorithm(object):
         """
         try:
             event_counts = self.distance.node_count(prototypes=self._prototypes,
-                                                    signature_prototypes=self._signature_prototypes)
+                                                    signature_prototypes=self._signature_prototypes,
+                                                    by_event=by_event)
         except AttributeError:
             return self._prototype_event_counts()
         return [list(element) for element in zip(*event_counts)]
 
-    def event_counts(self):
+    def node_counts(self):
+        return self._node_count()
+
+    def event_counts(self, by_event=False):
         """
         Method returns a list containing the current events considered from the monitoring tree by
         prototype.
@@ -196,7 +200,7 @@ class TreeDistanceAlgorithm(object):
 
         :return: List of monitoring tree event counts per prototype
         """
-        return self._event_count()
+        return self._event_count(by_event=by_event)
 
     def start_tree(self, maxlen=None, **kwargs):
         """
@@ -290,7 +294,10 @@ class TreeDistanceAlgorithm(object):
             raise EventNotSupportedException(event)
         return result
 
-    def _event_count(self):
+    def _node_count(self):
+        return NotImplemented
+
+    def _event_count(self, by_event=False):
         """
         Method returns the current event count of the monitoring tree.
 
