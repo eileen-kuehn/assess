@@ -23,8 +23,8 @@ class SignatureWrapper(object):
             return self._signature_cache.get(signature).values()[0]
         return self._signature_cache.get(signature)
 
-    def frequency(self):
-        return self._signature_cache.frequency()
+    def multiplicity(self):
+        return self._signature_cache.multiplicity()
 
 
 class PrototypeWrapper(object):
@@ -51,8 +51,8 @@ class PrototypeWrapper(object):
                 return {self._prototype_name: None}
         return {self._prototype_name: self._signature_cache.get(signature)}
 
-    def frequency(self, prototype=None):
-        return self._signature_cache.frequency()
+    def multiplicity(self, prototype=None):
+        return self._signature_cache.multiplicity()
 
 
 class ClusterDistance(dengraph.distance.IncrementalDistance):
@@ -73,28 +73,34 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         self.distance.init_distance(prototypes, prototypes_cache)
         for signature in second:
             matching_prototypes = prototypes_cache.get(signature=signature)
-            for statistic in second.get(signature)["duration"]:
-                count = statistic.count
-                value = statistic.value
-                for _ in range(count):
-                    if self.distance.supported[ProcessStartEvent]:
-                        self.distance.update_distance(
-                            prototypes=prototypes,
-                            signature_prototypes=prototypes_cache,
-                            event_type=ProcessStartEvent,
-                            matches=[{signature: matching_prototypes}]
-                        )
-                    if self.distance.supported[ProcessExitEvent]:
-                        self.distance.update_distance(
-                            prototypes=prototypes,
-                            signature_prototypes=prototypes_cache,
-                            event_type=ProcessExitEvent,
-                            matches=[{signature: matching_prototypes}],
-                            value=value
-                        )
+            supporters = second.get(signature=signature)
+            for support_key, statistics in supporters.items():
+                if len(statistics.keys()) <= 1:
+                    # I am only considering count here
+                    statistic = statistics.get("count", [])
+                    for stat in statistic:
+                        for _ in range(stat.count):
+                            self.distance.update_distance(
+                                prototypes=prototypes,
+                                signature_prototypes=prototypes_cache,
+                                event_type=support_key,
+                                matches=[{signature: matching_prototypes}]
+                            )
+                else:
+                    # only considering duration here
+                    statistic = statistics.get("duration", [])
+                    for stat in statistic:
+                        for _ in range(stat.count):
+                            self.distance.update_distance(
+                                prototypes=prototypes,
+                                signature_prototypes=prototypes_cache,
+                                event_type=support_key,
+                                matches=[{signature: matching_prototypes}],
+                                value=stat.value
+                            )
         self.distance.finish_distance(prototypes, prototypes_cache)
         result = next(self.distance.iter_on_prototypes(prototypes))[0] / float(
-            first.frequency() + second.frequency())
+            first.multiplicity() + second.multiplicity())
         return result
 
     def update(self, static, dynamic, dynamic_changes, base_distance=0, default=None):
