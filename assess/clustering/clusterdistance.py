@@ -93,7 +93,8 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                     # only considering duration here
                     statistic = statistics.get("duration", [])
                     for stat in statistic:
-                        for _ in range(stat.count):
+                        count = int(math.ceil(stat.count))  # round up to always consider occurrence
+                        for _ in range(count):
                             self.distance.update_distance(
                                 prototypes=prototypes,
                                 signature_prototypes=prototypes_cache,
