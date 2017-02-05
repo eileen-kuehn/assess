@@ -1,3 +1,5 @@
+import math
+
 import dengraph.distance
 
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
@@ -79,7 +81,8 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                     # I am only considering count here
                     statistic = statistics.get("count", [])
                     for stat in statistic:
-                        for _ in range(stat.count):
+                        count = int(math.ceil(stat.count))  # round up to always consider occurrence
+                        for _ in range(count):
                             self.distance.update_distance(
                                 prototypes=prototypes,
                                 signature_prototypes=prototypes_cache,
