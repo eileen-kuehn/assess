@@ -21,29 +21,31 @@ class SimpleDistance(Distance):
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
         for prototype in prototypes:
-            node_counts = signature_prototypes.node_count(prototype=prototype)
-            for index, node_count in enumerate(node_counts):
-                self._monitoring_results_dict[index][prototype] = node_count
+            node_count = signature_prototypes.node_count(prototype=prototype)
+            for index in range(self.signature_count):
+                try:
+                    self._monitoring_results_dict[index][prototype] = node_count[index]
+                except TypeError:
+                    self._monitoring_results_dict[index][prototype] = node_count
 
     def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
                         **kwargs):
-        for index, match in enumerate(matches):
+        for ensemble_index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature is None:
                     continue
-                if signature not in self._measured_nodes[index]:
+                if signature not in self._measured_nodes[ensemble_index]:
                     self._update_distances(
                         prototypes=prototypes,
-                        index=index,
+                        index=ensemble_index,
                         prototype_nodes=matching_prototypes,
                         node_signature=signature
                     )
-                    self._measured_nodes[index].add(signature)
+                    self._measured_nodes[ensemble_index].add(signature)
         return [match.keys() for match in matches]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
         result_dict = dict(zip(prototypes, [1 for _ in range(len(prototypes))]))
-
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = -1
         # add local node distance to global tree distance
