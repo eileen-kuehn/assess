@@ -4,7 +4,6 @@ import dengraph.distance
 
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
-from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
 
 class SignatureWrapper(object):
