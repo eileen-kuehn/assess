@@ -41,9 +41,7 @@ class SignatureCache(object):
             yield signature
 
     def __contains__(self, item):
-        if item in self._prototype_dict:
-            return True
-        return False
+        return item in self._prototype_dict
 
     def __len__(self):
         return len(self._prototype_dict.keys())
