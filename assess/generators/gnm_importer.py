@@ -114,8 +114,9 @@ class PrototypeCache(object):
                         job.prepare_traffic()
                         prototype = Prototype.from_job(job)
                         prototypes.append(prototype)
-                    with open(cache_path, 'wb') as cache_pkl:
-                        pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
+                    if prototypes:
+                        with open(cache_path, 'wb') as cache_pkl:
+                            pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
             except filelock.Timeout:
                 # we are NOT the writer - acquire the lock to see when the writer is done
                 with cache_prototype_lock:
