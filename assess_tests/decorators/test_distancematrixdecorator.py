@@ -83,12 +83,14 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         for event in Event.from_tree(simple_prototype()):
             decorator.add_event(event)
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0, .25]]]})
+        # old method: self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0, .25]]]})
+        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0, .4]]]})
         decorator.start_tree()
         for event in Event.from_tree(simple_additional_monitoring_tree()):
             decorator.add_event(event)
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0.0, .25]], [[.25, 0.0]]]})
+        # old method: self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0.0, .25]], [[.25, 0.0]]]})
+        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0.0, .4]], [[.4, 0.0]]]})
         self.assertRaises(MatrixDoesNotMatchBounds, decorator.start_tree)
 
     def test_update(self):
