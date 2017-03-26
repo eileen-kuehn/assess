@@ -61,8 +61,9 @@ class DistanceDecorator(Decorator):
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
                 if self._normalized:
-                    self._data[-1][i][j].append(result[i][j] / float(
-                        event_counts[i][j] + self._tmp_prototype_counts[i][j]))
+                    # changed formula to be consistent with distance definition from thesis
+                    self._data[-1][i][j].append(2 * result[i][j] / float(
+                        event_counts[i][j] + self._tmp_prototype_counts[i][j] + result[i][j]))
                 else:
                     self._data[-1][i][j].append(result[i][j])
 
