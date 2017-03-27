@@ -43,6 +43,10 @@ class StartDistance(Distance):
             return [signature_cache.node_count() for signature_cache in self._signature_cache]
         return [signature_cache.multiplicity() for signature_cache in self._signature_cache]
 
+    def event_count(self, by_event=False):
+        return [signature_cache.multiplicity(by_event=by_event) for signature_cache in
+                self._signature_cache]
+
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None):
         result_dict = dict(zip(prototypes, [1 for _ in range(len(prototypes))]))
