@@ -16,9 +16,12 @@ class StartDistance(Distance):
                                                 supported=self.supported)
                                  for _ in range(self.signature_count)]
         for prototype in prototypes:
-            node_count = prototype.node_count()
             for index in range(self.signature_count):
-                self._monitoring_results_dict[index][prototype] = node_count
+                node_count = signature_prototypes.multiplicity(prototype=prototype)
+                try:
+                    self._monitoring_results_dict[index][prototype] = node_count[index]
+                except TypeError:
+                    self._monitoring_results_dict[index][prototype] = node_count
 
     def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
                         value=None, **kwargs):
@@ -38,7 +41,7 @@ class StartDistance(Distance):
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes is not None:
-            return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
+            return [signature_prototypes.multiplicity(prototype=prototype, by_event=by_event) for prototype in prototypes]
         if signature:
             return [signature_cache.node_count() for signature_cache in self._signature_cache]
         return [signature_cache.multiplicity() for signature_cache in self._signature_cache]
