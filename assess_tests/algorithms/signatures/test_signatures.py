@@ -52,19 +52,34 @@ class TestSignatureFunctionalities(unittest.TestCase):
         node_signature = None
         signatures = set()
         for child in root.children():
-            signatures.add(signature.get_signature(child, root))
+            current_signature = signature.get_signature(child, root)
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 child.name,
+                                 signature.get_signature(root, None) if root is not None else child.name))
         self.assertEqual(len(signatures), 2)
 
         child_node = list(root.children())[2]
         signatures = set()
         for child in child_node.children():
-            signatures.add(signature.get_signature(child, child_node))
+            current_signature = signature.get_signature(child, child_node)
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 child.name,
+                                 signature.get_signature(child_node, None) if child_node is not None else child.name))
         self.assertEqual(len(signatures), 10)
 
         # test if there are "just" 13 different signatures
         signatures = set()
         for node in self.prototype.nodes():
-            signatures.add(signature.get_signature(node, node.parent()))
+            current_signature = signature.get_signature(node, node.parent())
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 node.name,
+                                 signature.get_signature(node.parent(), None) if node.parent() is not None else node.name))
         self.assertEqual(len(signatures), 14)
 
     def test_parent_child_order_topology_signature(self):
