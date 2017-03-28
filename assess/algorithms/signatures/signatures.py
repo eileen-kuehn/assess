@@ -40,20 +40,28 @@ class Signature(object):
         """
         self._prepare_signature(node, node.name)
 
-    def _prepare_signature(self, node, node_id):
+    def _prepare_signature(self, node, node_id, **kwargs):
+        for key, value in kwargs.items():
+            node.__dict__.setdefault('signature_id', {})["%s_%s" % (self, key)] = str(value)
         node.__dict__.setdefault('signature_id', {})[self] = str(node_id)
 
-    def get_signature(self, node, parent):
+    def get_signature(self, node, parent, dimension=None):
         """
         Method returns the signature of the given node. If no signature has been
         assigned so far, it is calculated and attached.
         :param node: The node whose signature should be returned.
+        :param parent: The parent of the node
+        :param dimension: Special dimension of signature if existent
         :return: The signature.
         """
         try:
+            if dimension:
+                return node.signature_id["%s_%s" % (self, dimension)]
             return node.signature_id[self]
         except (AttributeError, KeyError):
             self.prepare_signature(node, parent)
+            if dimension:
+                return node.signature_id["%s_%s" % (self, dimension)]
             return node.signature_id[self]
 
     def finish_node(self, node):
@@ -78,6 +86,10 @@ class ParentChildByNameTopologySignature(Signature):
             hash(self.get_signature(parent, None) if parent is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
+
+    @classmethod
+    def signature_string(cls, node_name, parent_signature):
+        return "%s_%s" % (node_name, hash(parent_signature))
 
 
 class ParentChildOrderTopologySignature(Signature):
