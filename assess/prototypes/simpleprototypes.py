@@ -610,15 +610,16 @@ class Prototype(Tree):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
-                    add_signature(event, ensemble_signature, cache)  # FIXME: turn into ExitEvent
+                    add_signature(event, ensemble_signature, cache, start_support, exit_support)  # FIXME: turn into ExitEvent
                 continue
             else:
                 current_signature = signature.get_signature(event.node, event.node.parent())
-            add_signature(event, current_signature, cache)
+            add_signature(event, current_signature, cache, start_support, exit_support)
         del cache.supported[EmptyProcessEvent]
         return cache
 
-    def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache):
+    def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache,
+                                        start_support=False, exit_support=False):
         if type(event) == ProcessStartEvent:
             cache[ensemble_signature_list, ProcessStartEvent] = {"count": 0}
         if type(event) == ProcessExitEvent:
@@ -632,7 +633,8 @@ class Prototype(Tree):
             cache[ensemble_signature_list, EmptyProcessEvent] = {"count": 0,
                                                                  "duration": 0}
 
-    def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache):
+    def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache,
+                                                  start_support=False, exit_support=False):
         if type(event) == ProcessStartEvent:
             cache[ensemble_signature_list, self, ProcessStartEvent] = {"count": 0}
         if type(event) == ProcessExitEvent:
@@ -646,10 +648,21 @@ class Prototype(Tree):
                 "duration": event.value  # FIXME: what is expected here?
             }
         if type(event) == EmptyProcessEvent:
-            cache[ensemble_signature_list, self, EmptyProcessEvent] = {
-                "count": 0,
-                "duration": 0
-            }
+            # EmptyProcessEvent means, that we are appending some dummy nodes.
+            # Those apparently have Start and Exit events, so add it
+            if start_support:
+                cache[ensemble_signature_list, self, ProcessStartEvent] = {
+                    "count": 0
+                }
+            if exit_support:
+                cache[ensemble_signature_list, self, ProcessExitEvent] = {
+                    "count": 0,
+                    "duration": 0
+                }
+            # cache[ensemble_signature_list, self, EmptyProcessEvent] = {
+            #     "count": 0,
+            #     "duration": 0
+            # }
 
     def event_iter(self, include_marker=True):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
