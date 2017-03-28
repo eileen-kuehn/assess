@@ -45,7 +45,6 @@ class EnsembleMatrixDecorator(Decorator):
         self._data.append([prototype for prototype in self._tmp_prototype_counts[0]])
 
     def _tree_finished(self, result):
-        # TODO: normalise me
         event_counts = self._algorithm.event_counts()  # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
         for j, prototype_result in enumerate(event_counts[0]):
             if self._normalized:
