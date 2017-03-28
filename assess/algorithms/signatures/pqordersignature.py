@@ -29,7 +29,26 @@ class PQOrderSignature(Signature):
         self._prepare_signature(node, algorithm_id, p=p_signature)
 
     def finish_node(self, node):
-        pass
+        result = []
+        if len(node.children_list()) > 0:
+            # we need to consider the insertion of empty nodes
+            ordered_nodes = node.children_list()[-(self._width+1):]
+            ordered_nodes = [node.name for node in ordered_nodes]
+            ordered_nodes.sort()
+            if len(ordered_nodes) > self._width:
+                ordered_nodes.pop(0)
+            for _ in xrange(self._width):
+                algorithm_id = "%s_%s_%s" % (
+                    "_".join(ordered_nodes[-self._width:]),
+                    "",
+                    hash(self.get_signature(node.parent(), None, dimension="p"))
+                )
+                result.append(algorithm_id)
+                if len(ordered_nodes) > 1:
+                    ordered_nodes.pop(0)
+                else:
+                    ordered_nodes.append("")
+        return result
 
     @staticmethod
     def sibling_generator(node):
