@@ -7,6 +7,22 @@ import types
 from assess.exceptions.exceptions import DecoratorNotFoundException
 
 
+class EventWrapper(object):
+    def __init__(self):
+        self._signature = None
+
+    @property
+    def signature(self):
+        return self._signature
+
+    @signature.setter
+    def signature(self, value):
+        if not isinstance(value, list):
+            self._signature = [value]
+        else:
+            self._signature = value
+
+
 class Decorator(object):
     """
     Base decorator for ASSESS to measure different statistics based on methods of algorithm class.
@@ -158,8 +174,13 @@ class Decorator(object):
             # Functionality has been changed to a list of results, so for each result the
             # internal method :py:meth:_event_added is called
             # TODO: maybe inform internal method about the actual event difference per step?
-            for single_result in result[:]:
-                self._event_added(event, single_result)
+            tmp_event = EventWrapper()
+            for index, single_result in enumerate(result[:]):
+                # given the assumption that none of the decorators requires the event but the
+                # signature decorator requires single list of signatures, we will prepare the
+                # event accordingly
+                tmp_event.signature = event.signature[index]
+                self._event_added(tmp_event, single_result)
         return result
 
     def update(self, decorator):
