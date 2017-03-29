@@ -182,3 +182,62 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
 
     def __repr__(self):
         return self.__class__.__name__ + " (count: %d)" % self._count
+
+
+class ParentSiblingSignature(Signature):
+    """
+    This class offers infinite P dimension encoding and fixed width finite-length Q encoding.
+    No further things are performed in here, so no sorting or such
+    """
+    def __init__(self, width=20):
+        Signature.__init__(self)
+        self._width = width
+
+    def prepare_signature(self, node, parent):
+        siblings = self.sibling_generator(node)
+        algorithm_id = "%s_%s_%s" % (
+            "_".join([next(siblings) for _ in xrange(self._width)]),
+            node.name,  # last element as anchor node name
+            hash(self.get_signature(parent, None, dimension="p") if parent is not None else node.name)
+        )
+        p_signature = ParentChildByNameTopologySignature.signature_string(
+            node.name, self.get_signature(parent, None, dimension="p") if parent is not None else node.name)
+        self._prepare_signature(node, algorithm_id, p=p_signature)
+
+    def finish_node(self, node):
+        result = []
+        if len(node.children_list()) > 0:
+            # we need to consider the insertion of empty nodes
+            siblings = [sibling.name for sibling in node.children_list()[-self._width:]]
+            for _ in xrange(self._width):
+                algorithm_id = "%s_%s_%s" % (
+                    "_".join(siblings[-self._width:]),
+                    "",
+                    hash(self.get_signature(node.parent(), None, dimension="p") if node.parent() is not None else node.name)
+                )
+                result.append(algorithm_id)
+                if len(siblings) > 1:
+                    siblings.pop(0)
+                else:
+                    siblings.append("")
+        return result
+
+    @staticmethod
+    def sibling_generator(node):
+        """
+        Generator returns names of left siblings in order. When no more siblings to the left
+        can be found, an empty string is returned.
+
+        :param node: The node to start at
+        :return: Sibling name generator
+        """
+        position = node.node_number()
+        parent = node.parent()
+        neighbors = parent.children_list()[:position] if parent is not None else []
+        for neighbor in reversed(neighbors):
+            yield neighbor.name
+        while True:
+            yield ""
+
+    def __repr__(self):
+        return self.__class__.__name__ + " (width: %d)" % self._width
