@@ -42,3 +42,6 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         self.distance.update_distance(prototypes=self._prototypes, signature_prototypes=None, )
         result = [value for value in self.distance.iter_on_prototypes(self._prototypes)]
         return [list(element) for element in zip(*result)]
+
+    def _event_count(self, by_event=False):
+        return [[count for _ in self.prototypes] for count in self.distance.event_count(by_event=by_event)]

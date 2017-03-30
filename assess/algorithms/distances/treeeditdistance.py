@@ -23,7 +23,7 @@ class TreeEditDistance(Distance):
     def node_count(self, prototypes=None, **kwargs):
         if prototypes is not None:
             # FIXME: dirty hack
-            return [[prototype.node_count() for prototype in prototypes]]
+            return [[prototype.node_count()] for prototype in prototypes]
         return self._tree.node_count()
 
     def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
