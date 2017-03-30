@@ -266,16 +266,18 @@ class TreeDistanceAlgorithm(object):
             # finish node to take care on empty nodes
             node, parent = self.finish_node(event, **kwargs)
             signatures = self._signature.finish_node(node)
-            event.signature = signatures
+            event.signature = []
             for signature in signatures:
                 if self.supported.get(ProcessStartEvent, False):
                     start_event = ProcessStartEvent(event.tme, 0, event.pid)
                     start_event.signature = signature
                     result.append(self.update_distance(start_event, signature, **kwargs))
+                    event.signature.append(signature)
                 if self.supported.get(ProcessExitEvent, False):
                     exit_event = ProcessExitEvent(event.tme, 0, event.pid, event.tme)
                     exit_event.signature = signature
                     result.append(self.update_distance(exit_event, signature, **kwargs))
+                    event.signature.append(signature)
 
             if self.supported.get(ProcessExitEvent, False):
                 signature = self.create_signature(node, parent)
