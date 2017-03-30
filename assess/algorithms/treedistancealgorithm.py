@@ -32,6 +32,7 @@ class TreeDistanceAlgorithm(object):
         self._cache_statistics = cache_statistics
         self._signature_prototypes = self._signature.prototype_signature_cache_class(
             statistics_cls=self._cache_statistics)
+        self._distance = None
 
         self._prototypes = []
         self._tree = None

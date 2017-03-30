@@ -17,7 +17,6 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
                  cache_statistics=SplittedStatistics, **kwargs):
         TreeDistanceAlgorithm.__init__(self, signature=signature,
                                        cache_statistics=cache_statistics, **kwargs)
-        self._distance = None
         self._measured_nodes = set()  # TODO: can those be removed?
         self._distance_builder = distance
         self.supported = {ProcessStartEvent: True, ProcessExitEvent: True, TrafficEvent: False}
