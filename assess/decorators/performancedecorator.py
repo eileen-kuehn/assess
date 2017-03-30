@@ -55,8 +55,13 @@ class PerformanceDecorator(Decorator):
         if event is None:
             return
         end = os.times()
-        for index, start_value in enumerate(self._start):
-            self._data[self._items[index]][-1].append(end[index] - start_value)
+        try:
+            for index, start_value in enumerate(self._start):
+                self._data[self._items[index]][-1].append(end[index] - start_value)
+        except TypeError:
+            # for result lists there is no start, because it has already been processed, so set 0
+            for index, _ in enumerate(end):
+                self._data[self._items[index]][-1].append(0)
         self._start = None
 
     def data(self):
