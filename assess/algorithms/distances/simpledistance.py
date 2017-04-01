@@ -45,7 +45,7 @@ class SimpleDistance(Distance):
         return [match.keys() for match in matches]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
-        result_dict = dict(zip(prototypes, [1 for _ in range(len(prototypes))]))
+        result_dict = dict.fromkeys(prototypes, 1)
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = -1
         # add local node distance to global tree distance
