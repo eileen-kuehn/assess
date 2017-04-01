@@ -57,7 +57,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
             self.assertEqual(current_signature,
                              ParentChildByNameTopologySignature.signature_string(
                                  child.name,
-                                 signature.get_signature(root, None) if root is not None else child.name))
+                                 signature.get_signature(root, None) if root is not None else ""))
         self.assertEqual(len(signatures), 2)
 
         child_node = list(root.children())[2]
@@ -68,7 +68,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
             self.assertEqual(current_signature,
                              ParentChildByNameTopologySignature.signature_string(
                                  child.name,
-                                 signature.get_signature(child_node, None) if child_node is not None else child.name))
+                                 signature.get_signature(child_node, None) if child_node is not None else ""))
         self.assertEqual(len(signatures), 10)
 
         # test if there are "just" 13 different signatures
@@ -79,7 +79,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
             self.assertEqual(current_signature,
                              ParentChildByNameTopologySignature.signature_string(
                                  node.name,
-                                 signature.get_signature(node.parent(), None) if node.parent() is not None else node.name))
+                                 signature.get_signature(node.parent(), None) if node.parent() is not None else ""))
         self.assertEqual(len(signatures), 14)
 
     def test_parent_child_order_topology_signature(self):
@@ -165,10 +165,10 @@ class TestSignatureFunctionalities(unittest.TestCase):
                 signatures.update(signature.finish_node(node.parent()))
         print(signatures)
         self.assertEqual(
-            set(['_root_-5995064038896156292', '_test_-6157006611854717364',
-                 'test_muh_-6157006611854717364', 'test_muh_test_-6157006611854717364',
-                 'muh_test_muh_-6157006611854717364', 'test_muh__-6157006611854717364',
-                 'muh__-6157006611854717364']), signatures)
+            set(['_root_-1', '_test_2219773432643596584',
+                 'test_muh_2219773432643596584', 'test_muh_test_2219773432643596584',
+                 'muh_test_muh_2219773432643596584', 'muh_test__2219773432643596584',
+                 'muh__2219773432643596584']), signatures)
 
     def test_count_signature_for_correct_zero_distance(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=3)
