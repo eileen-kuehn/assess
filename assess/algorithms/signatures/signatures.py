@@ -86,8 +86,8 @@ class ParentChildByNameTopologySignature(Signature):
         )
         self._prepare_signature(node, algorithm_id)
 
-    @classmethod
-    def signature_string(cls, node_name, parent_signature):
+    @staticmethod
+    def signature_string(node_name, parent_signature):
         """
         Parent signature usually looks like name_hash(parent_signature). Thus, we again perform
         a hash from parent_signature, to keep this format.
@@ -158,8 +158,8 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
 
     def prepare_signature(self, node, parent):
         position = node.node_number()
-        neighbors = parent.children_list()[-((len(parent.children_list())-position) +
-                                             self._count):position] if parent is not None else []
+        neighbors = parent.children_list()[(position - self._count if position > self._count else 0):position]\
+            if parent is not None else []
         algorithm_id = "%s_%s_%s" % (
             "_".join(str(node.name) for node in neighbors),
             node.name,
@@ -169,21 +169,18 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
 
     def finish_node(self, node):
         result = []
-        if len(node.children_list()) > 0:
+        if node.children_list():
             # we need to consider the insertion of empty nodes
             parent = node
             parent_signature = hash(self.get_signature(parent, None))
             neighbors = [str(node.name) for node in parent.children_list()[-self._count:]]
-            for _ in xrange(self._count):
+            while neighbors:
                 result.append("%s_%s_%s" % (
                     "_".join(neighbors),
                     "",
                     parent_signature
                 ))
-                # it might happen that we do not have a sufficient amount of nodes, so leave them
-                if len(neighbors) >= self._count:
-                    neighbors.pop(0)
-                #neighbors.append(None)
+                neighbors.pop(0)
         return result
 
     def __repr__(self):
