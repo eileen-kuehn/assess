@@ -3,7 +3,7 @@ This module offers an implementation to determine the performance of distance ca
 The signature creation process is not measured.
 """
 
-import os
+import time
 from assess.decorators.decorator import Decorator
 
 
@@ -14,16 +14,11 @@ class DistancePerformanceDecorator(Decorator):
     The Decorator differentiates between accumulated and single measurements.
 
     Format looks like this:
-    {
-        "user time": [
-            [v1t1, ..., vnt1],
-            ...,
-            [v1tn, ..., vntn]],
-        "system time": [...],
-        "children's user time": [...],
-        "children's system time": [...],
-        "elapsed real time": [...]
-    }
+    [
+        [v1t1, ..., vnt1],
+        ...,
+        [v1tn, ..., vntn]]
+    ]
 
     Also for accumulated values, you can expect to have a list in list.
     """
@@ -32,8 +27,6 @@ class DistancePerformanceDecorator(Decorator):
             Decorator.__init__(self, name="accumulated_distance_performance")
         else:
             Decorator.__init__(self, name="distance_performance")
-        self._items = ["user time", "system time", "children's user time", "children's system time",
-                       "elapsed real time"]
         self._data = None
         self._start = None
         self._accumulated = accumulated
@@ -44,10 +37,9 @@ class DistancePerformanceDecorator(Decorator):
 
     def _tree_started(self):
         if self._data is None:
-            self._data = {item: [[]] for item in self._items}
+            self._data = [[]]
         else:
-            for item in self._data.values():
-                item.append([])
+            self._data.append([])
 
     def update_distance(self, event, signature, **kwargs):
         """
@@ -58,39 +50,29 @@ class DistancePerformanceDecorator(Decorator):
         :param kwargs: Additional arguments
         :return: Updated distance
         """
-        start = os.times()
+        start = time.time()
         result = self._algorithm.__class__.update_distance(
             self._algorithm,
             event,
             signature,
             **kwargs
         )
-        end = os.times()
+        end = time.time()
 
-        for index, start_value in enumerate(start):
-            self._data[self._items[index]][-1].append(end[index] - start_value)
+        self._data[-1].append(end-start)
         return result
 
     def data(self):
         if self._data:
             if self._accumulated:
-                result = {item: [[]] for item in self._items}
-                for key in self._data.keys():
-                    if len(self._data[key][0]) > 0:
-                        result[key] = [[sum(elements)] for elements in self._data[key]]
-                    else:
-                        result[key] = [[]]
+                result = [[sum(elem) if len(elem) > 0 else None] for elem in self._data]
                 return result
             else:
                 return self._data
         return None
 
     def _update(self, decorator):
-        for key in self._data.keys():
-            if self._accumulated:
-                self._data[key] = self._data[key] + decorator.data()[key]
-            else:
-                self._data[key].extend(decorator.data()[key])
+        self._data.extend(decorator._data)
 
     def __iadd__(self, other):
         return NotImplemented

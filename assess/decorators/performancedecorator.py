@@ -3,7 +3,7 @@ This module provides a decorator implementation for getting the overall performa
 the distance measurement process as well as the signature creation process.
 """
 
-import os
+import time
 
 from assess.decorators.decorator import Decorator
 
@@ -13,16 +13,11 @@ class PerformanceDecorator(Decorator):
     The PerformanceDecorator measures the time from start to end of processing of a single event.
 
     Format looks like this:
-    {
-        "user time": [
-            [v1t1, ..., vnt1],
-            ...,
-            [v1tn, ..., vntn]],
-        "system time": [...],
-        "children's user time": [...],
-        "children's system time": [...],
-        "elapsed real time": [...]
-    }
+    [
+        [v1t1, ..., vnt1],
+        ...,
+        [v1tn, ..., vntn]]
+    ]
 
     Also for accumulated values, you can expect to have a list in list.
     """
@@ -31,8 +26,6 @@ class PerformanceDecorator(Decorator):
             Decorator.__init__(self, name="accumulated_performance")
         else:
             Decorator.__init__(self, name="performance")
-        self._items = ["user time", "system time", "children's user time", "children's system time",
-                       "elapsed real time"]
         self._data = None
         self._start = None
         self._accumulated = accumulated
@@ -43,47 +36,35 @@ class PerformanceDecorator(Decorator):
 
     def _tree_started(self):
         if self._data is None:
-            self._data = {item: [[]] for item in self._items}
+            self._data = [[]]
         else:
-            for item in self._data.values():
-                item.append([])
+            self._data.append([])
 
     def _event_will_be_added(self):
-        self._start = os.times()
+        self._start = time.time()
 
     def _event_added(self, event, result):
         if event is None:
             return
-        end = os.times()
+        end = time.time()
         try:
-            for index, start_value in enumerate(self._start):
-                self._data[self._items[index]][-1].append(end[index] - start_value)
+            self._data[-1].append(end-self._start)
         except TypeError:
             # for result lists there is no start, because it has already been processed, so set 0
-            for index, _ in enumerate(end):
-                self._data[self._items[index]][-1].append(0)
+            self._data[-1].append(0)
         self._start = None
 
     def data(self):
         if self._data:
             if self._accumulated:
-                result = {item: [[]] for item in self._items}
-                for key in self._data.keys():
-                    if len(self._data[key][0]) > 0:
-                        result[key] = [[sum(elements)] for elements in self._data[key]]
-                    else:
-                        result[key] = [[]]
+                result = [[sum(elem) if len(elem) > 0 else None] for elem in self._data]
                 return result
             else:
                 return self._data
         return None
 
     def _update(self, decorator):
-        for key in self._data.keys():
-            if self._accumulated:
-                self._data[key] = self._data[key] + decorator.data()[key]
-            else:
-                self._data[key].extend(decorator.data()[key])
+        self._data.extend(decorator._data)
 
     def __iadd__(self, other):
         return NotImplemented
