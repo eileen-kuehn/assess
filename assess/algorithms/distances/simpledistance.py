@@ -102,7 +102,7 @@ class SimpleDistance2(Distance):
                 in monitoring_result.values()]
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None):
-        result_dict = dict(zip(prototypes, [1] * len(prototypes)))
+        result_dict = dict.fromkeys(prototypes, 1)
         for prototype_node in prototype_nodes:
             result_dict[prototype_node] = 0
         # add local node distance to global tree distance

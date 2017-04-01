@@ -55,7 +55,7 @@ class StartExitSimilarity(Distance):
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None, event_type=None):
-        result_dict = dict(zip(prototypes, [0] * len(prototypes)))
+        result_dict = dict.fromkeys(prototypes, 0)
         for prototype_node in prototype_nodes:
             # FIXME: Ich denke die 2* muss entfernt werden
             if self._signature_cache[index].multiplicity(signature=node_signature, event_type=ProcessExitEvent) < \

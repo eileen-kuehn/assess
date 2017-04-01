@@ -52,7 +52,7 @@ class StartDistance(Distance):
 
     def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
                           value=None):
-        result_dict = dict(zip(prototypes, [1 for _ in range(len(prototypes))]))
+        result_dict = dict.fromkeys(prototypes, 1)
 
         for prototype_node in prototype_nodes:
             # reduce distance as long as the expected node count has not been reached

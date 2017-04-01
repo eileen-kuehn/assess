@@ -124,10 +124,15 @@ class Distance(object):
     @staticmethod
     def _add_result_dicts(base=None, to_add=None, index=None):
         if index is None:
-            result = []
+            result = []  # ensemble
             for index, element in enumerate(base):
-                result.append(dict((key, element.setdefault(key, 0) + to_add[index].setdefault(
-                    key, 0)) for key in set(element.keys() + to_add[index].keys())))
+                result.append(
+                    dict(
+                        (
+                            key,
+                            element.get(key, 0) + to_add[index].get(key, 0)
+                        )
+                        for key in set(element.keys() + to_add[index].keys())))
         else:
             result = base
             for element in to_add:

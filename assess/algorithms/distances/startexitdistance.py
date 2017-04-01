@@ -95,7 +95,7 @@ class StartExitDistance(Distance):
         base = self.weights().get(event_type, 0)
         node_base = self._weight
         property_base = base - node_base
-        result_dict = dict(zip(prototypes, [base for _ in range(len(prototypes))]))
+        result_dict = dict.fromkeys(prototypes, base)
 
         for prototype_node in prototype_nodes:
             if prototype_nodes[prototype_node] is None:

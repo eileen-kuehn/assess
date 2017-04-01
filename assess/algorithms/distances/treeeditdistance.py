@@ -34,7 +34,7 @@ class TreeEditDistance(Distance):
     def finish_distance(self, prototypes, signature_prototypes):
         tree = self._tree
 
-        result_dict = dict(zip(prototypes, [0 for _ in range(len(prototypes))]))
+        result_dict = dict.fromkeys(prototypes, 0)
         for prototype in prototypes:
             result_dict[prototype] = self._calculate_distance(prototype.root(), tree.root())
 
