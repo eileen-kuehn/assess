@@ -62,6 +62,20 @@ class SignaturePerformanceDecorator(Decorator):
 
         for index, start_value in enumerate(start):
             self._data[self._items[index]][-1].append(end[index] - start_value)
+
+    def create_signature_for_finished_node(self, node):
+        """
+        This method encapsulates the signature creation process for nodes that are finished.
+        Thus those signature that need to be appended at the end of sibling lists.
+
+        :param node:
+        :return:
+        """
+        start = time.time()
+        result = self._algorithm.__class__.create_signature_for_finished_node(self._algorithm, node)
+        end = time.time()
+
+        self._data[-1].append(end-start)
         return result
 
     def data(self):

@@ -398,6 +398,15 @@ class TreeDistanceAlgorithm(object):
         node = self._tree_dict.get_data(value=event.tme, key=event.pid)
         return node, parent
 
+    def create_signature_for_finished_node(self, node):
+        """
+        Method to create the signature for finished nodes (missing nodes for windowed signatures).
+
+        :param node:
+        :return:
+        """
+        return self._signature.finish_node(node)
+
     def create_signature(self, node, parent):
         """
         Method to create the signature of a node whilst considering its parent.
