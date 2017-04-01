@@ -66,6 +66,45 @@ class Signature(object):
     def finish_node(self, node):
         return []
 
+    def sibling_generator(self, node, width):
+        """
+        Generator returns names of left siblings in order. When no more siblings to the left
+        can be found, an empty string is returned.
+
+        :param node: The node to start at
+        :param width: number of siblings to return
+        :return: Sibling names
+        :rtype: generator
+        """
+        position = node.node_number()
+        parent = node.parent()
+        return self._sibling_generator(parent, position, width)
+
+    def sibling_finish_generator(self, parent, width):
+        return self._sibling_generator(parent, None, width)
+
+    @staticmethod
+    def _sibling_generator(parent, position, width):
+        if parent is None:
+            for _ in xrange(width):
+                yield ''
+        elif width == 0:
+            pass
+        elif position is None:
+            child_list = parent.children_list()
+            for node in reversed(parent.child_list[-width:]):
+                yield node.name
+            for _ in xrange(width - len(child_list)):
+                yield ''
+        elif position >= width:
+            for node in reversed(parent.children_list()[position - width:position]):
+                yield node.name
+        else:
+            for node in reversed(parent.children_list()[:position]):
+                yield node.name
+            for _ in xrange(width - position):
+                yield ''
+
     def __repr__(self):
         return self.__class__.__name__
 
@@ -82,7 +121,7 @@ class ParentChildByNameTopologySignature(Signature):
     def prepare_signature(self, node, parent):
         algorithm_id = self.__class__.signature_string(
             node.name,
-            self.get_signature(parent, None) if parent is not None else node.name
+            self.get_signature(parent, None) if parent is not None else ''
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -197,50 +236,33 @@ class ParentSiblingSignature(Signature):
         self._width = width
 
     def prepare_signature(self, node, parent):
-        siblings = self.sibling_generator(node)
-        parent_signature = self.get_signature(parent, None, dimension="p") if parent is not None else node.name
+        siblings = self.sibling_generator(node, self._width)
+        parent_signature = self.get_signature(parent, None, dimension="p") if parent is not None else ''
         p_signature = ParentChildByNameTopologySignature.signature_string(node.name, parent_signature)
         algorithm_id = "%s_%s" % (
-            "_".join([next(siblings) for _ in xrange(self._width)]),
+            "_".join(siblings),
             p_signature
         )
         self._prepare_signature(node, algorithm_id, p=p_signature)
 
     def finish_node(self, node):
+        # node is the PARENT of the current hierarchy :P
         result = []
-        if len(node.children_list()) > 0:
+        p_signature = ParentChildByNameTopologySignature.signature_string(
+            '',
+            self.get_signature(node, None, dimension="p")
+        )
+        if node.children_list():
             # we need to consider the insertion of empty nodes
-            siblings = [sibling.name for sibling in node.children_list()[-self._width:]]
-            for _ in xrange(self._width):
-                algorithm_id = "%s_%s_%s" % (
-                    "_".join(siblings[-self._width:]),
-                    "",
-                    hash(self.get_signature(node.parent(), None, dimension="p") if node.parent() is not None else node.name)
+            siblings = list(self.sibling_finish_generator(node, self._width))
+            while siblings:
+                algorithm_id = "%s_%s" % (
+                    "_".join(siblings),
+                    p_signature
                 )
                 result.append(algorithm_id)
-                if len(siblings) > 1:
-                    siblings.pop(0)
-                else:
-                    siblings.append("")
+                siblings.pop(0)
         return result
-
-    @staticmethod
-    def sibling_generator(node):
-        """
-        Generator returns names of left siblings in order. When no more siblings to the left
-        can be found, an empty string is returned.
-
-        :param node: The node to start at
-        :return: Sibling name generator
-        """
-        position = node.node_number()
-        parent = node.parent()
-        neighbors = parent.children_list()[:position] if parent is not None else []
-        while position > 0:
-            yield neighbors[position-1].name
-            position -= 1
-        while True:
-            yield ""
 
     def __repr__(self):
         return self.__class__.__name__ + " (width: %d)" % self._width

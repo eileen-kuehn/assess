@@ -16,29 +16,27 @@ class PQGramSignature(Signature):
 
     def prepare_signature(self, node, parent):
         parents = self.parent_generator(node)
-        siblings = self.sibling_generator(node)
+        siblings = self.sibling_generator(node, self._width)
         # Attention: this ordering is different from original pq-grams!
-        algorithm_id = "_".join(reversed([next(parents) for _ in range(self._height)])) + \
+        algorithm_id = "_".join([next(parents) for _ in range(self._height)]) + \
                        ("_%s_" % node.name) + \
                        "_".join([next(siblings) for _ in range(self._width)])
         self._prepare_signature(node, algorithm_id)
 
     def finish_node(self, node):
+        # node is the PARENT of the current hierarchy ^^
         result = []
-        if len(node.children_list()) > 0:
+        if node.children_list():
             # take the last node to initialize the generators
-            anchor = node.children_list()[-1]
-            parent_generator = self.parent_generator(anchor)
-            parents = list(reversed([next(parent_generator) for _ in range(self._height)]))
-            siblings = node.children_list()[-self._width:]
-
-            for _ in range(self._width):
-                algorithm_id = "_".join(parents) + ("_%s_" % "") + \
-                               "_".join(str(sibling.name) if sibling is not None else "" for sibling in siblings)
+            parent_generator = self.parent_generator(node)
+            parents = [node] + [next(parent_generator) for _ in range(self._height-1)]
+            siblings = list(self.sibling_finish_generator(node, self._width))
+            while siblings:
+                algorithm_id = "_".join(parents) + \
+                               ("_%s_" % "") + \
+                               "_".join(siblings)
                 result.append(algorithm_id)
-                if len(siblings) >= self._width:
-                    siblings.pop(0)
-                siblings.append(None)
+                siblings.pop(0)
         return result
 
     @staticmethod
@@ -54,25 +52,11 @@ class PQGramSignature(Signature):
             try:
                 root = root.parent()
             except AttributeError:
-                root = None
-            yield root.name if root is not None else ""
-
-    @staticmethod
-    def sibling_generator(node):
-        """
-        Generator returns names of left siblings in order. When no more siblings to the left
-        can be found, an empty string is returned.
-
-        :param node: The node to start at
-        :return: Sibling name generator
-        """
-        position = node.node_number()
-        parent = node.parent()
-        neighbors = parent.children_list()[:position] if parent is not None else []
-        for neighbor in reversed(neighbors):
-            yield neighbor.name
+                break
+            else:
+                yield root.name
         while True:
-            yield ""
+            yield ''
 
     def __repr__(self):
         return self.__class__.__name__ + " (p=%d, q=%d)" % (self._height, self._width)
