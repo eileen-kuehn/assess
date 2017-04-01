@@ -92,7 +92,7 @@ class Signature(object):
             pass
         elif position is None:
             child_list = parent.children_list()
-            for node in reversed(parent.child_list[-width:]):
+            for node in reversed(child_list[-width:]):
                 yield node.name
             for _ in xrange(width - len(child_list)):
                 yield ''
@@ -150,7 +150,7 @@ class ParentChildOrderTopologySignature(Signature):
         algorithm_id = "%s.%d_%s" % (
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             node.node_number(),
-            hash(parent_signature if parent_signature is not None else node.name)
+            hash(parent_signature if parent_signature is not None else "")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -180,7 +180,7 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             grouped_count,
             node.name,
-            hash(parent_signature if parent_signature is not None else node.name)
+            hash(parent_signature if parent_signature is not None else "")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -202,7 +202,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         algorithm_id = "%s_%s_%s" % (
             "_".join(str(node.name) for node in neighbors),
             node.name,
-            hash(self.get_signature(parent, None) if parent is not None else node.name)
+            hash(self.get_signature(parent, None) if parent is not None else "")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -212,14 +212,14 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
             # we need to consider the insertion of empty nodes
             parent = node
             parent_signature = hash(self.get_signature(parent, None))
-            neighbors = [str(node.name) for node in parent.children_list()[-self._count:]]
+            neighbors = list(self.sibling_finish_generator(node, self._count))
             while neighbors:
                 result.append("%s_%s_%s" % (
                     "_".join(neighbors),
                     "",
                     parent_signature
                 ))
-                neighbors.pop(0)
+                neighbors.pop()
         return result
 
     def __repr__(self):
@@ -261,7 +261,7 @@ class ParentSiblingSignature(Signature):
                     p_signature
                 )
                 result.append(algorithm_id)
-                siblings.pop(0)
+                siblings.pop()
         return result
 
     def __repr__(self):

@@ -29,14 +29,14 @@ class PQGramSignature(Signature):
         if node.children_list():
             # take the last node to initialize the generators
             parent_generator = self.parent_generator(node)
-            parents = [node] + [next(parent_generator) for _ in range(self._height-1)]
+            parents = [node.name] + [next(parent_generator) for _ in range(self._height-1)]
             siblings = list(self.sibling_finish_generator(node, self._width))
             while siblings:
                 algorithm_id = "_".join(parents) + \
                                ("_%s_" % "") + \
                                "_".join(siblings)
                 result.append(algorithm_id)
-                siblings.pop(0)
+                siblings.pop()
         return result
 
     @staticmethod
@@ -54,7 +54,10 @@ class PQGramSignature(Signature):
             except AttributeError:
                 break
             else:
-                yield root.name
+                try:
+                    yield root.name
+                except AttributeError:
+                    break
         while True:
             yield ''
 
