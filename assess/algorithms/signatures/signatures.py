@@ -77,14 +77,22 @@ class ParentChildByNameTopologySignature(Signature):
     Attention: The signature does not take care on the ordering of nodes.
     """
     def prepare_signature(self, node, parent):
-        algorithm_id = "%s_%s" % (
+        algorithm_id = self.__class__.signature_string(
             node.name,
-            hash(self.get_signature(parent, None) if parent is not None else node.name)
+            self.get_signature(parent, None) if parent is not None else node.name
         )
         self._prepare_signature(node, algorithm_id)
 
     @classmethod
     def signature_string(cls, node_name, parent_signature):
+        """
+        Parent signature usually looks like name_hash(parent_signature). Thus, we again perform
+        a hash from parent_signature, to keep this format.
+
+        :param node_name:
+        :param parent_signature:
+        :return:
+        """
         return "%s_%s" % (node_name, hash(parent_signature))
 
 
