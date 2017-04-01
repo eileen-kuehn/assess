@@ -104,11 +104,10 @@ class ParentChildOrderTopologySignature(Signature):
     their values.
     """
     def prepare_signature(self, node, parent):
-        count = node.node_number()
         parent_signature = self.get_signature(parent, None) if parent is not None else None
         algorithm_id = "%s.%d_%s" % (
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
-            count,
+            node.node_number(),
             hash(parent_signature if parent_signature is not None else node.name)
         )
         self._prepare_signature(node, algorithm_id)
@@ -170,14 +169,14 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         if len(node.children_list()) > 0:
             # we need to consider the insertion of empty nodes
             parent = node
-            neighbors = parent.children_list()[-self._count:]
-            for _ in range(self._count):
-                algorithm_id = "%s_%s_%s" % (
-                    "_".join(str(node.name) if node is not None else "" for node in neighbors),
+            parent_signature = hash(self.get_signature(parent, None))
+            neighbors = [str(node.name) for node in parent.children_list()[-self._count:]]
+            for _ in xrange(self._count):
+                result.append("%s_%s_%s" % (
+                    "_".join(neighbors),
                     "",
-                    hash(self.get_signature(parent, None))
-                )
-                result.append(algorithm_id)
+                    parent_signature
+                ))
                 # it might happen that we do not have a sufficient amount of nodes, so leave them
                 if len(neighbors) >= self._count:
                     neighbors.pop(0)
@@ -199,13 +198,12 @@ class ParentSiblingSignature(Signature):
 
     def prepare_signature(self, node, parent):
         siblings = self.sibling_generator(node)
-        algorithm_id = "%s_%s_%s" % (
+        parent_signature = self.get_signature(parent, None, dimension="p") if parent is not None else node.name
+        p_signature = ParentChildByNameTopologySignature.signature_string(node.name, parent_signature)
+        algorithm_id = "%s_%s" % (
             "_".join([next(siblings) for _ in xrange(self._width)]),
-            node.name,  # last element as anchor node name
-            hash(self.get_signature(parent, None, dimension="p") if parent is not None else node.name)
+            p_signature
         )
-        p_signature = ParentChildByNameTopologySignature.signature_string(
-            node.name, self.get_signature(parent, None, dimension="p") if parent is not None else node.name)
         self._prepare_signature(node, algorithm_id, p=p_signature)
 
     def finish_node(self, node):
@@ -238,8 +236,9 @@ class ParentSiblingSignature(Signature):
         position = node.node_number()
         parent = node.parent()
         neighbors = parent.children_list()[:position] if parent is not None else []
-        for neighbor in reversed(neighbors):
-            yield neighbor.name
+        while position > 0:
+            yield neighbors[position-1].name
+            position -= 1
         while True:
             yield ""
 
