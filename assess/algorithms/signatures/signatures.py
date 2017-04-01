@@ -41,9 +41,12 @@ class Signature(object):
         self._prepare_signature(node, node.name)
 
     def _prepare_signature(self, node, node_id, **kwargs):
-        node.__dict__.setdefault('signature_id', {})[self] = {None: str(node_id)}
-        for key, value in kwargs.items():
-            node.__dict__.setdefault('signature_id', {})[self][key] = str(value)
+        try:
+            node_signature_ids = node.signature_id
+        except AttributeError:
+            node.signature_id = node_signature_ids = {}
+        node_signature_ids[self] = self_signature_ids = {None: node_id}
+        self_signature_ids.update(kwargs)
 
     def get_signature(self, node, parent, dimension=None):
         """
