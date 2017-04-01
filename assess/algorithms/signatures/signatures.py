@@ -41,9 +41,9 @@ class Signature(object):
         self._prepare_signature(node, node.name)
 
     def _prepare_signature(self, node, node_id, **kwargs):
+        node.__dict__.setdefault('signature_id', {})[self] = {None: str(node_id)}
         for key, value in kwargs.items():
-            node.__dict__.setdefault('signature_id', {})["%s_%s" % (self, key)] = str(value)
-        node.__dict__.setdefault('signature_id', {})[self] = str(node_id)
+            node.__dict__.setdefault('signature_id', {})[self][key] = str(value)
 
     def get_signature(self, node, parent, dimension=None):
         """
@@ -55,14 +55,10 @@ class Signature(object):
         :return: The signature.
         """
         try:
-            if dimension:
-                return node.signature_id["%s_%s" % (self, dimension)]
-            return node.signature_id[self]
+            return node.signature_id[self][dimension]
         except (AttributeError, KeyError):
             self.prepare_signature(node, parent)
-            if dimension:
-                return node.signature_id["%s_%s" % (self, dimension)]
-            return node.signature_id[self]
+            return node.signature_id[self][dimension]
 
     def finish_node(self, node):
         return []
