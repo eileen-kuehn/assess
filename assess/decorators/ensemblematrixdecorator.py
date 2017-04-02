@@ -58,7 +58,8 @@ class EnsembleMatrixDecorator(Decorator):
         # result looks like [[p1e1, ..., pne1], ..., [p1en, ..., pnen]]
         event_counts = self._algorithm.event_counts()  # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
         # check if we have equal number of events for different ensembles
-        assert 1 in set([len(set(elem)) for elem in zip(*event_counts)])
+        # FIXME: removed assertion for equal count of events
+        # assert 1 in set([len(set(elem)) for elem in zip(*event_counts)])
 
         tmp_differences = [0 for _ in self._algorithm.prototypes]
         # accumulate all differences first
