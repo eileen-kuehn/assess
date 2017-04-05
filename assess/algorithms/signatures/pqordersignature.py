@@ -35,15 +35,16 @@ class PQOrderSignature(Signature):
         if node.children_list():
             # we need to consider the insertion of empty nodes
             ordered_nodes = list(self.sibling_finish_generator(node, self._width + 1))
-            ordered_nodes.sort()
-            ordered_nodes.pop(0)
-            while ordered_nodes:
-                algorithm_id = "%s_%s" % (
-                    "_".join(ordered_nodes),
-                    p_signature
-                )
-                result.append(algorithm_id)
+            if ordered_nodes:
+                ordered_nodes.sort()
                 ordered_nodes.pop(0)
+                while ordered_nodes:
+                    algorithm_id = "%s_%s" % (
+                        "_".join(ordered_nodes),
+                        p_signature
+                    )
+                    result.append(algorithm_id)
+                    ordered_nodes.pop(0)
         return result
 
     def __repr__(self):
