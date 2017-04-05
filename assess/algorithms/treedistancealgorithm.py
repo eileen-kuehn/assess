@@ -376,6 +376,7 @@ class TreeDistanceAlgorithm(object):
                     pid=event.pid,
                     ppid=event.ppid
                 )
+                node.attribute = True
                 # nodes don't have to be remembered to be loaded from cache, so skip this
         except AttributeError:
             raise TreeNotStartedException()
