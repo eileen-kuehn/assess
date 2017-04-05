@@ -76,34 +76,40 @@ class Signature(object):
         :return: Sibling names
         :rtype: generator
         """
-        position = node.node_number()
-        parent = node.parent()
-        return self._sibling_generator(parent, position, width)
+        if hasattr(node, "attribute"):
+            return self._sibling_generator(None, 0, width)
+        else:
+            position = node.node_number()
+            parent = node.parent()
+            return self._sibling_generator(parent, position, width)
 
     def sibling_finish_generator(self, parent, width):
         return self._sibling_generator(parent, None, width)
 
     @staticmethod
     def _sibling_generator(parent, position, width):
-        if parent is None:
-            for _ in xrange(width):
-                yield ''
-        elif width == 0:
-            pass
-        elif position is None:
-            child_list = parent.children_list()
-            for node in reversed(child_list[-width:]):
-                yield node.name
-            for _ in xrange(width - len(child_list)):
-                yield ''
-        elif position >= width:
-            for node in reversed(parent.children_list()[position - width:position]):
-                yield node.name
-        else:
-            for node in reversed(parent.children_list()[:position]):
-                yield node.name
-            for _ in xrange(width - position):
-                yield ''
+        returned_nodes = 0
+        if parent and width > 0:
+            if position is None:
+                child_list = parent.children_list()
+                for node in reversed(child_list):
+                    if not hasattr(node, "attribute"):
+                        returned_nodes += 1
+                        yield node.name
+                    if returned_nodes >= width:
+                        break
+                # handle special case that children are attributes only
+                if returned_nodes == 0:
+                    return
+            else:
+                for node in reversed(parent.children_list()[:position]):
+                    if not hasattr(node, "attribute"):
+                        returned_nodes += 1
+                        yield node.name
+                    if returned_nodes >= width:
+                        break
+        for _ in xrange(width - returned_nodes):
+            yield ''
 
     def __repr__(self):
         return self.__class__.__name__
