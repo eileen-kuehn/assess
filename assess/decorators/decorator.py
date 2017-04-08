@@ -45,6 +45,12 @@ class Decorator(object):
         elif "data" in name:
             from assess.decorators.datadecorator import DataDecorator
             return DataDecorator()
+        elif "normalized_ensembles" in name:
+            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            return EnsembleMatrixDecorator(normalized=True)
+        elif "ensembles" in name:
+            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            return EnsembleMatrixDecorator(normalized=False)
         elif "normalized_distances" in name:
             from assess.decorators.distancedecorator import DistanceDecorator
             return DistanceDecorator(normalized=True)
