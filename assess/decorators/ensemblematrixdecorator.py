@@ -77,6 +77,5 @@ class EnsembleMatrixDecorator(Decorator):
 
     def __iadd__(self, other):
         for tree_idx, tree_values in enumerate(other._data):
-            for ensemble_idx, ensemble_values in enumerate(tree_values):
-                self._data[tree_idx][ensemble_idx].extend(ensemble_values)
+            self._data[tree_idx].extend(tree_values)
         return self
