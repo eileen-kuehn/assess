@@ -13,6 +13,9 @@ class EnsembleSignatureList(list):
     def __repr__(self):
         return "%s%s" % (self.__class__.__name__, list.__repr__(self))
 
+    def __hash__(self):
+        return hash(tuple(self))
+
 
 class EnsembleSignature(Signature):
     signature_cache_class = EnsembleSignatureCache
