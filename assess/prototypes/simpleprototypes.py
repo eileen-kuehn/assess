@@ -629,9 +629,11 @@ class Prototype(Tree):
             cache[ensemble_signature_list, TrafficEvent] = {"count": 0,
                                                             "duration": event.value}
         if type(event) == EmptyProcessEvent:
-            assert False
-            cache[ensemble_signature_list, EmptyProcessEvent] = {"count": 0,
-                                                                 "duration": 0}
+            if start_support:
+                cache[ensemble_signature_list, ProcessStartEvent] = {"count": 0}
+            if exit_support:
+                cache[ensemble_signature_list, ProcessExitEvent] = {"count": 0,
+                                                                    "duration": 0}
 
     def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache,
                                                   start_support=False, exit_support=False):
