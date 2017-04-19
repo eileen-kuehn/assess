@@ -3,6 +3,7 @@ This module implements ensemble version of SignatureCache as well as PrototypeSi
 enable ensemble based algorithms.
 """
 import logging
+from itertools import izip_longest
 
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
@@ -47,8 +48,7 @@ class EnsembleSignatureCache(object):
                 self._signature_dicts[index][token, event_type] = value
 
     def __iter__(self):
-        for signature_dict in self._signature_dicts:
-            yield signature_dict
+        return izip_longest(*self._signature_dicts)
 
     def get(self, signature):
         """
