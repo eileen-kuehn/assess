@@ -34,6 +34,8 @@ class EnsembleDistanceDecorator(Decorator):
         self._data = []
         self._normalized = normalized
         self._tmp_prototype_counts = None
+        self._last_result = None
+        self._mismatches = None
 
     def data(self):
         return self._data
@@ -47,24 +49,35 @@ class EnsembleDistanceDecorator(Decorator):
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
             self._tmp_prototype_counts = [[mean_ensemble_distance(value) for value in zip(*self._tmp_prototype_counts)]]
+        self._last_result = self._tmp_prototype_counts
+        self._mismatches = [[0 for _ in self._algorithm.prototypes]]
+
+    def _tree_finished(self, result):
+        event_counts = [mean_ensemble_distance(value) for value in zip(*self._algorithm.event_counts())]
+        distance_data = [[mean_ensemble_distance(value) for value in
+                          self.algorithm.distance.iter_on_prototypes(self._algorithm.prototypes)]]
+
+        i = 0
+        for j, prototype_result in enumerate(event_counts):
+            self._data[-1][i][j].append(normalise_distance(
+                distance=distance_data[i][j],
+                size_prototype=self._tmp_prototype_counts[i][j],
+                size_tree=event_counts[j]))
 
     def _event_added(self, event, result):
         # result looks like [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
         # formatted_result looks like [[v1p1, ..., vnpn]]
         formatted_result = [[mean_ensemble_distance(value) for value in zip(*result)]]
-        # event counts look like [[p1, ..., pn]]
-        event_counts = [[mean_ensemble_distance(value) for value in zip(*self._algorithm.event_counts())]]
 
-        for i, ensemble_result in enumerate(formatted_result):
-            for j, prototype_result in enumerate(ensemble_result):
-                if self._normalized:
-                    # changed formula to be consistent with distance definition from thesis
-                    self._data[-1][i][j].append(normalise_distance(
-                        distance=result[i][j],
-                        size_tree=event_counts[i][j],
-                        size_prototype=self._tmp_prototype_counts[i][j]))
-                else:
-                    self._data[-1][i][j].append(result[i][j])
+        for ensemble_idx, ensemble in enumerate(formatted_result):
+            for prototype_index, prototype in enumerate(ensemble):
+                if prototype > self._last_result[ensemble_idx][prototype_index]:
+                    self._mismatches[ensemble_idx][prototype_index] += prototype - self._last_result[ensemble_idx][prototype_index]
+        for ensemble_idx, ensemble in enumerate(self._mismatches):
+            for prototype_idx, prototype in enumerate(ensemble):
+                self._data[-1][ensemble_idx][prototype_idx].append(
+                    prototype / float(self._tmp_prototype_counts[ensemble_idx][prototype_idx]))
+        self._last_result = formatted_result
 
     def _update(self, decorator):
         self._data.extend(decorator.data())
