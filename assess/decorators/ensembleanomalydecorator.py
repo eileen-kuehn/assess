@@ -52,9 +52,9 @@ class EnsembleAnomalyDecorator(Decorator):
         if self._tmp_event_weights is None:
             self._tmp_event_weights = self._algorithm.distance.weights()
         self._last_result = self._tmp_prototype_counts
-        self._mismatches = [[0 for _ in range(len(self._tmp_prototype_counts[0]))]]
-        self._enhanced_mismatches = [[0 for _ in range(len(self._tmp_prototype_counts[0]))]]
-        self._start_mismatch_counter = [[0 for _ in range(len(self._tmp_prototype_counts[0]))]]
+        self._mismatches = [[0 for _ in self._algorithm.prototypes]]
+        self._enhanced_mismatches = [[0 for _ in self._algorithm.prototypes]]
+        self._start_mismatch_counter = [[0 for _ in self._algorithm.prototypes]]
 
     def _tree_finished(self, result):
         # Format for result: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
