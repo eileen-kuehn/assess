@@ -8,6 +8,7 @@ from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyE
     NodeNotRemovedException, NodeNotFoundException
 from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent, EmptyProcessEvent
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignature import *
 
 from gnmutils.objectcache import ObjectCache
 from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
@@ -581,12 +582,20 @@ class Prototype(Tree):
     def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False,
                  cache=None, statistics_cls=None):
         if cache is None:
-            cache = SignatureCache(
-                {
-                    ProcessStartEvent: start_support,
-                    ProcessExitEvent: exit_support,
-                    TrafficEvent: traffic_support
-                }, statistics_cls=statistics_cls)
+            if isinstance(signature, EnsembleSignature):
+                cache = EnsembleSignatureCache(
+                    {
+                        ProcessStartEvent: start_support,
+                        ProcessExitEvent: exit_support,
+                        TrafficEvent: traffic_support
+                    }, statistics_cls=statistics_cls)
+            else:
+                cache = SignatureCache(
+                    {
+                        ProcessStartEvent: start_support,
+                        ProcessExitEvent: exit_support,
+                        TrafficEvent: traffic_support
+                    }, statistics_cls=statistics_cls)
         return self.to_prototype(signature=signature, start_support=start_support,
                                  exit_support=exit_support, traffic_support=traffic_support,
                                  cache=cache, statistics_cls=statistics_cls, _is_prototype=False)
