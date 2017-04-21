@@ -80,10 +80,10 @@ class DistanceMatrixDecorator(Decorator):
                 for j, prototype_result in enumerate(ensemble_result):
                     if self._normalized:
                         # changed formula to be consistent with distance definition from thesis
-                        self._data[-1][i][j] = 2 * distance_data[i][j] / float(
-                            event_counts[i][j] + self._tmp_prototype_counts[i][j] +
-                            distance_data[i][j]
-                        )
+                        self._data[-1][i][j] = normalise_distance(
+                            distance=distance_data[i][j],
+                            size_prototype=self._tmp_prototype_counts[i][j],
+                            size_tree=event_counts[i][j])
                     else:
                         self._data[-1][i][j] = distance_data[i][j]
 
