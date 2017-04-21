@@ -40,6 +40,8 @@ class EnsembleSignatureCache(object):
                 signature, value, event_type))
             return
         for index, token in enumerate(signature):
+            if token is None:
+                continue
             try:
                 self._signature_dicts[index][token, event_type] = value
             except IndexError:
