@@ -45,6 +45,24 @@ class StartExitDistance(Distance):
 
     def update_distance(self, prototypes, signature_prototypes, event_type, matches=[{}],
                         value=None, **kwargs):
+        """
+        matches follows the following format:
+        [{                                  <-- Ensemble 1
+            "signature": {
+                prototype: {statistics}
+            },
+            ...
+            "signature_n": {...}
+        }]
+
+        :param prototypes:
+        :param signature_prototypes:
+        :param event_type:
+        :param matches:
+        :param value:
+        :param kwargs:
+        :return:
+        """
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature is None:
@@ -61,7 +79,10 @@ class StartExitDistance(Distance):
                     self._signature_cache[index][signature, ProcessStartEvent] = {"count": 0}
                 else:
                     self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
-        return [match.keys()[0] for match in matches]
+        try:
+            return [match.keys()[0] for match in matches]
+        except IndexError:
+            return []
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes:
@@ -96,7 +117,6 @@ class StartExitDistance(Distance):
         node_base = self._weight
         property_base = base - node_base
         result_dict = dict.fromkeys(prototypes, base)
-
         for prototype_node in prototype_nodes:
             if prototype_nodes[prototype_node] is None:
                 continue
