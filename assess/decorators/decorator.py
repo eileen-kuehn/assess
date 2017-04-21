@@ -10,6 +10,7 @@ from assess.exceptions.exceptions import DecoratorNotFoundException
 class EventWrapper(object):
     def __init__(self):
         self._signature = None
+        self.type = None
 
     @property
     def signature(self):
@@ -39,6 +40,15 @@ class Decorator(object):
             from assess.decorators.anomalydecorator import AnomalyDecorator
             # FIXME: how to pass parameter?
             return AnomalyDecorator()
+        elif "normalized_ensembledistances" in name:
+            from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
+            return EnsembleDistanceDecorator(normalized=True)
+        elif "ensembledistances" in name:
+            return EnsembleDistanceDecorator(normalized=False)
+            from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
+        elif "ensembleanomaly" in name:
+            from assess.decorators.ensembleanomalydecorator import EnsembleAnomalyDecorator
+            return EnsembleAnomalyDecorator()
         elif "compression" in name:
             from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
             return CompressionFactorDecorator()
@@ -186,6 +196,7 @@ class Decorator(object):
                 # signature decorator requires single list of signatures, we will prepare the
                 # event accordingly
                 tmp_event.signature = event.signature[index]
+                tmp_event.type = type(event)
                 self._event_added(tmp_event, single_result)
         return result
 
