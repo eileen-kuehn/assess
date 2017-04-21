@@ -4,6 +4,7 @@ This module offers an implementation to generate the distance matrix for given d
 
 from assess.decorators.decorator import Decorator
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
+from assess.algorithms.distances.ensembledistance import normalise_distance
 
 
 class DistanceMatrixDecorator(Decorator):

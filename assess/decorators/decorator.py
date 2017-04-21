@@ -40,12 +40,15 @@ class Decorator(object):
             from assess.decorators.anomalydecorator import AnomalyDecorator
             # FIXME: how to pass parameter?
             return AnomalyDecorator()
+        elif "normalized_ensembles" in name:
+            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            return EnsembleMatrixDecorator(normalized=True)
         elif "normalized_ensembledistances" in name:
             from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
             return EnsembleDistanceDecorator(normalized=True)
         elif "ensembledistances" in name:
-            return EnsembleDistanceDecorator(normalized=False)
             from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
+            return EnsembleDistanceDecorator(normalized=False)
         elif "ensembleanomaly" in name:
             from assess.decorators.ensembleanomalydecorator import EnsembleAnomalyDecorator
             return EnsembleAnomalyDecorator()
@@ -94,6 +97,9 @@ class Decorator(object):
         elif "signature" in name:
             from assess.decorators.signaturedecorator import SignatureDecorator
             return SignatureDecorator()
+        elif "ensembles" in name:
+            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            return EnsembleMatrixDecorator(normalized=False)
 
     @property
     def algorithm(self):
