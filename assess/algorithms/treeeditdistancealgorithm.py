@@ -2,11 +2,8 @@
 Module offers functionality to perform the well-known tree edit distance based on the current
 framework for dynamic trees.
 """
-
-import zss
-
+from assess.algorithms.distances.treeeditdistance import TreeEditDistance
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
-from assess.events.events import ProcessStartEvent
 
 
 class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
@@ -17,34 +14,34 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
     """
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
-        self._monitoring_results = []
-        self._event_counter = 0
-        self._supported = {ProcessStartEvent: True}
+        self._distance = TreeEditDistance()
+
+    @property
+    def distance(self):
+        """
+        Property to retrieve the currently used distance method.
+
+        :return: Distance in use
+        """
+        return self._distance
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
-        self._monitoring_results = []
+        self.distance.init_distance(prototypes=self.prototypes,
+                                    signature_prototypes=self.signature_prototypes,
+                                    tree=self._tree,
+                                    signature=self._signature)
+        self.supported = self.distance.supported
+
+    def finish_tree(self):
+        self.distance.finish_distance(self.prototypes, self.signature_prototypes)
+        result = [value for value in self.distance.iter_on_prototypes(self._prototypes)]
+        return [list(element) for element in zip(*result)]
 
     def _update_distances(self, event, signature, **kwargs):
-        prototypes = self._prototypes
-        tree = self._tree
+        self.distance.update_distance(prototypes=self._prototypes, signature_prototypes=None, )
+        result = [value for value in self.distance.iter_on_prototypes(self._prototypes)]
+        return [list(element) for element in zip(*result)]
 
-        result_dict = dict(zip(self._prototypes, [0] * len(self._prototypes)))
-        for prototype in prototypes:
-            result_dict[prototype] = self._calculate_distance(prototype.root(), tree.root())
-
-        # add local node distance to global tree distance
-        self._add_result_dicts(result_dict)
-        return [value for value in self._monitoring_results[-1].values()]
-
-    def _calculate_distance(self, prototype, tree):
-        return zss.simple_distance(
-            prototype,
-            tree,
-            lambda node: list(node.children()),
-            lambda node: self._signature.get_signature(node, node.parent()),
-            lambda prototype_label, tree_label: prototype_label != tree_label
-        )
-
-    def _add_result_dicts(self, results):
-        return self._monitoring_results.append(results)
+    def _event_count(self, by_event=False):
+        return [[count for _ in self.prototypes] for count in self.distance.event_count(by_event=by_event)]

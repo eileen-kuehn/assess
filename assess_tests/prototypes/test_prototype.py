@@ -1,8 +1,14 @@
 import unittest
+import os
+import assess_tests
 
 from assess.prototypes.simpleprototypes import Prototype, Tree
-from assess.exceptions.exceptions import TreeInvalidatedException
+from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
+from assess.algorithms.signatures.signatures import *
+from assess.events.events import ProcessExitEvent, ProcessStartEvent
+
+from gnmutils.sources.filedatasource import FileDataSource
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -195,3 +201,108 @@ class TestPrototypeFunctions(unittest.TestCase):
             "(1 (0): (2 (1), 3 (1), 4 (1), 5 (1)))"
         )
 
+    def test_global_order(self):
+        prototype = Prototype()
+        root = prototype.add_node("root")
+        node_1 = prototype.add_node("node_1", parent=root)
+        node_2 = prototype.add_node("node_2", parent=root)
+        prototype.add_node("node_3", parent=node_2)
+        prototype.add_node("node_4", parent=node_1)
+        prototype.add_node("node_5", parent=node_2)
+        prototype.add_node("node_6", parent=node_1)
+
+        # test depth first
+        self.assertEqual([node.name for node in list(prototype.nodes())],
+                         ["root", "node_1", "node_4", "node_6", "node_2", "node_3", "node_5"])
+        # test order first
+        self.assertEqual([node.name for node in list(prototype.nodes(order_first=True))],
+                         ["root", "node_1", "node_2", "node_3", "node_4", "node_5", "node_6"])
+        # test linkage
+        self.assertEqual(node_2.previous_node, node_1)
+        self.assertEqual(node_2.next_node.name, "node_3")
+        self.assertEqual(node_2.parent(), root)
+
+    def test_from_job(self):
+        file_path = os.path.join(
+            os.path.dirname(assess_tests.__file__),
+            "data/c01-007-102/1/1-process.csv"
+        )
+        data_source = FileDataSource()
+        for job in data_source.jobs(path=file_path):
+            prototype = Prototype.from_job(job)
+        self.assertIsNotNone(prototype)
+        self.assertEqual(prototype.node_count(), 9109)
+
+        last_tme = 0
+        for node in prototype.nodes(order_first=True):
+            self.assertTrue(last_tme <= node.tme)
+            last_tme = node.tme
+
+    def test_node_removal(self):
+        tree = Prototype()
+        root = tree.add_node("root")
+        node_1 = root.add_node("node_1")
+        node_2 = root.add_node("node_2")
+        node_3 = node_1.add_node("node_3")
+        node_4 = node_3.add_node("node_4")
+        node_5 = node_2.add_node("node_5")
+
+        self.assertEqual(tree.node_count(), 6)
+        self.assertRaises(NodeNotEmptyException, tree.remove_node, node_3)
+        tree.remove_node(node=node_5)
+        self.assertEqual(tree.node_count(), 5)
+        # check correct order
+        self.assertEqual(node_4, tree._graph._last_node)
+        self.assertEqual(None, node_4.next_node)
+
+        tree.remove_node(node=node_2)
+        self.assertEqual(tree.node_count(), 4)
+        self.assertEqual(node_1.next_node, node_3)
+        self.assertEqual(node_3.previous_node, node_1)
+
+        child_1 = node_3.add_node("child_1")
+        child_2 = node_3.add_node("child_2")
+        child_3 = node_3.add_node("child_3")
+        self.assertEqual(node_4.position, 0)
+        self.assertEqual(child_1.position, 1)
+        self.assertEqual(child_2.position, 2)
+        self.assertEqual(child_3.position, 3)
+        tree.remove_node(node=child_2)
+        self.assertEqual(child_1.position, 1)
+        self.assertEqual(child_2.position, 2)
+
+        tree.remove_subtree(node=node_3)
+        self.assertEqual(tree.node_count(), 2)
+
+    def test_to_index(self):
+        prototype = simple_prototype()
+        index = prototype.to_index(signature=ParentChildByNameTopologySignature())
+        self.assertEqual(2, index.multiplicity(signature="root_-1"))
+        self.assertEqual(4, index.multiplicity(signature="test_4776923186638158062"))
+        self.assertEqual(4, index.multiplicity(signature="muh_4776923186638158062"))
+        self.assertEqual(3, index.node_count())
+        self.assertEqual(2, index.get_statistics(
+            signature="muh_4776923186638158062", key="duration", event_type=ProcessExitEvent)._statistics[1].mean)
+        self.assertEqual(0, index.get_statistics(
+            signature="muh_4776923186638158062", key="duration", event_type=ProcessExitEvent).distance(2))
+
+        index = prototype.to_index(signature=ParentChildByNameTopologySignature(), exit_support=False)
+        self.assertEqual(3, index.node_count())
+        self.assertEqual(1, index.multiplicity(signature="root_-1"))
+        self.assertEqual(2, index.multiplicity(signature="test_4776923186638158062"))
+        self.assertEqual(2, index.multiplicity(signature="muh_4776923186638158062"))
+
+    def test_parent_child_event_iter(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=1, ppid=0, tme=0, exit_tme=3, traffic=[])
+        one = root.add_node("one", pid=2, ppid=1, tme=0, exit_tme=2, traffic=[])
+        one.add_node("one.one", pid=3, ppid=2, tme=1, exit_tme=2, traffic=[])
+        one.add_node("one.two", pid=5, ppid=2, tme=2, exit_tme=2, traffic=[])
+        root.add_node("two", pid=4, ppid=1, tme=1, exit_tme=2, traffic=[])
+        finished = set()
+        for event in prototype.event_iter():
+            if isinstance(event, ProcessStartEvent):
+                self.assertTrue(event.ppid not in finished, "Node with pid %s is already gone..." % event.ppid)
+            if isinstance(event, ProcessExitEvent):
+                self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
+                finished.add(event.pid)

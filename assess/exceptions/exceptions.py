@@ -31,6 +31,33 @@ class TreeInvalidatedException(BasicException):
         )
 
 
+class TreeNotStartedException(BasicException):
+    """ Thrown when event is added to algorithm and tree is not started"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "Event was added without correct initialisation of algorithm (tree not started)"
+        )
+
+
+class NodeNotEmptyException(BasicException):
+    """Thrown when trying to remove a node that still has children"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "A node is trying to be removed that still has children"
+        )
+
+
+class NodeNotRemovedException(BasicException):
+    """Thrown when a node could not be removed"""
+    def __init__(self):
+        BasicException.__init__(
+            self,
+            "A node could not be removed from tree"
+        )
+
+
 class MatrixDoesNotMatchBounds(BasicException):
     """Thrown when the distance matrix is expanded over its bounds"""
     def __init__(self, expected=None, width=None, height=None):
@@ -38,4 +65,13 @@ class MatrixDoesNotMatchBounds(BasicException):
             self,
             "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
             % (expected, expected, width, height)
+        )
+
+
+class DecoratorNotFoundException(BasicException):
+    """Thrown when updating decorators and a matching decorator is not found"""
+    def __init__(self, decorator=None):
+        BasicException.__init__(
+            self,
+            "No matching decorator has been found for %s" % decorator
         )

@@ -1,7 +1,15 @@
 import unittest
 
 from assess.algorithms.signatures.signatures import *
+from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.prototypes.simpleprototypes import Prototype
+from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
+from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+from assess.decorators.datadecorator import DataDecorator
+from assess.exceptions.exceptions import EventNotSupportedException
+from assess.algorithms.distances.simpledistance import SimpleDistance
+
+from assess_tests.basedata import simple_prototype, real_tree
 
 
 class TestSignatureFunctionalities(unittest.TestCase):
@@ -44,19 +52,34 @@ class TestSignatureFunctionalities(unittest.TestCase):
         node_signature = None
         signatures = set()
         for child in root.children():
-            signatures.add(signature.get_signature(child, root))
+            current_signature = signature.get_signature(child, root)
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 child.name,
+                                 signature.get_signature(root, None) if root is not None else ""))
         self.assertEqual(len(signatures), 2)
 
         child_node = list(root.children())[2]
         signatures = set()
         for child in child_node.children():
-            signatures.add(signature.get_signature(child, child_node))
+            current_signature = signature.get_signature(child, child_node)
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 child.name,
+                                 signature.get_signature(child_node, None) if child_node is not None else ""))
         self.assertEqual(len(signatures), 10)
 
         # test if there are "just" 13 different signatures
         signatures = set()
         for node in self.prototype.nodes():
-            signatures.add(signature.get_signature(node, node.parent()))
+            current_signature = signature.get_signature(node, node.parent())
+            signatures.add(current_signature)
+            self.assertEqual(current_signature,
+                             ParentChildByNameTopologySignature.signature_string(
+                                 node.name,
+                                 signature.get_signature(node.parent(), None) if node.parent() is not None else ""))
         self.assertEqual(len(signatures), 14)
 
     def test_parent_child_order_topology_signature(self):
@@ -120,3 +143,65 @@ class TestSignatureFunctionalities(unittest.TestCase):
     def test_representation(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=5)
         self.assertEqual(signature.__repr__(), "ParentCountedChildrenByNameTopologySignature (count: 5)")
+
+    def test_custom_creation(self):
+        signature = Signature()
+        self.assertEqual(Signature, signature.__class__)
+        signature = Signature("ParentChildByNameTopologySignature")
+        self.assertEqual(ParentChildByNameTopologySignature, signature.__class__)
+        signature = Signature("ParentChildOrderTopologySignature")
+        self.assertEqual(ParentChildOrderTopologySignature, signature.__class__)
+        signature = Signature("ParentChildOrderByNameTopologySignature")
+        self.assertEqual(ParentChildOrderByNameTopologySignature, signature.__class__)
+
+    def test_empty_nodes(self):
+        signature = ParentCountedChildrenByNameTopologySignature(count=2)
+
+        signatures = set()
+        for node in simple_prototype().nodes(include_marker=True):
+            try:
+                signatures.add(signature.get_signature(node, node.parent()))
+            except AttributeError:
+                signatures.update(signature.finish_node(node.parent()))
+        print(signatures)
+        self.assertEqual(
+            set(['_root_-1', '_test_2219773432643596584',
+                 'test_muh_2219773432643596584', 'test_muh_test_2219773432643596584',
+                 'muh_test_muh_2219773432643596584', 'muh_test__2219773432643596584',
+                 'muh__2219773432643596584']), signatures)
+
+    def test_count_signature_for_correct_zero_distance(self):
+        signature = ParentCountedChildrenByNameTopologySignature(count=3)
+        algorithm = IncrementalDistanceAlgorithm(signature=signature)
+        decorator = DistanceMatrixDecorator(normalized=False)
+        decorator.wrap_algorithm(algorithm)
+        algorithm.prototypes = [real_tree()]
+
+        algorithm.start_tree()
+        for event in real_tree().event_iter(include_marker=True):
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        print(algorithm._signature_prototypes._prototype_dict[0]._prototype_dict.keys())
+        self.assertEqual([[[0]]], decorator.data())
+
+    def test_node_count_for_correct_zero_distance(self):
+        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(),
+                                                  ParentCountedChildrenByNameTopologySignature(count=3)])
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        data_decorator = DataDecorator()
+        data_decorator.wrap_algorithm(algorithm)
+        algorithm.prototypes = [real_tree()]
+
+        algorithm.start_tree()
+        for event in real_tree().event_iter(include_marker=True):
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        self.assertEqual([tree_value for values in data_decorator.data().get("prototypes", {}).get("converted", []) for tree_value in values],
+                         [tree_value for values in data_decorator.data().get("monitoring", {}).get("converted", []) for tree_value in values])
+

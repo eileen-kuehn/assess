@@ -28,6 +28,7 @@ class TestEventFunctionality(unittest.TestCase):
         exit.ppid = 1
         exit.tme = 1
         exit.start_tme = 0
+        exit.value = 1
         self.assertEqual(exit, Event.exit(1, 2, 1, 0))
 
         traffic = TrafficEvent(0, 0, 0, 0)
