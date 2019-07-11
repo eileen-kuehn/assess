@@ -104,7 +104,7 @@ class CSVEventStreamer(GNMImporter):
 
     def _convert_types(self, row):
         """Convert all known items of a row to their appropriate types"""
-        for key, value in row.iteritems():
+        for key, value in row.items():
             try:
                 row[key] = self.default_key_type[key](value)
             except ValueError:

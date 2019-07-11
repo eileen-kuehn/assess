@@ -73,5 +73,5 @@ class Distance(object):
     @staticmethod
     def _add_result_dicts(first, second):
         result = dict((key, first.setdefault(key, 0) + second.setdefault(key, 0))
-                      for key in set(first.keys() + second.keys()))
+                      for key in {*first, *second})
         return result
