@@ -4,8 +4,7 @@ Generators for event streams for GNM monitoring files
 import csv
 import bisect
 
-from gnmutils.objectcache import ObjectCache
-
+from assess.utility.objectcache import ObjectCache, DataNotInCacheException
 from assess.events.events import Event
 from assess.prototypes.simpleprototypes import Prototype
 
@@ -49,10 +48,13 @@ class CSVTreeBuilder(GNMImporter):
 
         with open(csv_path) as csv_file:
             for process in csv.DictReader(row for row in csv_file if not row.startswith('#')):
-                parent = process_cache.getObject(
-                    tme=process.get("tme", 0),
-                    pid=process.get("ppid", 0)
-                )
+                try:
+                    parent = process_cache.get_data(
+                        value=process.get("tme", 0),
+                        key=process.get("ppid", 0)
+                    )
+                except DataNotInCacheException:
+                    parent = None
                 node = result.add_node(
                     process.get("name", "."),
                     parent=parent,
@@ -61,10 +63,10 @@ class CSVTreeBuilder(GNMImporter):
                     pid=process.get("pid", 0),
                     ppid=process.get("ppid", 0)
                 )
-                process_cache.addObject(
-                    object=node,
-                    pid=process.get("pid", 0),
-                    tme=process.get("tme", 0)
+                process_cache.add_data(
+                    data=node,
+                    key=process.get("pid", 0),
+                    value=process.get("tme", 0)
                 )
         return result
 
@@ -96,7 +98,7 @@ class CSVEventStreamer(GNMImporter):
                 process['tme'], process['start_tme'] = process['exit_tme'], process['tme']
                 exit_event = Event.exit(**process)
                 #exit_event = ProcessExitEvent(**process)
-                # process starts NOW, exists LATER
+                # process starts NOW, exits LATER
                 yield start_event
                 bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
         while exit_event_queue:

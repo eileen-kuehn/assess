@@ -8,7 +8,7 @@ from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache,
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
 from assess.exceptions.exceptions import EventNotSupportedException
 
-from gnmutils.objectcache import ObjectCache
+from assess.utility.objectcache import ObjectCache, DataNotInCacheException
 
 
 class TreeDistanceAlgorithm(object):
@@ -224,7 +224,10 @@ class TreeDistanceAlgorithm(object):
         :param kwargs: Additional parameters
         :return: Tuple of created node and its parent
         """
-        parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
+        try:
+            parent = self._tree_dict.get_data(value=event.tme, key=event.ppid)
+        except DataNotInCacheException:
+            parent = None
         node = self._tree.add_node(
             event.name,
             parent=parent,
@@ -232,7 +235,7 @@ class TreeDistanceAlgorithm(object):
             pid=event.pid,
             ppid=event.ppid
         )
-        self._tree_dict.addObject(node, pid=event.pid, tme=event.tme)
+        self._tree_dict.add_data(data=node, key=event.pid, value=event.tme)
         return node, parent
 
     def finish_node(self, event, **kwargs):
@@ -243,8 +246,11 @@ class TreeDistanceAlgorithm(object):
         :param kwargs: Additional parameters
         :return: Tuple of finished node and its parent
         """
-        parent = self._tree_dict.getObject(tme=event.tme, pid=event.ppid)
-        node = self._tree_dict.getObject(tme=event.tme, pid=event.pid)
+        try:
+            parent = self._tree_dict.get_data(value=event.tme, key=event.ppid)
+        except DataNotInCacheException:
+            parent = None
+        node = self._tree_dict.get_data(value=event.tme, key=event.pid)
         return node, parent
 
     def create_signature(self, node, parent):

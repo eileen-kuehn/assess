@@ -1,40 +1,39 @@
 """
 Module implements different Exceptions being used within ASSESS.
 """
-from utility.exceptions import BasicException
 
 
-class EventNotSupportedException(BasicException):
+class EventNotSupportedException(Exception):
     """Thrown when algorithm does not support a specific event"""
     def __init__(self, event=None):
-        BasicException.__init__(
+        Exception.__init__(
             self,
             "Received [%s] event and does not support it so far!" % event
         )
 
 
-class NodeNotFoundException(BasicException):
+class NodeNotFoundException(Exception):
     """Thrown when a specific node cannot be found"""
     def __init__(self, node=None, amount=None):
-        BasicException.__init__(
+        Exception.__init__(
             self,
             "Cannot find %s between %s" % (node, amount)
         )
 
 
-class TreeInvalidatedException(BasicException):
+class TreeInvalidatedException(Exception):
     """Thrown when an invalid tree is being created"""
     def __init__(self):
-        BasicException.__init__(
+        Exception.__init__(
             self,
             "An invalid tree is being created"
         )
 
 
-class MatrixDoesNotMatchBounds(BasicException):
+class MatrixDoesNotMatchBounds(Exception):
     """Thrown when the distance matrix is expanded over its bounds"""
     def __init__(self, expected=None, width=None, height=None):
-        BasicException.__init__(
+        Exception.__init__(
             self,
             "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
             % (expected, expected, width, height)

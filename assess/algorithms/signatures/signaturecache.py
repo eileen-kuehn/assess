@@ -4,7 +4,7 @@ also defines the statistics being available for PrototypeSignatureCache.
 """
 import math
 
-from cachemap.frequencycachemap import FrequencyCacheMap
+from assess.utility.frequencycachemap import FrequencyCacheMap
 
 
 class SignatureCache(object):
