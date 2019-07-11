@@ -45,6 +45,6 @@ class TestAdditionalMissingDistance(unittest.TestCase):
                 signature=node_signature,
                 matching_prototypes=self.algorithm.signature_prototypes.get(node_signature)
             )
-            self.assertEqual(distance._monitoring_results_dict.values()[0], index*2 if index <= 2 else 4)
+            self.assertEqual(list(distance._monitoring_results_dict.values())[0], index*2 if index <= 2 else 4)
         self.assertEqual(distance._monitoring_results_dict[self.algorithm.prototypes[0]], 4)
         self.assertEqual(distance.finish_distance()[0], 2)
