@@ -1,3 +1,5 @@
+import zlib
+
 from assess.algorithms.signatures.signatures import Signature, ParentChildByNameTopologySignature
 
 
@@ -19,7 +21,7 @@ class PQOrderSignature(Signature):
         algorithm_id = "%s_%s_%s" % (
             "_".join(ordered_nodes[1:-1]),  # up to width ordered siblings
             ordered_nodes[-1],  # last element as anchor node name
-            hash(self.get_signature(parent, None, dimension="p") if parent is not None else '')
+            zlib.adler32(self.get_signature(parent, None, dimension="p").encode('utf-8', errors='surrogateescape') if parent is not None else b'')
         )
         p_signature = ParentChildByNameTopologySignature.signature_string(
             node.name, self.get_signature(parent, None, dimension="p") if parent is not None else '')
