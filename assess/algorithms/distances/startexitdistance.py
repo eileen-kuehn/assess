@@ -128,25 +128,27 @@ class StartExitDistance(Distance):
                 result += node_base
             if property_base > 0:
                 try:
-                    signature_count = self._signature_cache[index].get_statistics(
-                        signature=node_signature, key="duration", event_type=event_type).count(
-                        value=value)
-                except (KeyError, ValueError, TypeError):
+                    statistic = self._signature_cache[index].get_statistics(
+                        signature=node_signature, key="duration", event_type=event_type)
+                except KeyError:
                     # no data has been saved for node_signature
                     signature_count = 0
-                try:
-                    distance = prototype_nodes[prototype_node][event_type]["duration"].distance(
-                        value=value,
-                        count=signature_count
-                    )
-                except KeyError:
-                    distance = 1
-                if distance > 0.5:
+                else:
+                    signature_count = statistic.count(value=value)
+                if value is None:
+                    distance = 0
+                else:
+                    try:
+                        distance = prototype_nodes[prototype_node][event_type]["duration"].distance(
+                            value=value,
+                            count=signature_count
+                        )
+                    except KeyError:
+                        distance = 1
+                if distance > .5:
                     # partial or full mismatch
                     result += distance * property_base
                 else:
-                    if distance is None:
-                        distance = 0
                     result -= (1 - distance) * property_base
             result_dict[prototype_node] = result
         # add local node distance to global tree distance
