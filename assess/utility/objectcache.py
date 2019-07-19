@@ -142,11 +142,8 @@ class ObjectCache(object):
         """
         Clear the current state of the cache.
         """
-        del self._object_cache
         self._object_cache = {}
-        del self.faulty_nodes
         self.faulty_nodes = set()
-        del self.unfound
         self.unfound = set()
 
     @property
