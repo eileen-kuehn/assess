@@ -5,7 +5,7 @@ import random
 from assess.prototypes.simpleprototypes import Prototype
 from assess.events.events import Event
 
-from evenmoreutils.randoms import id_generator
+from assess.utility.randoms import id_generator
 
 
 class RandomGenerator(object):

@@ -46,7 +46,7 @@ class TestSplittedStatistics(unittest.TestCase):
     def test_order(self):
         statistics = SplittedStatistics(statistics_type=MeanVariance)
         random.seed(1234)
-        for _ in xrange(1000):
+        for _ in range(1000):
             value = random.randint(0, 10000)
             statistics.add(value)
         last = -float("inf")

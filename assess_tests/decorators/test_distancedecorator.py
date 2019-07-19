@@ -96,5 +96,12 @@ class TestDistanceDecorator(unittest.TestCase):
             algorithm.add_event(event)
         algorithm.finish_tree()
 
-        self.assertEqual([[[[.5, .2, .2, 0.0], [.5, .2, .2, 0.0]],
-                           [[.6666666666666666, .42857142857142855, .42857142857142855, .25], [.5, .2, .2, 0.0]]]], decorator.data())
+        self.assertEqual([[
+            [  # ParentChildByNameTopologySignature
+                [2/3, 1/3, 1/3, 0.0],  # simple_prototype
+                [2/3, 1/3, 1/3, 0.0]   # simple_monitoring_tree
+            ],
+            [  # ParentChildOrderByNameTopologySignature
+                [4/5, 3/5, 3/5, 2/5],
+                [2/3, 1/3, 1/3, 0.0]
+            ]]], decorator.data())

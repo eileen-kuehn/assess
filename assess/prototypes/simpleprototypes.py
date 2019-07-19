@@ -40,6 +40,9 @@ class OrderedTreeNode(object):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+    def __hash__(self):
+        return hash(id(self))
+
     def __eq__(self, other):
         if type(self) != type(other):
             return False
