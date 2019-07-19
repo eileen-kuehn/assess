@@ -1,6 +1,7 @@
 import unittest
 
-from assess.utility.objectcache import ObjectCache, DataNotInCacheException
+from assess.utility.objectcache import ObjectCache
+from assess.exceptions.exceptions import DataNotInCacheException
 
 
 class Process(object):

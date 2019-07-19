@@ -6,8 +6,9 @@ from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
-from assess.exceptions.exceptions import EventNotSupportedException, TreeNotStartedException
-from assess.utility.objectcache import ObjectCache, DataNotInCacheException
+from assess.exceptions.exceptions import EventNotSupportedException, \
+    TreeNotStartedException, DataNotInCacheException
+from assess.utility.objectcache import ObjectCache
 
 
 class TreeDistanceAlgorithm(object):

@@ -74,3 +74,8 @@ class DecoratorNotFoundException(Exception):
             self,
             "No matching decorator has been found for %s" % decorator
         )
+
+
+class DataNotInCacheException(Exception):
+    def __init__(self, *args, **kwargs):
+        Exception.__init__(self, *args, **kwargs)

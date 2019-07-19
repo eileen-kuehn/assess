@@ -2,13 +2,13 @@ import unittest
 import os
 import assess_tests
 
+from gnmutils.sources.filedatasource import FileDataSource
+
 from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
 from assess.algorithms.signatures.signatures import *
 from assess.events.events import ProcessExitEvent, ProcessStartEvent
-
-from gnmutils.sources.filedatasource import FileDataSource
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -306,3 +306,19 @@ class TestPrototypeFunctions(unittest.TestCase):
             if isinstance(event, ProcessExitEvent):
                 self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
                 finished.add(event.pid)
+
+    def test_streaming_order(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=2, ppid=1, tme=1, exit_tme=5)
+        nodes = [root,
+                 root.add_node("one", pid=3, ppid=2, tme=1, exit_tme=2),
+                 root.add_node("two", pid=4, ppid=2, tme=1, exit_tme=2),
+                 root.add_node("four", pid=5, ppid=2, tme=2, exit_tme=3),
+                 root.add_node("three", pid=6, ppid=2, tme=1, exit_tme=3)]
+
+        index = 0
+        for event in prototype.event_iter():
+            if isinstance(event, ProcessStartEvent):
+                self.assertEquals(nodes[index].name, event.name)
+                index += 1
+        self.assertEquals(index, len(nodes))

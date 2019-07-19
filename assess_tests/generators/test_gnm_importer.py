@@ -201,3 +201,8 @@ class TestGNMImporter(unittest.TestCase):
                         result = True
                         break
                 self.assertTrue(result, "Did not find correct parent")
+
+    def test_payload_generation(self):
+        tree_builder = CSVTreeBuilder()
+        tree = tree_builder.build("data/c01-007-102/2/1078-2-process.csv")
+        print(tree)

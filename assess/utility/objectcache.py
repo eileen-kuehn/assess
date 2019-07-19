@@ -5,10 +5,7 @@ The ObjectCache allows sorting values by a key and another value.
 import bisect
 import logging
 
-
-class DataNotInCacheException(Exception):
-    def __init__(self, *args, **kwargs):
-        Exception.__init__(self, *args, **kwargs)
+from assess.exceptions.exceptions import DataNotInCacheException
 
 
 class ObjectCache(object):

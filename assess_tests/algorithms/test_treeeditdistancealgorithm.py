@@ -32,9 +32,9 @@ class TestTreeEditDistanceFunctionalities(unittest.TestCase):
         algorithm.prototypes = [prototype]
 
         algorithm.start_tree()
-        result = algorithm.add_events(Event.from_tree(tree))[0]
-        algorithm.finish_tree()
-        return result
+        algorithm.add_events(Event.from_tree(tree))
+        result = algorithm.finish_tree()
+        return result[0]
 
     def test_zero_distance(self):
         self.assertEqual(self._test_algorithm(

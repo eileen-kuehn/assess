@@ -4,16 +4,17 @@ the single nodes is defined.
 """
 import bisect
 
-from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException, \
-    NodeNotRemovedException, NodeNotFoundException
+from assess.exceptions.exceptions import TreeInvalidatedException, \
+    NodeNotEmptyException, \
+    NodeNotRemovedException, NodeNotFoundException, DataNotInCacheException
 from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent, EmptyProcessEvent
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 from assess.algorithms.signatures.ensemblesignature import *
 
-from gnmutils.objectcache import ObjectCache
-from gnmutils.exceptions import DataNotInCacheException, ObjectIsRootException
+from assess.utility.objectcache import ObjectCache
+from assess.utility.randoms import id_generator
 
-from evenmoreutils.randoms import id_generator
+from gnmutils.exceptions import ObjectIsRootException
 
 
 class OrderedTreeNode(object):

@@ -53,5 +53,6 @@ class TestSplittedStatistics(unittest.TestCase):
         for statistic in statistics._statistics:
             self.assertTrue(statistic.mean > last)
             last = statistic.mean
-        self.assertEqual(len(statistics._statistics), 850)  # number of clusters wo attraction
+        self.assertEqual(len(statistics._statistics), 841)  # number of clusters wo attraction
+        # TODO: introduce a test that is independent from random
 
