@@ -165,10 +165,9 @@ class TestSignatureFunctionalities(unittest.TestCase):
                 signatures.update(signature.finish_node(node.parent()))
         print(signatures)
         self.assertEqual(
-            set(['_root_-1', '_test_2219773432643596584',
-                 'test_muh_2219773432643596584', 'test_muh_test_2219773432643596584',
-                 'muh_test_muh_2219773432643596584', 'muh_test__2219773432643596584',
-                 'muh__2219773432643596584']), signatures)
+            set({'_root_1', '_test_192807604', 'muh__192807604', 'muh_test__192807604',
+                 'muh_test_muh_192807604', 'test_muh_192807604',
+                 'test_muh_test_192807604'}), signatures)
 
     def test_count_signature_for_correct_zero_distance(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=3)

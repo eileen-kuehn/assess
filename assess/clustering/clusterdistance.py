@@ -22,11 +22,14 @@ class SignatureWrapper(object):
     def get(self, signature):
         result = self._signature_cache.get(signature)
         if not isinstance(result, list):
-            result = EnsembleSignatureCacheList(result)
+            result = EnsembleSignatureCacheList([result])
         return result
 
     def multiplicity(self):
-        return self._signature_cache.multiplicity()
+        result = self._signature_cache.multiplicity()
+        if not isinstance(result, list):
+            result = [result]
+        return result
 
 
 class PrototypeWrapper(object):
@@ -56,7 +59,7 @@ class PrototypeWrapper(object):
         elif isinstance(self._signature_cache_list[0], EnsembleSignatureCache):
             # p_1 {e_1, ..., e_n}, ... p_2 {e_1, ..., e_n}
             tmp = [cache.get(signature) for cache in self._signature_cache_list]
-            result = [{} for _ in xrange(len(signature))]
+            result = [{} for _ in range(len(signature))]
             for prototype_idx, prototype in enumerate(tmp):
                 for ensemble_idx, ensemble in enumerate(prototype):
                     result[ensemble_idx].setdefault(signature[ensemble_idx], {})[self.prototype_name[prototype_idx]] = ensemble
@@ -65,7 +68,10 @@ class PrototypeWrapper(object):
     def multiplicity(self, prototype=None):
         if prototype is not None:
             return prototype.multiplicity()
-        return EnsemblePrototypeSignatureCacheList(cache.multiplicity() for cache in self._signature_cache_list)
+        if isinstance(self._signature_cache_list[0], EnsembleSignatureCache):
+            return EnsemblePrototypeSignatureCacheList(cache.multiplicity() for cache in self._signature_cache_list)
+        result = [cache.multiplicity() for cache in self._signature_cache_list]
+        return EnsemblePrototypeSignatureCacheList([result])
 
 
 class ClusterDistance(dengraph.distance.IncrementalDistance):
@@ -99,11 +105,10 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                     # skip supporters that don't match anything
                     continue
                 for support_key, statistics in supporter.items():
-                    if len(statistics.keys()) <= 1:
-                        # I am only considering count here
-                        statistic = statistics.get("count", [])
+                    for statistics_key in statistics:
+                        statistic = statistics.get(statistics_key, [])
                         for stat in statistic:
-                            count = int(math.ceil(stat.count))  # round up to always consider occurrence
+                            count = int(math.ceil(stat.count))  # round up to always consider occurence
                             for _ in range(count):
                                 # select for matches only specific signature
                                 self.distance.update_distance(
@@ -111,18 +116,7 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                                     signature_prototypes=prototypes_caches,
                                     event_type=support_key,
                                     matches=[matching_prototypes[idx] if idx == supporter_index else {} for idx, value in enumerate(matching_prototypes)]
-                                )
-                    else:
-                        # only considering duration here
-                        statistic = statistics.get("duration", [])
-                        for stat in statistic:
-                            count = int(math.ceil(stat.count))  # round up to always consider occurrence
-                            for _ in range(count):
-                                self.distance.update_distance(
-                                    prototypes=prototypes_caches.prototype_name,
-                                    signature_prototypes=prototypes_caches,
-                                    event_type=support_key,
-                                    matches=[matching_prototypes[idx] if idx == supporter_index else {} for idx, value in enumerate(matching_prototypes)]
+                                    # TODO: add values here
                                 )
         self.distance.finish_distance(prototypes, prototypes_caches)
         results = self.distance.distance_for_prototypes(prototypes)

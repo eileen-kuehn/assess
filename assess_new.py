@@ -198,7 +198,7 @@ def main():
                 },
                 "data": results
             }
-            print json.dumps(dump, indent=2)
+            print(json.dumps(dump, indent=2))
         else:
             print(results)
 

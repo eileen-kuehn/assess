@@ -85,7 +85,7 @@ def main():
             },
             "data": results
         }
-        print json.dumps(dump, indent=2)
+        print(json.dumps(dump, indent=2))
     else:
         print(results)
 
@@ -149,6 +149,7 @@ def calculate_distance_matrix(paths=[], algorithm=None, signature=Signature):
     for values in decorator.distance_matrix:
         print(", ".join("%.2f" % value for value in values))
     return decorator.distance_matrix
+
 
 if __name__ == '__main__':
     update_parser(CLI)

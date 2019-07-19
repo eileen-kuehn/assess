@@ -6,10 +6,9 @@ from assess.prototypes.simpleprototypes import Tree
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
-from assess.exceptions.exceptions import EventNotSupportedException, TreeNotStartedException
-
-from gnmutils.objectcache import ObjectCache
-from gnmutils.exceptions import DataNotInCacheException
+from assess.exceptions.exceptions import EventNotSupportedException, \
+    TreeNotStartedException, DataNotInCacheException
+from assess.utility.objectcache import ObjectCache
 
 
 class TreeDistanceAlgorithm(object):
@@ -253,11 +252,11 @@ class TreeDistanceAlgorithm(object):
         :return: Returns the current distances after the event has been applied.
         """
         result = []
-        event.signature = []
         # TODO: why are we actually still getting EmptyProcessEvent instances here?
         self._event_counter += 1
         if isinstance(event, ProcessStartEvent):
             if self.supported.get(ProcessStartEvent, False):
+                event.signature = []
                 # create node
                 node, parent = self.create_node(event, **kwargs)
                 signature = self.create_signature(node, parent)
@@ -266,6 +265,7 @@ class TreeDistanceAlgorithm(object):
                 result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, ProcessExitEvent):
             # finish node to take care on empty nodes
+            event.signature = []
             node, parent = self.finish_node(event, **kwargs)
             signatures = self.create_signature_for_finished_node(node)
             for signature in signatures:
@@ -286,6 +286,7 @@ class TreeDistanceAlgorithm(object):
                 event.signature.append(signature)
                 result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, TrafficEvent):
+            event.signature = []
             if self.supported.get(TrafficEvent, False):
                 # create or reuse node
                 node, parent = self.create_or_reuse_node(event, **kwargs)

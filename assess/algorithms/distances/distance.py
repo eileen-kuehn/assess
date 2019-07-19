@@ -132,7 +132,7 @@ class Distance(object):
                             key,
                             element.get(key, 0) + to_add[index].get(key, 0)
                         )
-                        for key in set(element.keys() + to_add[index].keys())))
+                        for key in {*element, *to_add[index]}))
         else:
             result = base
             for element in to_add:

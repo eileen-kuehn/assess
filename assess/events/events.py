@@ -1,7 +1,6 @@
 """
 Module implements the different kind of events that are supported in dynamic process trees.
 """
-from __future__ import print_function
 
 
 class Event(object):

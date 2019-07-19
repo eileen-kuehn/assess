@@ -2,7 +2,6 @@
 Module implements possible methods to represent statistics that might be used for e.g. cluster
 representatitives. Currently only MeanVariance is supported.
 """
-from __future__ import division
 import math
 
 
@@ -194,8 +193,8 @@ class MeanVariance(Statistic):
     def distance(self, value=None):
         """
         Check the current distance for a given value. The distance is not a distance in this way but
-        more a similarity. If the value equals the mean, 0 is returned. For convenience, value being
-        None or 0 get a distance of None, meaning, that the handling can be done externally.
+        more a similarity. If the value equals the mean, 0 is returned. For convenience, values being
+        None get a distance of None, meaning, that the handling must be done externally.
 
         :param value: The value to check the distance for
         :return: Distance

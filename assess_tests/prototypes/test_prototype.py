@@ -2,13 +2,13 @@ import unittest
 import os
 import assess_tests
 
+from gnmutils.sources.filedatasource import FileDataSource
+
 from assess.prototypes.simpleprototypes import Prototype, Tree
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
 from assess.algorithms.signatures.signatures import *
 from assess.events.events import ProcessExitEvent, ProcessStartEvent
-
-from gnmutils.sources.filedatasource import FileDataSource
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -277,20 +277,20 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_to_index(self):
         prototype = simple_prototype()
         index = prototype.to_index(signature=ParentChildByNameTopologySignature())
-        self.assertEqual(2, index.multiplicity(signature="root_-1"))
-        self.assertEqual(4, index.multiplicity(signature="test_4776923186638158062"))
-        self.assertEqual(4, index.multiplicity(signature="muh_4776923186638158062"))
+        self.assertEqual(2, index.multiplicity(signature="root_1"))
+        self.assertEqual(4, index.multiplicity(signature="test_149160533"))
+        self.assertEqual(4, index.multiplicity(signature="muh_149160533"))
         self.assertEqual(3, index.node_count())
         self.assertEqual(2, index.get_statistics(
-            signature="muh_4776923186638158062", key="duration", event_type=ProcessExitEvent)._statistics[1].mean)
+            signature="muh_149160533", key="duration", event_type=ProcessExitEvent)._statistics[1].mean)
         self.assertEqual(0, index.get_statistics(
-            signature="muh_4776923186638158062", key="duration", event_type=ProcessExitEvent).distance(2))
+            signature="muh_149160533", key="duration", event_type=ProcessExitEvent).distance(2))
 
         index = prototype.to_index(signature=ParentChildByNameTopologySignature(), exit_support=False)
         self.assertEqual(3, index.node_count())
-        self.assertEqual(1, index.multiplicity(signature="root_-1"))
-        self.assertEqual(2, index.multiplicity(signature="test_4776923186638158062"))
-        self.assertEqual(2, index.multiplicity(signature="muh_4776923186638158062"))
+        self.assertEqual(1, index.multiplicity(signature="root_1"))
+        self.assertEqual(2, index.multiplicity(signature="test_149160533"))
+        self.assertEqual(2, index.multiplicity(signature="muh_149160533"))
 
     def test_parent_child_event_iter(self):
         prototype = Prototype()
@@ -306,3 +306,19 @@ class TestPrototypeFunctions(unittest.TestCase):
             if isinstance(event, ProcessExitEvent):
                 self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
                 finished.add(event.pid)
+
+    def test_streaming_order(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=2, ppid=1, tme=1, exit_tme=5)
+        nodes = [root,
+                 root.add_node("one", pid=3, ppid=2, tme=1, exit_tme=2),
+                 root.add_node("two", pid=4, ppid=2, tme=1, exit_tme=2),
+                 root.add_node("four", pid=5, ppid=2, tme=2, exit_tme=3),
+                 root.add_node("three", pid=6, ppid=2, tme=1, exit_tme=3)]
+
+        index = 0
+        for event in prototype.event_iter():
+            if isinstance(event, ProcessStartEvent):
+                self.assertEquals(nodes[index].name, event.name)
+                index += 1
+        self.assertEquals(index, len(nodes))

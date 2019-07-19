@@ -32,11 +32,11 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
         decorator.wrap_algorithm(algorithm)
 
-        self.assertEqual(decorator.descriptive_data(), {"matrix": []})
+        self.assertEqual({"matrix": []}, decorator.descriptive_data())
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[None]]]})
+        self.assertEqual({"matrix": [[[None]]]}, decorator.descriptive_data())
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[3]]]})
+        self.assertEqual({"matrix": [[[3]]]}, decorator.descriptive_data())
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
@@ -51,12 +51,12 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         for event in Event.from_tree(simple_prototype()):
             decorator.add_event(event)
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[0, 2]]]})
+        self.assertEqual({"matrix": [[[0, 2]]]}, decorator.descriptive_data())
         decorator.start_tree()
         for event in Event.from_tree(simple_additional_monitoring_tree()):
             decorator.add_event(event)
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"matrix": [[[0, 2]], [[2, 0]]]})
+        self.assertEqual({"matrix": [[[0, 2]], [[2, 0]]]}, decorator.descriptive_data())
         self.assertRaises(MatrixDoesNotMatchBounds, decorator.start_tree)
 
     def test_simple_normalized_matrix(self):

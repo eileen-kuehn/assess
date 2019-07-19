@@ -2,6 +2,8 @@
 Module supports different signature implementations that can be used to compress trees based
 on different characteristics of workflows.
 """
+import zlib
+
 from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
 
 
@@ -108,7 +110,7 @@ class Signature(object):
                         yield node.name
                     if returned_nodes >= width:
                         break
-        for _ in xrange(width - returned_nodes):
+        for _ in range(width - returned_nodes):
             yield ''
 
     def __repr__(self):
@@ -141,7 +143,7 @@ class ParentChildByNameTopologySignature(Signature):
         :param parent_signature:
         :return:
         """
-        return "%s_%s" % (node_name, hash(parent_signature))
+        return "%s_%s" % (node_name, zlib.adler32(parent_signature.encode('utf-8', errors='surrogateescape')))
 
 
 class ParentChildOrderTopologySignature(Signature):
@@ -156,7 +158,7 @@ class ParentChildOrderTopologySignature(Signature):
         algorithm_id = "%s.%d_%s" % (
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             node.node_number(),
-            hash(parent_signature if parent_signature is not None else "")
+            zlib.adler32(parent_signature.encode('utf-8', errors='surrogateescape') if parent_signature is not None else b"")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -186,7 +188,7 @@ class ParentChildOrderByNameTopologySignature(ParentChildOrderTopologySignature)
             self._first_part_algorithm_id(parent_signature if parent_signature is not None else ""),
             grouped_count,
             node.name,
-            hash(parent_signature if parent_signature is not None else "")
+            zlib.adler32(parent_signature.encode('utf-8', errors='surrogateescape') if parent_signature is not None else b"")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -208,7 +210,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         algorithm_id = "%s_%s_%s" % (
             "_".join(str(node.name) for node in neighbors),
             node.name,
-            hash(self.get_signature(parent, None) if parent is not None else "")
+            zlib.adler32(self.get_signature(parent, None).encode('utf-8', errors='surrogateescape') if parent is not None else b"")
         )
         self._prepare_signature(node, algorithm_id)
 
@@ -217,7 +219,7 @@ class ParentCountedChildrenByNameTopologySignature(Signature):
         if node.children_list():
             # we need to consider the insertion of empty nodes
             parent = node
-            parent_signature = hash(self.get_signature(parent, None))
+            parent_signature = zlib.adler32(self.get_signature(parent, None).encode('utf-8', errors='surrogateescape'))
             neighbors = list(self.sibling_finish_generator(node, self._count))
             while neighbors:
                 result.append("%s_%s_%s" % (

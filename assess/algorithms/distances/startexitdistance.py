@@ -78,9 +78,9 @@ class StartExitDistance(Distance):
                 if event_type == ProcessStartEvent:
                     self._signature_cache[index][signature, ProcessStartEvent] = {"count": 0}
                 else:
-                    self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
+                    self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value if value is not None else 0}
         try:
-            return [match.keys()[0] for match in matches]
+            return [list(match)[0] for match in matches]
         except IndexError:
             return []
 
@@ -128,25 +128,27 @@ class StartExitDistance(Distance):
                 result += node_base
             if property_base > 0:
                 try:
-                    signature_count = self._signature_cache[index].get_statistics(
-                        signature=node_signature, key="duration", event_type=event_type).count(
-                        value=value)
-                except (KeyError, ValueError, TypeError):
+                    statistic = self._signature_cache[index].get_statistics(
+                        signature=node_signature, key="duration", event_type=event_type)
+                except KeyError:
                     # no data has been saved for node_signature
                     signature_count = 0
-                try:
-                    distance = prototype_nodes[prototype_node][event_type]["duration"].distance(
-                        value=value,
-                        count=signature_count
-                    )
-                except KeyError:
-                    distance = 1
-                if distance > 0.5:
+                else:
+                    signature_count = statistic.count(value=value)
+                if value is None:
+                    distance = 0
+                else:
+                    try:
+                        distance = prototype_nodes[prototype_node][event_type]["duration"].distance(
+                            value=value,
+                            count=signature_count
+                        )
+                    except KeyError:
+                        distance = 1
+                if distance > .5:
                     # partial or full mismatch
                     result += distance * property_base
                 else:
-                    if distance is None:
-                        distance = 0
                     result -= (1 - distance) * property_base
             result_dict[prototype_node] = result
         # add local node distance to global tree distance
@@ -158,3 +160,56 @@ class StartExitDistance(Distance):
 
     def __repr__(self):
         return "%s (weight=%s)" % (self.__class__.__name__, self._weight)
+
+
+class StartExitDistanceWOAttributes(StartExitDistance):
+    """
+    The StartExitDistanceWOAttributes offers distance measurements that support also the removal
+    of nodes but ignores local as well as global attributes. Only the pure existence of nodes
+    does influence actual distance measurement
+    """
+    def __init__(self, **kwargs):
+        Distance.__init__(self, **kwargs)
+        self._based_on_original = False
+        self._signature_cache = None
+
+    def update_distance(self, prototypes, signature_prototypes, event_type, matches=[{}],
+                        value=None, **kwargs):
+        for index, match in enumerate(matches):
+            for signature, matching_prototypes in match.items():
+                if signature is None:
+                    continue
+                self._update_distances(
+                    prototypes=prototypes,
+                    event_type=event_type,
+                    index=index,
+                    prototype_nodes=matching_prototypes,
+                    node_signature=signature,
+                    value=value
+                )
+                self._signature_cache[index][signature, event_type] = {"count": 0}
+        return [list(match)[0] for match in matches]
+
+    def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None,
+                          node_signature=None, value=None):
+        node_base = .5
+        result_dict = dict(zip(prototypes, [node_base for _ in range(len(prototypes))]))
+
+        for prototype_node in prototype_nodes:
+            if prototype_nodes[prototype_node] is None:
+                continue
+            result = 0
+            if self._signature_cache[index].multiplicity(signature=node_signature, event_type=event_type) < prototype_nodes[prototype_node][event_type]["count"].count():
+                result -= node_base
+            else:
+                result += node_base
+            result_dict[prototype_node] = result
+        # add local node distance to global tree distance
+        self._monitoring_results_dict = self._add_result_dicts(
+            index=index,
+            to_add=[result_dict],
+            base=self._monitoring_results_dict
+        )
+
+    def __repr__(self):
+        return "%s" % self.__class__.__name__

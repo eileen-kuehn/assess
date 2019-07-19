@@ -81,8 +81,7 @@ class AnomalyDecorator(Decorator):
     def _finished_range(self):
         result = []
         for i, ensemble_result in enumerate(self._tmp_prototype_counts):
-            result.append(zip([0 for _ in ensemble_result],
-                              [max_value * self._percentage for max_value in ensemble_result]))
+            result.append([(0, max_value * self._percentage) for max_value in ensemble_result])
         return result
 
     def _current_range(self, progress):
@@ -106,7 +105,7 @@ class AnomalyDecorator(Decorator):
                           for count in self._tmp_prototype_counts[ensemble_index]])
             upper.append([-current_progress + count * (1 + self._percentage)
                           for count in self._tmp_prototype_counts[ensemble_index]])
-        result = [zip(lower[index], upper[index]) for index in range(len(lower))]
+        result = [list(zip(lower[index], upper[index])) for index in range(len(lower))]
         return result
 
     def __iadd__(self, other):

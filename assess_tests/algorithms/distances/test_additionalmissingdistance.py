@@ -56,7 +56,7 @@ class TestAdditionalMissingDistance(unittest.TestCase):
                          enumerate(node_signature)]
             )
             for result in distance._monitoring_results_dict:
-                self.assertEqual(result.values()[0], index*2 if index <= 2 else 4)
+                self.assertEqual(list(result.values())[0], index*2 if index <= 2 else 4)
         self.assertEqual(distance._monitoring_results_dict[0][self.algorithm.prototypes[0]], 4)
         self.assertEqual(distance.finish_distance(
             prototypes=self.algorithm.prototypes,

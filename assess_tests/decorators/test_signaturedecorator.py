@@ -36,9 +36,9 @@ class TestSignatureDecorator(unittest.TestCase):
         self.assertEqual(len(description["signature"]), 1)
         self.assertEqual(len(set(description["signature"][0][0])), 3)
         self.assertEqual(len(description["signature"][0][0]), 4)
-        self.assertEqual(description["signature"][0][0][0], "root_-1")
-        self.assertEqual(description["signature"][0][0][1], "test_4776923186638158062")
-        self.assertEqual(description["signature"][0][0][3], "muh_4776923186638158062")
+        self.assertEqual(description["signature"][0][0][0], "root_1")
+        self.assertEqual(description["signature"][0][0][1], "test_149160533")
+        self.assertEqual(description["signature"][0][0][3], "muh_149160533")
 
         decorator.start_tree()
         for event in Event.from_tree(simple_monitoring_tree()):
@@ -60,40 +60,40 @@ class TestSignatureDecorator(unittest.TestCase):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {'signature': [[[
-            'root_-1',
-            'test_4776923186638158062',
-            'test_4776923186638158062',
-            'muh_4776923186638158062'
+            'root_1',
+            'test_149160533',
+            'test_149160533',
+            'muh_149160533'
         ], [
-            '.0_root_-1',
-            '.0.0_test_3482211675449548892',
-            '.0.0_test_3482211675449548892',
-            '.0.1_muh_3482211675449548892']]]})
+            '.0_root_1',
+            '.0.0_test_245236498',
+            '.0.0_test_245236498',
+            '.0.1_muh_245236498']]]})
 
         algorithm.start_tree()
         for event in Event.from_tree(simple_prototype()):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {'signature': [[[
-            'root_-1',
-            'test_4776923186638158062',
-            'test_4776923186638158062',
-            'muh_4776923186638158062'
+            'root_1',
+            'test_149160533',
+            'test_149160533',
+            'muh_149160533'
         ], [
-            '.0_root_-1',
-            '.0.0_test_3482211675449548892',
-            '.0.0_test_3482211675449548892',
-            '.0.1_muh_3482211675449548892'
+            '.0_root_1',
+            '.0.0_test_245236498',
+            '.0.0_test_245236498',
+            '.0.1_muh_245236498'
         ]], [[
-            'root_-1',
-            'test_4776923186638158062',
-            'muh_4776923186638158062',
-            'test_4776923186638158062',
-            'muh_4776923186638158062'
+            'root_1',
+            'test_149160533',
+            'muh_149160533',
+            'test_149160533',
+            'muh_149160533'
         ], [
-            '.0_root_-1',
-            '.0.0_test_3482211675449548892',
-            '.0.1_muh_3482211675449548892',
-            '.0.2_test_3482211675449548892',
-            '.0.3_muh_3482211675449548892']]]})
+            '.0_root_1',
+            '.0.0_test_245236498',
+            '.0.1_muh_245236498',
+            '.0.2_test_245236498',
+            '.0.3_muh_245236498']]]})
 

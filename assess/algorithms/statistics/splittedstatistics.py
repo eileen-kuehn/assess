@@ -107,6 +107,8 @@ class SplittedStatistics(Statistics):
             self._statistics.append(self._statistics_type(value=value))
 
     def _perform_merging(self, index):
+        if len(self._statistics) <= 1:
+            return
         merged = True
         while merged:
             merged = False
@@ -137,7 +139,9 @@ class SplittedStatistics(Statistics):
         result = 0
         if value is not None:
             distance, index = self._closest_value_and_index(value)
-            if distance < 1:
+            if distance is None:  # TODO: to be removed
+                result = self._statistics[index].height(value)
+            elif distance < 1:
                 result = self._statistics[index].height(value)
         else:
             for statistic in self._statistics:
@@ -158,6 +162,8 @@ class SplittedStatistics(Statistics):
             distance, index = self._closest_value_and_index(value=value)
             if count >= self._statistics[index].height(value):
                 distance = 1
+            elif distance is None:
+                distance = 0
             elif distance < 1:
                 distance = 0
         if distance == float("inf"):
@@ -176,6 +182,8 @@ class SplittedStatistics(Statistics):
             if index > 1 else float("inf")
         right_distance = self._statistics[index].distance(value=value) \
             if index < len(self._statistics) else float("inf")
+        if left_distance is None or right_distance is None:
+            return None, index
         return min(left_distance, right_distance), index \
             if right_distance < left_distance else index - 1
 

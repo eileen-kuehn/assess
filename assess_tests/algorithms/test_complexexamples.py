@@ -2,6 +2,7 @@ import os
 import unittest
 
 import assess_tests
+from assess.algorithms.distances.simpledistance import SimpleDistance
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
 from assess.algorithms.distances.startexitdistance import StartExitDistance
@@ -145,3 +146,32 @@ class TestComplexExamples(unittest.TestCase):
             prototype_signatures.append(cluster_distance.mean(tree_profiles, prototype=prototype))
         algorithm.cluster_representatives(signature_prototypes=prototype_signatures, prototypes=prototype_names)
         algorithm.start_tree()
+
+    def test_negative_values(self):
+        def distance_builder(**kwargs):
+            distance = SimpleDistance(**kwargs)
+            return distance
+        tree_one = real_tree(path="data/c01-007-102/2/1078-2-process.csv", absolute=True)
+        tree_two = real_tree(path="data/c01-007-102/2/1165-2-process.csv", absolute=True)
+        signature = ParentChildByNameTopologySignature()
+        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=distance_builder, cache_statistics=SetStatistics)
+        algorithm.prototypes = [tree_one, tree_two]
+        decorator = DistanceMatrixDecorator(normalized=True)
+        decorator.wrap_algorithm(algorithm)
+
+        algorithm.start_tree()
+        for event in tree_one.event_iter():
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        algorithm.start_tree()
+        for event in tree_two.event_iter():
+            try:
+                algorithm.add_event(event)
+            except EventNotSupportedException:
+                pass
+        algorithm.finish_tree()
+        print(decorator.data())
+        self.assertTrue(False)

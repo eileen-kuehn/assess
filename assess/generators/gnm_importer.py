@@ -11,7 +11,6 @@ except ImportError:
     import pickle
 
 from gnmutils.sources.filedatasource import FileDataSource
-
 from assess.prototypes.simpleprototypes import Prototype
 from assess.generators.event_generator import EventGenerator, NodeGenerator
 
@@ -175,6 +174,16 @@ class PrototypeCache(object):
                         pickle.dump(job_files, cache_pkl, pickle.HIGHEST_PROTOCOL)
             except filelock.Timeout:
                 pass
+
+
+class PKLTreeBuilder(GNMImporter):
+    """
+    The PKLTreeBuilder builds a tree from an explicit pickle dump based on a log file.
+    """
+    @staticmethod
+    def build(pkl_path):
+        with open(pkl_path, "r") as job_pkl:
+            return pickle.load(job_pkl)
 
 
 class CSVTreeBuilder(GNMImporter):

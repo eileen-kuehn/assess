@@ -2,7 +2,7 @@
 This module implements the possibility to encapsulate different signatures into one single
 signature. This allows to pick the best available signature to calculate distances.
 """
-from itertools import izip_longest
+from itertools import zip_longest
 
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache, \
@@ -49,7 +49,7 @@ class EnsembleSignature(Signature):
         result = EnsembleSignatureList()
         for signature in self._signatures:
             result.append(signature.finish_node(node))
-        return [EnsembleSignatureList(element) for element in izip_longest(*result)]
+        return [EnsembleSignatureList(element) for element in zip_longest(*result)]
 
     def __repr__(self):
         return "%s (%s)" % (self.__class__.__name__, ", ".join(
