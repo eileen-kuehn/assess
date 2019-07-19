@@ -2,9 +2,10 @@ import math
 
 import dengraph.distance
 from assess.algorithms.distances.ensembledistance import mean_ensemble_distance
-
-from assess.algorithms.signatures.ensemblesignaturecache import *
-from assess.algorithms.signatures.signaturecache import *
+from assess.algorithms.signatures.ensemblesignaturecache import \
+    EnsembleSignatureCacheList, EnsembleSignatureCache, \
+    EnsemblePrototypeSignatureCacheList, EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
 
 
 class SignatureWrapper(object):
@@ -62,14 +63,17 @@ class PrototypeWrapper(object):
             result = [{} for _ in range(len(signature))]
             for prototype_idx, prototype in enumerate(tmp):
                 for ensemble_idx, ensemble in enumerate(prototype):
-                    result[ensemble_idx].setdefault(signature[ensemble_idx], {})[self.prototype_name[prototype_idx]] = ensemble
+                    result[ensemble_idx].setdefault(
+                        signature[ensemble_idx], {})[
+                        self.prototype_name[prototype_idx]] = ensemble
         return result
 
     def multiplicity(self, prototype=None):
         if prototype is not None:
             return prototype.multiplicity()
         if isinstance(self._signature_cache_list[0], EnsembleSignatureCache):
-            return EnsemblePrototypeSignatureCacheList(cache.multiplicity() for cache in self._signature_cache_list)
+            return EnsemblePrototypeSignatureCacheList(
+                cache.multiplicity() for cache in self._signature_cache_list)
         result = [cache.multiplicity() for cache in self._signature_cache_list]
         return EnsemblePrototypeSignatureCacheList([result])
 
@@ -81,10 +85,12 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
 
     def __call__(self, prototypes, second, default=None):
         """
-        :param prototypes: List of prototypes to be checked; may include cluster representatives
+        :param prototypes: List of prototypes to be checked; may include cluster
+            representatives
         :param second: Current tree to be checked
         :param default: Default distance to return
-        :return: (Minimal) distance between first and second (if first includes several CRs)
+        :return: (Minimal) distance between first and second (if first includes
+            several CRs)
         """
         result = default
         # placeholder prototypes to access data
@@ -94,8 +100,8 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         second = SignatureWrapper(second)
         self.distance.init_distance(prototypes, prototypes_caches)
 
-        # TODO: update distance with regard to all signatures and related statistics (count, duration, value)
-
+        # TODO: update distance with regard to all signatures and related
+        # statistics (count, duration, value)
         for signature in second:
             matching_prototypes = prototypes_caches.get(signature=signature)
             supporters = second.get(signature=signature)
@@ -108,14 +114,18 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                     for statistics_key in statistics:
                         statistic = statistics.get(statistics_key, [])
                         for stat in statistic:
-                            count = int(math.ceil(stat.count))  # round up to always consider occurence
+                            # round up to always consider occurence
+                            count = int(math.ceil(stat.count))
                             for _ in range(count):
                                 # select for matches only specific signature
                                 self.distance.update_distance(
                                     prototypes=prototypes_caches.prototype_name,
                                     signature_prototypes=prototypes_caches,
                                     event_type=support_key,
-                                    matches=[matching_prototypes[idx] if idx == supporter_index else {} for idx, value in enumerate(matching_prototypes)]
+                                    matches=[matching_prototypes[idx]
+                                             if idx == supporter_index else {}
+                                             for idx, value in enumerate(
+                                        matching_prototypes)]
                                     # TODO: add values here
                                 )
         self.distance.finish_distance(prototypes, prototypes_caches)
@@ -125,9 +135,11 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
         tree_event_counts = second.multiplicity()
         for i, ensemble in enumerate(results):
             for j, prototype in enumerate(ensemble):
-                normalised_results.append([2 * results[i][j] / float(event_counts[j][i] + tree_event_counts[i] + results[i][j])])
+                normalised_results.append([2 * prototype / float(
+                    event_counts[j][i] + tree_event_counts[i] + prototype)])
         absolute_results = [mean_ensemble_distance(values) for values in zip(*results)]
-        normalised_results = [mean_ensemble_distance(values) for values in zip(*normalised_results)]
+        normalised_results = [mean_ensemble_distance(values)
+                              for values in zip(*normalised_results)]
         return min(normalised_results)
 
     def update(self, static, dynamic, dynamic_changes, base_distance=0, default=None):
@@ -151,19 +163,22 @@ class ClusterDistance(dengraph.distance.IncrementalDistance):
                 for ensemble_idx, signature_cache in enumerate(arg._signature_dicts):
                     # each position is another identity class
                     pc = PrototypeSignatureCache.from_signature_caches(
-                            [signature_cache],
-                            prototype=prototype[index],
-                            threshold=self.threshold)
+                        [signature_cache],
+                        prototype=prototype[index],
+                        threshold=self.threshold)
                     try:
                         tmp[ensemble_idx] += pc
                     except IndexError:
                         tmp.append(pc)
-            result = EnsemblePrototypeSignatureCache.from_prototype_signature_caches(cache_list=tmp)
+            result = EnsemblePrototypeSignatureCache.from_prototype_signature_caches(
+                cache_list=tmp)
             return result
         else:
-            return PrototypeSignatureCache.from_signature_caches(args,
-                                                                 prototype=prototype,
-                                                                 threshold=self.threshold)
+            return PrototypeSignatureCache.from_signature_caches(
+                args,
+                prototype=prototype,
+                threshold=self.threshold
+            )
 
     def median(self, *args, **kwargs):
         return NotImplementedError

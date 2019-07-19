@@ -1,5 +1,6 @@
 """
-Module implements the different kind of events that are supported in dynamic process trees.
+Module implements the different kind of events that are supported in dynamic
+process trees.
 """
 
 
@@ -26,7 +27,12 @@ class Event(object):
         """
         for node in tree.nodes(depth_first=False):
             # TODO: how to pass on complete dict?
-            yield ProcessStartEvent(tme=node.tme, pid=node.pid, ppid=node.ppid, name=node.name)
+            yield ProcessStartEvent(
+                tme=node.tme,
+                pid=node.pid,
+                ppid=node.ppid,
+                name=node.name
+            )
 
     @staticmethod
     def start(tme, pid, ppid, **kwargs):
@@ -53,7 +59,8 @@ class Event(object):
         process_exit_dict = vars(process).copy()
         process_exit_dict["start_tme"] = process_exit_dict["tme"]
         process_exit_dict["tme"] = process_exit_dict["exit_tme"]
-        process_exit_dict["value"] = process_exit_dict["tme"] - process_exit_dict["start_tme"]
+        process_exit_dict["value"] = process_exit_dict["tme"] - \
+            process_exit_dict["start_tme"]
 
         # prepare traffic events
         traffic_list = []
@@ -67,7 +74,8 @@ class Event(object):
                         **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
         except AttributeError:
             pass
-        return ProcessStartEvent(**process_dict), ProcessExitEvent(**process_exit_dict), \
+        return ProcessStartEvent(**process_dict), \
+            ProcessExitEvent(**process_exit_dict), \
             traffic_list
 
     @staticmethod
@@ -91,7 +99,8 @@ class Event(object):
         :param kwargs: Additional parameters
         :return: Created exit event
         """
-        return ProcessExitEvent(tme, pid, ppid, start_tme, value=(tme-start_tme), **kwargs)
+        return ProcessExitEvent(
+            tme, pid, ppid, start_tme, value=(tme - start_tme), **kwargs)
 
     @staticmethod
     def add(tme, pid, ppid, value, **kwargs):
@@ -148,8 +157,8 @@ class ProcessExitEvent(Event):
     """
 
     def __init__(self, tme, pid, ppid, start_tme, value=None, **kwargs):
-        Event.__init__(self, tme, pid, ppid, start_tme=start_tme, value=value or (tme-start_tme),
-                       **kwargs)
+        Event.__init__(self, tme, pid, ppid, start_tme=start_tme,
+                       value=value or (tme - start_tme), **kwargs)
         self._start_tme = start_tme
 
     @property

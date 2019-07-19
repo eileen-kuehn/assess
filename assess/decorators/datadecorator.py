@@ -7,7 +7,8 @@ from assess.decorators.decorator import Decorator
 
 class DataDecorator(Decorator):
     """
-    The DataDecorator collects information on the node count of currently analysed prototypes.
+    The DataDecorator collects information on the node count of currently
+    analysed prototypes.
 
     Returns data regarding ensembles in the following format:
     {
@@ -61,7 +62,8 @@ class DataDecorator(Decorator):
         try:
             if other.col_idx[0] not in self.col_idx:
                 for key in ["original", "converted"]:
-                    for index, ensemble_values in enumerate(other._data["prototypes"][key]):
+                    for index, ensemble_values in enumerate(
+                            other._data["prototypes"][key]):
                         self._data["prototypes"][key][index].extend(ensemble_values)
                 self.col_idx.extend(other.col_idx)
             if other.row_idx[0] not in self.row_idx:

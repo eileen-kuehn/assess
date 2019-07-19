@@ -1,5 +1,6 @@
 """
-This module offers an implementation to generate the distance matrix for given dynamic trees.
+This module offers an implementation to generate the distance matrix for given
+dynamic trees.
 """
 
 from assess.decorators.decorator import Decorator
@@ -9,8 +10,9 @@ from assess.algorithms.distances.ensembledistance import normalise_distance
 
 class DistanceMatrixDecorator(Decorator):
     """
-    The DistanceMatrixDecorator takes care on outputting distance results formatted like a
-    distance matrix. It differentiates between normalized and not normalized distance results.
+    The DistanceMatrixDecorator takes care on outputting distance results
+    formatted like a distance matrix. It differentiates between normalized and
+    not normalized distance results.
 
     Format to expect looks like this:
     [                               <- start of matrix
@@ -45,7 +47,8 @@ class DistanceMatrixDecorator(Decorator):
                 for single in result:
                     # cutting on -.01 because of inaccuracies in calculation
                     # TODO: ensure that values are not too low in minus
-                    adapted = [value if value is None or value >= -.01 else None for value in single]
+                    adapted = [value if value is None or value >= -.01 else
+                               None for value in single]
                     results[-1].append(adapted)
             return results
         return None
@@ -59,7 +62,8 @@ class DistanceMatrixDecorator(Decorator):
         if self._data and size < len(self._data) + 1:
             raise MatrixDoesNotMatchBounds(size, size, len(self._data) + 1)
         # add a new row for a new algorithm for each ensemble
-        # FIXME: when _prototypes differs in length with prototypes, then we are skipping parts
+        # FIXME: when _prototypes differs in length with prototypes,
+        # then we are skipping parts
         # of the matrix, try to show this in initialisation process!
         self._data.append([[None for _ in self.algorithm.prototypes]
                            for _ in range(self.algorithm.signature.count)])
@@ -67,26 +71,29 @@ class DistanceMatrixDecorator(Decorator):
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
 
     def _tree_finished(self, result):
-        distance_data = self.algorithm.distance.distance_for_prototypes(self.algorithm.prototypes)
+        distance_data = self.algorithm.distance.distance_for_prototypes(
+            self.algorithm.prototypes)
         size = self._matrix_size()
         try:
             if size < len(distance_data[0]):
                 raise MatrixDoesNotMatchBounds(size, len(result), len(self._data))
         except IndexError:
-            # apparently, nothing has been added to tree, so we assume a distance of prototype size
+            # apparently, nothing has been added to tree, so we assume a distance
+            # of prototype size
             pass
         else:
             event_counts = self._algorithm.event_counts()
             for i, ensemble_result in enumerate(distance_data):
                 for j, prototype_result in enumerate(ensemble_result):
                     if self._normalized:
-                        # changed formula to be consistent with distance definition from thesis
+                        # changed formula to be consistent with distance
+                        # definition from thesis
                         self._data[-1][i][j] = normalise_distance(
-                            distance=distance_data[i][j],
+                            distance=prototype_result,
                             size_prototype=self._tmp_prototype_counts[i][j],
                             size_tree=event_counts[i][j])
                     else:
-                        self._data[-1][i][j] = distance_data[i][j]
+                        self._data[-1][i][j] = prototype_result
 
     def _matrix_size(self):
         if self._data is None:
@@ -123,11 +130,13 @@ class DistanceMatrixDecorator(Decorator):
                 self.row_idx[0] = other.row_idx[0]
                 # as we are starting a new row, we can also take col index
                 self.col_idx[0] = other.col_idx[0]
-            elif other.row_idx[0] == self.row_idx[0] and other.col_idx[0] > self.col_idx[0]:
+            elif other.row_idx[0] == self.row_idx[0] and other.col_idx[0] > \
+                    self.col_idx[0]:
                 # append new prototypes
                 for tree_idx, tree_values in enumerate(other._data):
                     for ensemble_idx, ensemble_values in enumerate(tree_values):
-                        self._data[-(len(other._data) - tree_idx)][ensemble_idx].extend(ensemble_values)
+                        self._data[-(len(other._data) - tree_idx)][ensemble_idx].extend(
+                            ensemble_values)
                 self.col_idx[0] = other.col_idx[0]
             return self
         except AttributeError:

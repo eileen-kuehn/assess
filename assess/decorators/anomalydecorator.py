@@ -3,9 +3,9 @@ from assess.decorators.decorator import Decorator
 
 class AnomalyDecorator(Decorator):
     """
-    The anomaly detector works based on each event for given prototypes and ensembles. For each
-    event it is determined if it is handled as an anomaly or not. If it might be an anomaly, True
-    is appended, False otherwise.
+    The anomaly detector works based on each event for given prototypes and
+    ensembles. For each event it is determined if it is handled as an anomaly
+    or not. If it might be an anomaly, True is appended, False otherwise.
 
     The results are given in the following format:
     [
@@ -54,12 +54,14 @@ class AnomalyDecorator(Decorator):
         if result is not None:
             for i, ensemble_result in enumerate(result):
                 for j, prototype_result in enumerate(ensemble_result):
-                    self._data[-1][i][j].append(not ranges[i][0] <= result[i][j] <= ranges[i][1])
+                    self._data[-1][i][j].append(
+                        not ranges[i][0] <= prototype_result <= ranges[i][1])
         else:
             for i, prototype in enumerate(self.algorithm.distance.iter_on_prototypes(
                     self._algorithm.prototypes)):
                 for j, ensemble in enumerate(prototype):
-                    self._data[-1][j][i].append(not ranges[j][i][0] <= ensemble <= ranges[j][i][1])
+                    self._data[-1][j][i].append(
+                        not ranges[j][i][0] <= ensemble <= ranges[j][i][1])
         self._last_event_counts = None
 
     def _event_added(self, event, result):
@@ -73,15 +75,17 @@ class AnomalyDecorator(Decorator):
         # Format for ranges: [(e1), ..., (en)]
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
-                self._data[-1][i][j].append(not ranges[i][j][0] <= prototype_result <= ranges[i][j][1])
+                self._data[-1][i][j].append(
+                    not ranges[i][j][0] <= prototype_result <= ranges[i][j][1])
 
     def _update(self, decorator):
         self._data.extend(decorator.data())
 
     def _finished_range(self):
         result = []
-        for i, ensemble_result in enumerate(self._tmp_prototype_counts):
-            result.append([(0, max_value * self._percentage) for max_value in ensemble_result])
+        for ensemble_result in self._tmp_prototype_counts:
+            result.append(
+                [(0, max_value * self._percentage) for max_value in ensemble_result])
         return result
 
     def _current_range(self, progress):
@@ -89,8 +93,8 @@ class AnomalyDecorator(Decorator):
         weighted_progress = []
         try:
             for elements in progress:
-                weighted_progress.append(sum([value * self._tmp_event_weights.get(key, 1)
-                                              for key, value in elements.items()]))
+                weighted_progress.append(sum([value * self._tmp_event_weights.get(
+                    key, 1) for key, value in elements.items()]))
         except AttributeError:
             weighted_progress = progress
         # Format for result: [ve1, ..., ven]

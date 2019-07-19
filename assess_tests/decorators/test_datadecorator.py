@@ -58,7 +58,9 @@ class TestDataDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"data": {
                 "prototypes": {
-                    "original": [[5, 5]],  # FIXME: hier bin ich mir nicht sicher, ob dass das sagt, was ich gern hätte...
+                    # FIXME: hier bin ich mir nicht sicher, ob dass das sagt,
+                    # was ich gern hätte...
+                    "original": [[5, 5]],
                     "converted": [[3, 3]]
                 },
                 "monitoring": {

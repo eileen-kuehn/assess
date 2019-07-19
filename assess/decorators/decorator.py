@@ -1,6 +1,6 @@
 """
-This module implements a base decorator for ASSESS. It ensures the correct encapsulation of
-decorators and wraps the actual algorithm being used.
+This module implements a base decorator for ASSESS. It ensures the correct
+encapsulation of decorators and wraps the actual algorithm being used.
 """
 import types
 
@@ -26,7 +26,8 @@ class EventWrapper(object):
 
 class Decorator(object):
     """
-    Base decorator for ASSESS to measure different statistics based on methods of algorithm class.
+    Base decorator for ASSESS to measure different statistics based on methods
+    of algorithm class.
     """
     def __init__(self, name="decorator"):
         self._algorithm = None
@@ -41,64 +42,83 @@ class Decorator(object):
             # FIXME: how to pass parameter?
             return AnomalyDecorator()
         elif "normalized_ensembles" in name:
-            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            from assess.decorators.ensemblematrixdecorator import \
+                EnsembleMatrixDecorator
             return EnsembleMatrixDecorator(normalized=True)
         elif "normalized_ensembledistances" in name:
-            from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
+            from assess.decorators.ensembledistancedecorator import \
+                EnsembleDistanceDecorator
             return EnsembleDistanceDecorator(normalized=True)
         elif "ensembledistances" in name:
-            from assess.decorators.ensembledistancedecorator import EnsembleDistanceDecorator
+            from assess.decorators.ensembledistancedecorator import \
+                EnsembleDistanceDecorator
             return EnsembleDistanceDecorator(normalized=False)
         elif "ensembleanomaly" in name:
-            from assess.decorators.ensembleanomalydecorator import EnsembleAnomalyDecorator
+            from assess.decorators.ensembleanomalydecorator import \
+                EnsembleAnomalyDecorator
             return EnsembleAnomalyDecorator()
         elif "compression" in name:
-            from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
+            from assess.decorators.compressionfactordecorator import \
+                CompressionFactorDecorator
             return CompressionFactorDecorator()
         elif "data" in name:
             from assess.decorators.datadecorator import DataDecorator
             return DataDecorator()
         elif "normalized_ensembles" in name:
-            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            from assess.decorators.ensemblematrixdecorator import \
+                EnsembleMatrixDecorator
             return EnsembleMatrixDecorator(normalized=True)
         elif "ensembles" in name:
-            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            from assess.decorators.ensemblematrixdecorator import \
+                EnsembleMatrixDecorator
             return EnsembleMatrixDecorator(normalized=False)
         elif "normalized_distances" in name:
-            from assess.decorators.distancedecorator import DistanceDecorator
+            from assess.decorators.distancedecorator import \
+                DistanceDecorator
             return DistanceDecorator(normalized=True)
         elif "distances" in name:
-            from assess.decorators.distancedecorator import DistanceDecorator
+            from assess.decorators.distancedecorator import \
+                DistanceDecorator
             return DistanceDecorator(normalized=False)
         elif "normalized_matrix" in name:
-            from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+            from assess.decorators.distancematrixdecorator import \
+                DistanceMatrixDecorator
             return DistanceMatrixDecorator(normalized=True)
         elif "matrix" in name:
-            from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
+            from assess.decorators.distancematrixdecorator import \
+                DistanceMatrixDecorator
             return DistanceMatrixDecorator(normalized=False)
         elif "accumulated_distance_performance" in name:
-            from assess.decorators.distanceperformancedecorator import DistancePerformanceDecorator
+            from assess.decorators.distanceperformancedecorator import \
+                DistancePerformanceDecorator
             return DistancePerformanceDecorator(accumulated=True)
         elif "distance_performance" in name:
-            from assess.decorators.distanceperformancedecorator import DistancePerformanceDecorator
+            from assess.decorators.distanceperformancedecorator import \
+                DistancePerformanceDecorator
             return DistancePerformanceDecorator(accumulated=False)
         elif "accumulated_performance" in name:
-            from assess.decorators.performancedecorator import PerformanceDecorator
+            from assess.decorators.performancedecorator import \
+                PerformanceDecorator
             return PerformanceDecorator(accumulated=True)
         elif "performance" in name:
-            from assess.decorators.performancedecorator import PerformanceDecorator
+            from assess.decorators.performancedecorator import \
+                PerformanceDecorator
             return PerformanceDecorator(accumulated=False)
         elif "accumulated_signature_performance" in name:
-            from assess.decorators.signatureperformancedecorator import SignaturePerformanceDecorator
+            from assess.decorators.signatureperformancedecorator import \
+                SignaturePerformanceDecorator
             return SignaturePerformanceDecorator(accumulated=True)
         elif "signature_performance" in name:
-            from assess.decorators.signatureperformancedecorator import SignaturePerformanceDecorator
+            from assess.decorators.signatureperformancedecorator import \
+                SignaturePerformanceDecorator
             return SignaturePerformanceDecorator(accumulated=False)
         elif "signature" in name:
-            from assess.decorators.signaturedecorator import SignatureDecorator
+            from assess.decorators.signaturedecorator import \
+                SignatureDecorator
             return SignatureDecorator()
         elif "ensembles" in name:
-            from assess.decorators.ensemblematrixdecorator import EnsembleMatrixDecorator
+            from assess.decorators.ensemblematrixdecorator import \
+                EnsembleMatrixDecorator
             return EnsembleMatrixDecorator(normalized=False)
 
     @property
@@ -191,16 +211,18 @@ class Decorator(object):
         if self.decorator:
             result = self.decorator.add_event(event, **kwargs)
         else:
-            result = self._algorithm.__class__.add_event(self._algorithm, event, **kwargs)
+            result = self._algorithm.__class__.add_event(
+                self._algorithm, event, **kwargs)
         if result is not None:
-            # Functionality has been changed to a list of results, so for each result the
-            # internal method :py:meth:_event_added is called
-            # TODO: maybe inform internal method about the actual event difference per step?
+            # Functionality has been changed to a list of results, so for each
+            # result the internal method :py:meth:_event_added is called
+            # TODO: maybe inform internal method about the actual event
+            # difference per step?
             tmp_event = EventWrapper()
             for index, single_result in enumerate(result[:]):
-                # given the assumption that none of the decorators requires the event but the
-                # signature decorator requires single list of signatures, we will prepare the
-                # event accordingly
+                # given the assumption that none of the decorators requires
+                # the event but the signature decorator requires single list of
+                # signatures, we will prepare the event accordingly
                 tmp_event.signature = event.signature[index]
                 tmp_event.type = type(event)
                 self._event_added(tmp_event, single_result)
@@ -208,9 +230,10 @@ class Decorator(object):
 
     def update(self, decorator):
         """
-        This method is intended to update a specific decorator with another part. This is especially
-        useful when using multiprocessing. Then it might happen, that a single run is splitted into
-        several parts that should afterwards be recombined.
+        This method is intended to update a specific decorator with another part.
+        This is especially useful when using multiprocessing. Then it might happen,
+        that a single run is splitted into several parts that should afterwards
+        be recombined.
 
         :param decorator: A decorator to add to current values
         """
@@ -251,8 +274,9 @@ class Decorator(object):
 
     def descriptive_data(self):
         """
-        Method to receive the data that was collected by the decorator. It also includes a
-        description about the decorator itself to be self-explanatory in e.g. json output.
+        Method to receive the data that was collected by the decorator.
+        It also includes a description about the decorator itself to be
+        self-explanatory in e.g. json output.
 
         :return: Descriptive string containing the data
         """

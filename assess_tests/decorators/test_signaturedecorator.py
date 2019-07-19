@@ -1,8 +1,9 @@
 import unittest
 
+from assess.algorithms.signatures.signatures import \
+    ParentChildByNameTopologySignature, ParentChildOrderByNameTopologySignature
 from assess.decorators.signaturedecorator import SignatureDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.events.events import Event
 
@@ -18,7 +19,8 @@ class TestSignatureDecorator(unittest.TestCase):
 
     def test_signatures(self):
         decorator = SignatureDecorator()
-        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature())
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=ParentChildByNameTopologySignature())
         algorithm.prototypes = [simple_prototype()]
         decorator.wrap_algorithm(algorithm)
 
@@ -50,8 +52,10 @@ class TestSignatureDecorator(unittest.TestCase):
     def test_ensemble_signature(self):
         decorator = SignatureDecorator()
         algorithm = IncrementalDistanceAlgorithm(
-            signature=EnsembleSignature(signatures=[ParentChildByNameTopologySignature(),
-                                                    ParentChildOrderByNameTopologySignature()]))
+            signature=EnsembleSignature(
+                signatures=[ParentChildByNameTopologySignature(),
+                            ParentChildOrderByNameTopologySignature()])
+        )
         algorithm.prototypes = [simple_prototype(), simple_monitoring_tree()]
         decorator.wrap_algorithm(algorithm)
 
@@ -96,4 +100,3 @@ class TestSignatureDecorator(unittest.TestCase):
             '.0.1_muh_245236498',
             '.0.2_test_245236498',
             '.0.3_muh_245236498']]]})
-

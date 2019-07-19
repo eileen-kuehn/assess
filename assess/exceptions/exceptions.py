@@ -35,7 +35,8 @@ class TreeNotStartedException(Exception):
     def __init__(self):
         Exception.__init__(
             self,
-            "Event was added without correct initialisation of algorithm (tree not started)"
+            "Event was added without correct initialisation of algorithm "
+            "(tree not started)"
         )
 
 
@@ -62,7 +63,8 @@ class MatrixDoesNotMatchBounds(Exception):
     def __init__(self, expected=None, width=None, height=None):
         Exception.__init__(
             self,
-            "The bounds of the matrix do not match (expected: %dx%d, received: width %d, height %d"
+            "The bounds of the matrix do not match (expected: %dx%d, "
+            "received: width %d, height %d"
             % (expected, expected, width, height)
         )
 

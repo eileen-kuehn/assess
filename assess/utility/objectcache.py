@@ -18,9 +18,10 @@ class ObjectCache(object):
                  key_function=lambda data: data.pid,
                  value_function=lambda data: data.tme):
         """
-        Method takes care to add the given data object into the cache. The *key* and
-        *value* to be stored can be given. Otherwise the method tries to access the
-        parameters directly by utilising :py:attr:`key_name` and :py:attr:`value_name`.
+        Method takes care to add the given data object into the cache.
+        The *key* and *value* to be stored can be given. Otherwise the method
+        tries to access the parameters directly by utilising :py:attr:`key_name`
+        and :py:attr:`value_name`.
 
         Attention: The method also takes care, that the value is stored in data.
         If it is available, it is extended.
@@ -37,18 +38,20 @@ class ObjectCache(object):
             value = value_function(data)
 
         try:
-            value_list = [int(value_function(process)) for process in self._object_cache[key]]
+            value_list = [int(value_function(process))
+                          for process in self._object_cache[key]]
             index = bisect.bisect_left(value_list, int(value))
             self._object_cache[key].insert(index, data)
         except KeyError:
             self._object_cache[key] = [data]
 
-    def get_data(self, value=None, key=None, remember_error=False, validate_range=False,
+    def get_data(self, value=None, key=None, remember_error=False,
+                 validate_range=False,
                  range_end_value_function=lambda data: data.exit_tme,
                  value_function=lambda data: data.tme):
         """
-        Method returns the closest matching data objects specified by given *key* and
-        *value*. If no data is found, `None` is returned.
+        Method returns the closest matching data objects specified by given
+        *key* and *value*. If no data is found, `None` is returned.
         If specified, unmatched keys are remembered for further reference.
 
         :param value: value to look for

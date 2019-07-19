@@ -19,9 +19,15 @@ if __name__ == '__main__':
         author_email=package_about['__email__'],
         url="https://bitbucket.org/teamkseta/assess",
         packages=setuptools.find_packages(),
-        dependency_links = ['git+ssh://git@github.com:MaineKuehn/dengraph.git',
-                            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git'],
+        dependency_links=[
+            'git+ssh://git@github.com:MaineKuehn/dengraph.git',
+            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git'
+        ],
         install_requires=["zss", 'dengraph', 'treedistancegenerator', 'filelock'],
+        extras_require={
+            'docs': ["sphinx", "sphinx_rtd_theme"],
+            'contrib': ['flake8', 'flake8-bugbear'],
+        },
         # unit tests
         test_suite='assess_tests',
     )

@@ -1,12 +1,13 @@
 """
-This module implements the possibility to encapsulate different signatures into one single
-signature. This allows to pick the best available signature to calculate distances.
+This module implements the possibility to encapsulate different signatures into
+one single signature. This allows to pick the best available signature to
+calculate distances.
 """
 from itertools import zip_longest
 
 from assess.algorithms.signatures.signatures import Signature
-from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache, \
-    EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignaturecache import \
+    EnsembleSignatureCache, EnsemblePrototypeSignatureCache
 
 
 class EnsembleSignatureList(list):
@@ -32,9 +33,9 @@ class EnsembleSignature(Signature):
 
     def get_signature(self, node, parent):
         """
-        EnsembleSignature calls all of its signatures to get the relevant tokens. Those are appended
-        to a list to be returned. The position in the list defines the signature that was used to
-        generate the token.
+        EnsembleSignature calls all of its signatures to get the relevant tokens.
+        Those are appended to a list to be returned. The position in the list
+        defines the signature that was used to generate the token.
 
         :param node:
         :param parent:

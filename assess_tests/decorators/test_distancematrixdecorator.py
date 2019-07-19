@@ -4,7 +4,7 @@ from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.events.events import Event
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
-from assess_tests.basedata import simple_prototype, simple_monitoring_tree, \
+from assess_tests.basedata import simple_prototype, \
     simple_additional_monitoring_tree
 
 
@@ -66,7 +66,9 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[None]]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            "normalized_matrix": [[[None]]]
+        })
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[1]]]})
 
@@ -83,14 +85,16 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         for event in Event.from_tree(simple_prototype()):
             decorator.add_event(event)
         decorator.finish_tree()
-        # old method: self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0, .25]]]})
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0, .4]]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            "normalized_matrix": [[[0, .4]]]
+        })
         decorator.start_tree()
         for event in Event.from_tree(simple_additional_monitoring_tree()):
             decorator.add_event(event)
         decorator.finish_tree()
-        # old method: self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0.0, .25]], [[.25, 0.0]]]})
-        self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0.0, .4]], [[.4, 0.0]]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            "normalized_matrix": [[[0.0, .4]], [[.4, 0.0]]]
+        })
         self.assertRaises(MatrixDoesNotMatchBounds, decorator.start_tree)
 
     def test_update(self):
@@ -99,11 +103,13 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         second_decorator = DistanceMatrixDecorator(normalized=True)
         second_decorator._data = [[[6], [7], [8], [9], [10]]]
         decorator.update(second_decorator)
-        self.assertEqual(decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])
+        self.assertEqual(
+            decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])
 
         decorator = DistanceMatrixDecorator(normalized=False)
         decorator._data = [[[1], [2], [3], [4], [5]]]
         second_decorator = DistanceMatrixDecorator(normalized=False)
         second_decorator._data = [[[6], [7], [8], [9], [10]]]
         decorator.update(second_decorator)
-        self.assertEqual(decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])
+        self.assertEqual(
+            decorator.data(), [[[1], [2], [3], [4], [5]], [[6], [7], [8], [9], [10]]])

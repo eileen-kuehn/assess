@@ -16,7 +16,11 @@ class TreeEditDistance(Distance):
 
     def init_distance(self, tree, signature, **kwargs):
         Distance.init_distance(self, **kwargs)
-        self.supported = {ProcessStartEvent: True, ProcessExitEvent: False, TrafficEvent: False}
+        self.supported = {
+            ProcessStartEvent: True,
+            ProcessExitEvent: False,
+            TrafficEvent: False
+        }
         self._tree = tree
         self._signature = signature
 
@@ -26,9 +30,8 @@ class TreeEditDistance(Distance):
             return [[prototype.node_count()] for prototype in prototypes]
         return self._tree.node_count()
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
-                        **kwargs):
-        # don't do anything here
+    def update_distance(self, prototypes, signature_prototypes, event_type=None,
+                        matches=None, **kwargs):
         pass
 
     def finish_distance(self, prototypes, signature_prototypes):
@@ -36,7 +39,8 @@ class TreeEditDistance(Distance):
 
         result_dict = dict.fromkeys(prototypes, 0)
         for prototype in prototypes:
-            result_dict[prototype] = self._calculate_distance(prototype.root(), tree.root())
+            result_dict[prototype] = self._calculate_distance(
+                prototype.root(), tree.root())
 
         # add local node distance to global tree distance
         # taking index 0 here, because usually, TED is not used in an ensemble

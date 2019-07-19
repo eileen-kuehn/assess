@@ -1,7 +1,10 @@
 import unittest
 
-from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
+from assess.algorithms.signatures.signatures import Signature, \
+    ParentChildByNameTopologySignature, ParentChildOrderTopologySignature, \
+    ParentChildOrderByNameTopologySignature, \
+    ParentCountedChildrenByNameTopologySignature
 from assess.prototypes.simpleprototypes import Prototype
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
@@ -16,19 +19,19 @@ class TestSignatureFunctionalities(unittest.TestCase):
     def setUp(self):
         self.prototype = Prototype()
         root = self.prototype.add_node("root", ppid=0, pid=1)
-        for i in range(10):
+        for _ in range(10):
             root.add_node("child")
-        for i in range(10):
+        for _ in range(10):
             root.add_node("child2")
-        for i in range(10):
+        for _ in range(10):
             root.add_node("child")
-        for i in range(10):
+        for _ in range(10):
             root.add_node("child2")
         child_node = list(root.children())[2]
         for i in range(10):
             child_node.add_node(i)
         child_child_node = list(child_node.children())[0]
-        for i in range(5):
+        for _ in range(5):
             child_child_node.add_node("child")
 
     def test_base_signature(self):
@@ -40,7 +43,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
         for node in self.prototype.nodes():
             signatures.add(signature.get_signature(node, node.parent()))
         # TODO: is this really correct?
-        #self.assertEqual(len(signatures), self.prototype.node_count())
+        # self.assertEqual(len(signatures), self.prototype.node_count())
         self.assertEqual(len(signatures), 13)
 
     def test_parent_child_by_name_topology_signature(self):
@@ -49,15 +52,14 @@ class TestSignatureFunctionalities(unittest.TestCase):
 
         # ensure that "same nodes" get same signature
         root = self.prototype.root()
-        node_signature = None
         signatures = set()
         for child in root.children():
             current_signature = signature.get_signature(child, root)
             signatures.add(current_signature)
-            self.assertEqual(current_signature,
-                             ParentChildByNameTopologySignature.signature_string(
-                                 child.name,
-                                 signature.get_signature(root, None) if root is not None else ""))
+            self.assertEqual(
+                current_signature, ParentChildByNameTopologySignature.signature_string(
+                    child.name, signature.get_signature(
+                        root, None) if root is not None else ""))
         self.assertEqual(len(signatures), 2)
 
         child_node = list(root.children())[2]
@@ -65,10 +67,10 @@ class TestSignatureFunctionalities(unittest.TestCase):
         for child in child_node.children():
             current_signature = signature.get_signature(child, child_node)
             signatures.add(current_signature)
-            self.assertEqual(current_signature,
-                             ParentChildByNameTopologySignature.signature_string(
-                                 child.name,
-                                 signature.get_signature(child_node, None) if child_node is not None else ""))
+            self.assertEqual(
+                current_signature, ParentChildByNameTopologySignature.signature_string(
+                    child.name, signature.get_signature(
+                        child_node, None) if child_node is not None else ""))
         self.assertEqual(len(signatures), 10)
 
         # test if there are "just" 13 different signatures
@@ -76,10 +78,10 @@ class TestSignatureFunctionalities(unittest.TestCase):
         for node in self.prototype.nodes():
             current_signature = signature.get_signature(node, node.parent())
             signatures.add(current_signature)
-            self.assertEqual(current_signature,
-                             ParentChildByNameTopologySignature.signature_string(
-                                 node.name,
-                                 signature.get_signature(node.parent(), None) if node.parent() is not None else ""))
+            self.assertEqual(
+                current_signature, ParentChildByNameTopologySignature.signature_string(
+                    node.name, signature.get_signature(
+                        node.parent(), None) if node.parent() is not None else ""))
         self.assertEqual(len(signatures), 14)
 
     def test_parent_child_order_topology_signature(self):
@@ -142,7 +144,9 @@ class TestSignatureFunctionalities(unittest.TestCase):
 
     def test_representation(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=5)
-        self.assertEqual(signature.__repr__(), "ParentCountedChildrenByNameTopologySignature (count: 5)")
+        self.assertEqual(
+            signature.__repr__(),
+            "ParentCountedChildrenByNameTopologySignature (count: 5)")
 
     def test_custom_creation(self):
         signature = Signature()
@@ -165,9 +169,9 @@ class TestSignatureFunctionalities(unittest.TestCase):
                 signatures.update(signature.finish_node(node.parent()))
         print(signatures)
         self.assertEqual(
-            set({'_root_1', '_test_192807604', 'muh__192807604', 'muh_test__192807604',
-                 'muh_test_muh_192807604', 'test_muh_192807604',
-                 'test_muh_test_192807604'}), signatures)
+            {'_root_1', '_test_192807604', 'muh__192807604', 'muh_test__192807604',
+             'muh_test_muh_192807604', 'test_muh_192807604', 'test_muh_test_192807604'},
+            signatures)
 
     def test_count_signature_for_correct_zero_distance(self):
         signature = ParentCountedChildrenByNameTopologySignature(count=3)
@@ -187,9 +191,11 @@ class TestSignatureFunctionalities(unittest.TestCase):
         self.assertEqual([[[0]]], decorator.data())
 
     def test_node_count_for_correct_zero_distance(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(),
-                                                  ParentCountedChildrenByNameTopologySignature(count=3)])
-        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=SimpleDistance)
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentCountedChildrenByNameTopologySignature(count=3)])
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=signature, distance=SimpleDistance)
         data_decorator = DataDecorator()
         data_decorator.wrap_algorithm(algorithm)
         algorithm.prototypes = [real_tree()]
@@ -201,6 +207,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
             except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
-        self.assertEqual([tree_value for values in data_decorator.data().get("prototypes", {}).get("converted", []) for tree_value in values],
-                         [tree_value for values in data_decorator.data().get("monitoring", {}).get("converted", []) for tree_value in values])
-
+        self.assertEqual([tree_value for values in data_decorator.data().get(
+            "prototypes", {}).get("converted", []) for tree_value in values],
+            [tree_value for values in data_decorator.data().get(
+             "monitoring", {}).get("converted", []) for tree_value in values])

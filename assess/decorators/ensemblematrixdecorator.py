@@ -1,6 +1,7 @@
 """
-This module offers an implementation to output the different distances for dynamic trees based
-on the single events that are processed. The actual output is in form of a vector.
+This module offers an implementation to output the different distances for
+dynamic trees based on the single events that are processed. The actual output
+is in form of a vector.
 """
 from assess.decorators.decorator import Decorator
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
@@ -8,8 +9,8 @@ from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
 
 class EnsembleMatrixDecorator(Decorator):
     """
-    The EnsembleMatrixDecorator evaluates given distance results from ensembles and determines
-    the distance ensemble result.
+    The EnsembleMatrixDecorator evaluates given distance results from ensembles
+    and determines the distance ensemble result.
 
     Attention: currently ensemble only considers the mean for given signatures!
 
@@ -51,34 +52,32 @@ class EnsembleMatrixDecorator(Decorator):
         # add a new row for a new algorithm for only _one_ ensemble
         self._data.append([[prototype for prototype in self._tmp_prototype_counts[0]]])
         self._last_distance_event = self._tmp_prototype_counts
-        # FIXME: self._data.append([prototype for prototype in self._tmp_prototype_counts[0]])
+        # FIXME: self._data.append([prototype for prototype in self._
+        # tmp_prototype_counts[0]])
 
     def _tree_finished(self, result):
-        event_counts = self._algorithm.event_counts()  # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+        # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+        event_counts = self._algorithm.event_counts()
 
-        i=0
-        for j, prototype_result in enumerate(event_counts[0]):
+        i = 0
+        for j, prototype_result in enumerate(event_counts[i]):
             if self._normalized:
                 distance = self._data[-1][i][j]
                 self._data[-1][i][j] = 2 * distance / float(
-                    event_counts[i][j] + self._tmp_prototype_counts[i][j] + distance)
+                    prototype_result + self._tmp_prototype_counts[i][j] + distance)
             else:
                 pass
 
     def _event_added(self, event, result):
         # result looks like [[p1e1, ..., pne1], ..., [p1en, ..., pnen]]
-        event_counts = self._algorithm.event_counts()  # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
-        # check if we have equal number of events for different ensembles
-        # FIXME: removed assertion for equal count of events
-        # assert 1 in set([len(set(elem)) for elem in zip(*event_counts)])
-
         tmp_differences = [0 for _ in self._algorithm.prototypes]
         # accumulate all differences first
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
-                tmp_differences[j] += result[i][j] - self._last_distance_event[i][j]
+                tmp_differences[j] += prototype_result - self._last_distance_event[i][j]
         # then divide by number of ensembles to get mean
-        tmp_differences = [value / float(len(self._tmp_prototype_counts)) for value in tmp_differences]
+        tmp_differences = [value / float(len(self._tmp_prototype_counts))
+                           for value in tmp_differences]
         ensemble_idx = 0
         for index, difference in enumerate(tmp_differences):
             self._data[-1][ensemble_idx][index] += difference
@@ -119,11 +118,13 @@ class EnsembleMatrixDecorator(Decorator):
                 self.row_idx[0] = other.row_idx[0]
                 # as we are starting a new row, we can also take col index
                 self.col_idx[0] = other.col_idx[0]
-            elif other.row_idx[0] == self.row_idx[0] and other.col_idx[0] > self.col_idx[0]:
+            elif other.row_idx[0] == \
+                    self.row_idx[0] and other.col_idx[0] > self.col_idx[0]:
                 # append new prototypes
                 for tree_idx, tree_values in enumerate(other._data):
                     for ensemble_idx, ensemble_values in enumerate(tree_values):
-                        self._data[-(len(other._data) - tree_idx)][ensemble_idx].extend(ensemble_values)
+                        self._data[-(len(other._data) - tree_idx)][ensemble_idx].extend(
+                            ensemble_values)
                 self.col_idx[0] = other.col_idx[0]
             return self
         except AttributeError:

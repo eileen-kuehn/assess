@@ -1,7 +1,7 @@
 import unittest
 
 from assess.algorithms.distances.startexitsimilarity import StartExitSimilarity
-from assess.algorithms.signatures.signatures import *
+from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
 from assess.events.events import ProcessStartEvent
 from assess_tests.algorithms.distances.test_distance import algorithm, monitoring_tree
 
@@ -11,20 +11,32 @@ class TestStartExitSimilarity(unittest.TestCase):
         self.algorithm = algorithm(signature=ParentChildByNameTopologySignature())
 
     def test_creation(self):
-        similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
-        similarity.init_distance(prototypes=self.algorithm.prototypes, signature_prototypes=self.algorithm.signature_prototypes)
+        similarity = StartExitSimilarity(
+            signature_count=self.algorithm.signature.count)
+        similarity.init_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes
+        )
 
-        for index, dist in enumerate(similarity.iter_on_prototypes(self.algorithm.prototypes)):
+        last_index = 0
+        for index, dist in enumerate(similarity.iter_on_prototypes(
+                self.algorithm.prototypes)):
             self.assertEqual(dist, [0])
-        self.assertEqual(index, 0)
+            last_index = index
+        self.assertEqual(last_index, 0)
 
     def test_base_similarity(self):
-        similarity = StartExitSimilarity(signature_count=self.algorithm.signature.count)
-        similarity.init_distance(prototypes=self.algorithm.prototypes, signature_prototypes=self.algorithm.signature_prototypes)
+        similarity = StartExitSimilarity(
+            signature_count=self.algorithm.signature.count)
+        similarity.init_distance(
+            prototypes=self.algorithm.prototypes,
+            signature_prototypes=self.algorithm.signature_prototypes
+        )
 
         for index, node in enumerate(monitoring_tree().nodes()):
             node_signature = self.algorithm.signature.get_signature(node, node.parent())
-            matching_prototypes = self.algorithm.signature_prototypes.get(signature=[node_signature])
+            matching_prototypes = self.algorithm.signature_prototypes.get(
+                signature=[node_signature])
             similarity.update_distance(
                 prototypes=self.algorithm.prototypes,
                 signature_prototypes=self.algorithm.signature_prototypes,

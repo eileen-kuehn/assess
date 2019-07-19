@@ -21,7 +21,7 @@ class TestRandomGenerator(unittest.TestCase):
         for event in rg:
             self.assertIsNotNone(event)
             event_counter += 1
-        self.assertEqual(event_counter, 101*2)
+        self.assertEqual(event_counter, 101 * 2)
 
     def test_default_generator_incremental_distance(self):
         rg = RandomGenerator(seed=1234)
@@ -62,7 +62,7 @@ class TestRandomGenerator(unittest.TestCase):
 
         decorator.start_tree()
         for event in rg:
-            distance = decorator.add_event(event)
+            decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.data()[-1][-1][-1][-1], 0)
 

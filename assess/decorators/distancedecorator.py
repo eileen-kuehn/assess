@@ -1,6 +1,7 @@
 """
-This module offers an implementation to output the different distances for dynamic trees based
-on the single events that are processed. The actual output is in form of a vector.
+This module offers an implementation to output the different distances for dynamic
+trees based on the single events that are processed. The actual output is in form
+of a vector.
 """
 
 from assess.decorators.decorator import Decorator
@@ -8,8 +9,9 @@ from assess.decorators.decorator import Decorator
 
 class DistanceDecorator(Decorator):
     """
-    The DistanceDecorator takes care to initialize a vector of distances. For each event the current
-    distance is given. The class also differentiates between normalized and not normalized results.
+    The DistanceDecorator takes care to initialize a vector of distances.
+    For each event the current distance is given. The class also differentiates
+    between normalized and not normalized results.
 
     The results are given in the following format:
     [
@@ -56,14 +58,17 @@ class DistanceDecorator(Decorator):
 
     def _event_added(self, event, result):
         # result looks like [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
-        event_counts = self._algorithm.event_counts()  # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+        # [[e1p1, ..., e1pn], ..., [enp1, ..., enpn]]
+        event_counts = self._algorithm.event_counts()
 
         for i, ensemble_result in enumerate(result):
             for j, prototype_result in enumerate(ensemble_result):
                 if self._normalized:
-                    # changed formula to be consistent with distance definition from thesis
-                    self._data[-1][i][j].append(2 * result[i][j] / float(
-                        event_counts[i][j] + self._tmp_prototype_counts[i][j] + result[i][j]))
+                    # changed formula to be consistent with distance definition
+                    # from thesis
+                    self._data[-1][i][j].append(2 * prototype_result / float(
+                        event_counts[i][j] + self._tmp_prototype_counts[i][j]
+                        + prototype_result))
                 else:
                     self._data[-1][i][j].append(result[i][j])
 

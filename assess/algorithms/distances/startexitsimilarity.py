@@ -9,8 +9,9 @@ from assess.events.events import ProcessExitEvent, ProcessStartEvent
 
 class StartExitSimilarity(Distance):
     """
-    The StartExitSimilarity calculates a similarity for dynamic trees based on their start and
-    exit events. For exit events statistics like mean and variance are considered.
+    The StartExitSimilarity calculates a similarity for dynamic trees based on
+    their start and exit events. For exit events statistics like mean and variance
+    are considered.
     """
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
@@ -19,15 +20,18 @@ class StartExitSimilarity(Distance):
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
-        self._signature_cache = [SignatureCache(statistics_cls=signature_prototypes.statistics_cls,
-                                                supported=self.supported)
-                                 for _ in range(len(self._monitoring_results_dict))]
+        self._signature_cache = [SignatureCache(
+            statistics_cls=signature_prototypes.statistics_cls,
+            supported=self.supported
+        ) for _ in range(len(self._monitoring_results_dict))]
         for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
-                        value=None, **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None,
+                        matches=None, value=None, **kwargs):
+        if matches is None:
+            matches = []
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature is None:
@@ -41,26 +45,39 @@ class StartExitSimilarity(Distance):
                     event_type=event_type
                 )
                 if event_type == ProcessStartEvent:
-                    self._signature_cache[index][signature, event_type] = {"count": 0}
+                    self._signature_cache[index][signature, event_type] = {
+                        "count": 0
+                    }
                 else:
-                    self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
+                    self._signature_cache[index][signature, event_type] = {
+                        "count": 0,
+                        "duration": value
+                    }
         return [list(match)[0] for match in matches]
 
-    def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
+    def node_count(self, prototypes=None, signature_prototypes=None, signature=False,
+                   by_event=False):
         if prototypes is not None:
-            return [signature_prototypes.frequency(prototype=prototype) for prototype in prototypes]
+            return [signature_prototypes.frequency(
+                prototype=prototype
+            ) for prototype in prototypes]
         if signature:
-            return [signature_cache.node_count() for signature_cache in self._signature_cache]
-        return [signature_cache.frequency() for signature_cache in self._signature_cache]
+            return [signature_cache.node_count() for signature_cache in
+                    self._signature_cache]
+        return [signature_cache.frequency() for signature_cache in
+                self._signature_cache]
 
-    def _update_distances(self, prototypes, index=0, prototype_nodes=None, node_signature=None,
-                          value=None, event_type=None):
+    def _update_distances(self, prototypes, index=0, prototype_nodes=None,
+                          node_signature=None, value=None, event_type=None):
         result_dict = dict.fromkeys(prototypes, 0)
         for prototype_node in prototype_nodes:
             # FIXME: Ich denke die 2* muss entfernt werden
-            if self._signature_cache[index].multiplicity(signature=node_signature, event_type=ProcessExitEvent) < \
-                            2*prototype_nodes[prototype_node][ProcessExitEvent]["duration"].count():
-                distance = prototype_nodes[prototype_node][ProcessExitEvent]["duration"].distance(value=value)
+            statistic = prototype_nodes[prototype_node][ProcessExitEvent]["duration"]
+            if self._signature_cache[index].multiplicity(
+                    signature=node_signature,
+                    event_type=ProcessExitEvent
+            ) < 2 * statistic.count():
+                distance = statistic.distance(value=value)
                 if distance is None:
                     result_dict[prototype_node] = 1
                 else:

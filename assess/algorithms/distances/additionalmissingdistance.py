@@ -1,5 +1,6 @@
 """
-Module implements a distance that introduces a prediction for missing nodes for the monitoring tree.
+Module implements a distance that introduces a prediction for missing nodes for
+the monitoring tree.
 """
 from assess.algorithms.distances.distance import Distance
 
@@ -23,8 +24,10 @@ class AdditionalMissingDistance(Distance):
                 self._additional_nodes_dict[index][prototype] = 0
                 self._missing_nodes_dict[index][prototype] = 0
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[],
-                        **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None,
+                        matches=None, **kwargs):
+        if matches is None:
+            matches = []
         for index, match in enumerate(matches):
             for signature, matching_prototypes in match.items():
                 if signature is None:
@@ -47,17 +50,19 @@ class AdditionalMissingDistance(Distance):
         return [list(match)[0] for match in matches]
 
     def finish_distance(self, prototypes, signature_prototypes):
-        result_dict = [dict(zip(prototypes, [0] * len(prototypes)))] * self.signature_count
+        result_dict = [dict(zip(prototypes, [0] * len(prototypes)))] \
+            * self.signature_count
 
         for prototype in prototypes:
             prototype_counts = signature_prototypes.node_count(prototype=prototype)
             # matching
             for index, prototype_count in enumerate(prototype_counts):
-                result_dict[index][prototype] = (prototype_count - (
-                    len(self._measured_nodes[index]) -
-                    self._additional_nodes_dict[index][prototype])) - (
-                    self._monitoring_results_dict[index][prototype] -
-                    self._additional_nodes_dict[index][prototype])
+                result_dict[index][prototype] = \
+                    (prototype_count
+                     - (len(self._measured_nodes[index])
+                        - self._additional_nodes_dict[index][prototype])) \
+                    - (self._monitoring_results_dict[index][prototype]
+                       - self._additional_nodes_dict[index][prototype])
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
             result_dict,
@@ -105,9 +110,10 @@ class AdditionalMissingDistance(Distance):
         )
 
     def _prototype_weight(self, index, prototype, signature_prototypes):
-        return 0.9 * signature_prototypes.node_count(prototype=prototype)[index] - \
-               self._missing_nodes_dict[index][prototype] - (len(self._measured_nodes[index]) -
-                                                      self._additional_nodes_dict[index][prototype])
+        return 0.9 * signature_prototypes.node_count(
+            prototype=prototype)[index] - self._missing_nodes_dict[index][prototype] \
+            - (len(self._measured_nodes[index])
+               - self._additional_nodes_dict[index][prototype])
         # return min(self.node_count_for_prototype(
         #     prototype, original=False),
         #     len(self._measured_nodes)

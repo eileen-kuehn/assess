@@ -6,8 +6,8 @@ from assess.algorithms.signatures.signatures import Signature
 
 class PQGramSignature(Signature):
     """
-    The PQGramSignature implements the pq-gram from literature but takes some adaptations to make
-    it usable on streamed tree data.
+    The PQGramSignature implements the pq-gram from literature but takes some
+    adaptations to make it usable on streamed tree data.
     """
     def __init__(self, height=1, width=0):
         Signature.__init__(self)
@@ -29,7 +29,8 @@ class PQGramSignature(Signature):
         if node.children_list():
             # take the last node to initialize the generators
             parent_generator = self.parent_generator(node)
-            parents = [node.name] + [next(parent_generator) for _ in range(self._height-1)]
+            parents = [node.name] + [next(parent_generator) for _ in
+                                     range(self._height - 1)]
             siblings = list(self.sibling_finish_generator(node, self._width))
             while siblings:
                 algorithm_id = "_".join(parents) + \
@@ -42,8 +43,8 @@ class PQGramSignature(Signature):
     @staticmethod
     def parent_generator(root):
         """
-        Generator returns names of parents in order. When no more parents are existent, an
-        empty string is returned.
+        Generator returns names of parents in order. When no more parents are
+        existent, an empty string is returned.
 
         :param root: The node to start at
         :return: Parent name generator

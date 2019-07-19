@@ -1,20 +1,21 @@
 from assess.decorators.decorator import Decorator
 
-from assess.algorithms.distances.ensembledistance import mean_ensemble_distance, mean_ensemble_event_counts, normalise_distance
+from assess.algorithms.distances.ensembledistance import mean_ensemble_distance, \
+    normalise_distance
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
 
 class EnsembleAnomalyDecorator(Decorator):
     """
-    The ensemble anomaly detector works on ensembles and thus first summarises the distances and
-    based on this, determines for each event if it is handled as an anomaly or not.
-    If it might be an anomaly, True is appended, False otherwise.
+    The ensemble anomaly detector works on ensembles and thus first summarises
+    the distances and based on this, determines for each event if it is handled
+    as an anomaly or not. If it might be an anomaly, True is appended, False otherwise.
 
     The results are given in the following format:
     [
-        [                                       <- start of a tree
-            [                                   <- start of an ensemble (for generic reading)
-                [v1p1t1, ..., vnpnt1]           <- list of anomaly events per prototype
+        [                                 <- start of a tree
+            [                             <- start of an ensemble (for generic reading)
+                [v1p1t1, ..., vnpnt1]     <- list of anomaly events per prototype
             ]
             ...
             [
@@ -47,8 +48,11 @@ class EnsembleAnomalyDecorator(Decorator):
         self._data.append([[[] for _ in self._algorithm.prototypes]])
         if self._tmp_prototype_counts is None:
             self._tmp_prototype_counts = self._algorithm.prototype_event_counts()
-            self._tmp_prototype_counts = [[mean_ensemble_distance(value) for value in zip(*self._tmp_prototype_counts)]]
-            self._threshold = [[self._percentage * value / float(1 - self._percentage) for value in self._tmp_prototype_counts[0]]]
+            self._tmp_prototype_counts = [
+                [mean_ensemble_distance(value) for value in zip(
+                    *self._tmp_prototype_counts)]]
+            self._threshold = [[self._percentage * value / float(1 - self._percentage)
+                                for value in self._tmp_prototype_counts[0]]]
         if self._tmp_event_weights is None:
             self._tmp_event_weights = self._algorithm.distance.weights()
         self._last_result = self._tmp_prototype_counts
@@ -58,40 +62,49 @@ class EnsembleAnomalyDecorator(Decorator):
 
     def _tree_finished(self, result):
         # Format for result: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
-        event_counts = [mean_ensemble_distance(value) for value in zip(*self._algorithm.event_counts())]
+        event_counts = [mean_ensemble_distance(value)
+                        for value in zip(*self._algorithm.event_counts())]
         if result is not None:
             # -> reformat result to: [[v1p1, ..., vnpn]]
-            formatted_result = [[mean_ensemble_distance(value) for value in zip(*result)]]
+            formatted_result = [[mean_ensemble_distance(value)
+                                 for value in zip(*result)]]
         else:
             formatted_result = [[mean_ensemble_distance(value) for value in
-                                 self.algorithm.distance.iter_on_prototypes(self._algorithm.prototypes)]]
+                                 self.algorithm.distance.iter_on_prototypes(
+                                     self._algorithm.prototypes)]]
         for i, ensemble_result in enumerate(formatted_result):
             for j, prototype_result in enumerate(ensemble_result):
-                normalised_distance = normalise_distance(distance=prototype_result,
-                                                         size_prototype=self._tmp_prototype_counts[i][j],
-                                                         size_tree=event_counts[j])
-                self._data[-1][i][j].append(0 if normalised_distance <= self._percentage else 2)
+                normalised_distance = normalise_distance(
+                    distance=prototype_result,
+                    size_prototype=self._tmp_prototype_counts[i][j],
+                    size_tree=event_counts[j]
+                )
+                self._data[-1][i][j].append(
+                    0 if normalised_distance <= self._percentage else 2)
 
     def _event_added(self, event, result):
         # Format for result: [[v1p1e1, ..., vnpne1], ..., [v1p1en, ..., vnpnen]]
         # -> reformat result to [[v1p1, ..., vnpn]]
         formatted_result = [[mean_ensemble_distance(value) for value in zip(*result)]]
 
-        for ensemble_idx, ensemble in enumerate(formatted_result):
-            for prototype_index, prototype in enumerate(ensemble):
-                if prototype > self._last_result[ensemble_idx][prototype_index]:
-                    mismatch = prototype - self._last_result[ensemble_idx][prototype_index]
-                    self._mismatches[ensemble_idx][prototype_index] += mismatch
-                    if event.type == ProcessStartEvent and self._tmp_event_weights[ProcessStartEvent] == mismatch:
-                        self._enhanced_mismatches[ensemble_idx][prototype_index] += mismatch + self._tmp_event_weights[ProcessExitEvent]
-                        self._start_mismatch_counter[ensemble_idx][prototype_index] += 1
-                    elif (event.type == ProcessExitEvent and
-                                  self._tmp_event_weights[ProcessExitEvent] == mismatch and
-                                  self._start_mismatch_counter[ensemble_idx][prototype_index] > 0):
+        for i, ensemble in enumerate(formatted_result):
+            for j, prototype in enumerate(ensemble):
+                if prototype > self._last_result[i][j]:
+                    mismatch = prototype - self._last_result[i][j]
+                    self._mismatches[i][j] += mismatch
+                    if event.type == ProcessStartEvent and \
+                            self._tmp_event_weights[ProcessStartEvent] == mismatch:
+                        self._enhanced_mismatches[i][j] += \
+                            mismatch + self._tmp_event_weights[ProcessExitEvent]
+                        self._start_mismatch_counter[i][j] += 1
+                    elif (event.type == ProcessExitEvent
+                          and self._tmp_event_weights[ProcessExitEvent] == mismatch
+                          and self._start_mismatch_counter[i][j] > 0):
                         # ignore mismatch and decrease counter
-                        self._start_mismatch_counter[ensemble_idx][prototype_index] -= 1
+                        self._start_mismatch_counter[i][j] -= 1
                     else:
-                        self._enhanced_mismatches[ensemble_idx][prototype_index] += mismatch
+                        self._enhanced_mismatches[i][j] += \
+                            mismatch
         for idx, prototype in enumerate(self._mismatches[0]):
             if prototype > self._threshold[0][idx]:
                 self._data[-1][0][idx].append(2)

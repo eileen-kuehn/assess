@@ -1,6 +1,6 @@
 """
-This module offers a decorator to track information on actual compression for monitoring tree as
-well as prototypes.
+This module offers a decorator to track information on actual compression for
+monitoring tree as well as prototypes.
 """
 
 from assess.decorators.decorator import Decorator
@@ -8,8 +8,8 @@ from assess.decorators.decorator import Decorator
 
 class CompressionFactorDecorator(Decorator):
     """
-    The CompressionFactorDecorator outputs information about the actual compression that is
-    produced by using a single kind of signature.
+    The CompressionFactorDecorator outputs information about the actual compression
+    that is produced by using a single kind of signature.
 
     Returns data regarding ensembles in the following format:
     {
@@ -22,12 +22,12 @@ class CompressionFactorDecorator(Decorator):
         "accumulated": [ve1, ..., ven]
     }
 
-    The prototype gives information on how many nodes for a prototype are compressed regarding a
-    given ensemble.
-    The monitoring gives information on how many nodes for the monitoring tree are compressed
-    regarding a given ensemble. This is appended for each tree that is processed.
-    The accumulated gives information on how many nodes for all prototypes are compressed
+    The prototype gives information on how many nodes for a prototype are compressed
     regarding a given ensemble.
+    The monitoring gives information on how many nodes for the monitoring tree
+    are compressed regarding a given ensemble. This is appended for each tree
+    that is processed. The accumulated gives information on how many nodes for
+    all prototypes are compressed regarding a given ensemble.
     """
     def __init__(self):
         Decorator.__init__(self, name="compression")
@@ -66,13 +66,14 @@ class CompressionFactorDecorator(Decorator):
 
     def _accumulated_compression_factor(self):
         """
-        Accumulated compression is a list of accumulated compression by ensemble. For convenience
-        in accessing the datastructure, each item is put inside a list again, e.g.
-        [compression_e1, ..., compression_en]
+        Accumulated compression is a list of accumulated compression by ensemble.
+        For convenience in accessing the datastructure, each item is put inside
+        a list again, e.g. [compression_e1, ..., compression_en]
 
         :return: list of compression factors by ensemble
         """
-        original = [sum(element) for element in self._original_sizes()]  # [sum1, ..., sumn]
+        # [sum1, ..., sumn]
+        original = [sum(element) for element in self._original_sizes()]
         if original[0] == 0:
             return []
         converted = self._algorithm.signature_prototypes
@@ -80,7 +81,8 @@ class CompressionFactorDecorator(Decorator):
             compressed = converted.node_count()  # [ve1, ..., ven]
         except AttributeError:
             compressed = [sum(element) for element in self._compressed_size()]
-        return [1.0 - compressed[i] / float(original[i]) for i in range(len(compressed))]
+        return [1.0 - compressed[i] / float(original[i]) for i in range(
+            len(compressed))]
 
     def data(self):
         return self._data

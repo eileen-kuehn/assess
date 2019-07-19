@@ -12,7 +12,8 @@ class TestPQOrderSignature(unittest.TestCase):
         prototype = simple_prototype()
         for node in prototype.nodes():
             signatures.add(signature.get_signature(node, node.parent()))
-            p_signatures.add(signature.get_signature(node, node.parent(), dimension="p"))
+            p_signatures.add(
+                signature.get_signature(node, node.parent(), dimension="p"))
         self.assertEqual(4, len(signatures))
         self.assertEqual(3, len(p_signatures))
         self.assertNotEqual(signatures, p_signatures)

@@ -1,6 +1,7 @@
 """
-This module provides a decorator implementation for getting the overall performance regarding
-the distance measurement process as well as the signature creation process.
+This module provides a decorator implementation for getting the overall
+performance regarding the distance measurement process as well as the signature
+creation process.
 """
 
 import time
@@ -10,7 +11,8 @@ from assess.decorators.decorator import Decorator
 
 class PerformanceDecorator(Decorator):
     """
-    The PerformanceDecorator measures the time from start to end of processing of a single event.
+    The PerformanceDecorator measures the time from start to end of processing
+    of a single event.
 
     Format looks like this:
     [
@@ -48,16 +50,18 @@ class PerformanceDecorator(Decorator):
             return
         end = time.time()
         try:
-            self._data[-1].append(end-self._start)
+            self._data[-1].append(end - self._start)
         except TypeError:
-            # for result lists there is no start, because it has already been processed, so set 0
+            # for result lists there is no start, because it has already
+            # been processed, so set 0
             self._data[-1].append(0)
         self._start = None
 
     def data(self):
         if self._data:
             if self._accumulated:
-                result = [[sum(elem) if len(elem) > 0 else None] for elem in self._data]
+                result = [[sum(elem) if len(elem) > 0 else None]
+                          for elem in self._data]
                 return result
             else:
                 return self._data
@@ -68,4 +72,3 @@ class PerformanceDecorator(Decorator):
 
     def __iadd__(self, other):
         return NotImplemented
-

@@ -3,7 +3,7 @@ import unittest
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.events.events import Event
-from assess_tests.basedata import *
+from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
 
 class TestCompressionFactorDecorator(unittest.TestCase):

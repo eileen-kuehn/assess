@@ -1,6 +1,6 @@
 """
-Module offers functionality to perform the well-known tree edit distance based on the current
-framework for dynamic trees.
+Module offers functionality to perform the well-known tree edit distance based
+on the current framework for dynamic trees.
 """
 from assess.algorithms.distances.treeeditdistance import TreeEditDistance
 from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
@@ -8,9 +8,9 @@ from assess.algorithms.treedistancealgorithm import TreeDistanceAlgorithm
 
 class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
     """
-    Implementation of tree edit distance based on dynamic trees by waiting until the whole tree
-    is generated. The algorithm itself is just based on process start events and ignores actual
-    exit events.
+    Implementation of tree edit distance based on dynamic trees by waiting until
+    the whole tree is generated. The algorithm itself is just based on process
+    start events and ignores actual exit events.
     """
     def __init__(self, **kwargs):
         TreeDistanceAlgorithm.__init__(self, **kwargs)
@@ -39,9 +39,12 @@ class TreeEditDistanceAlgorithm(TreeDistanceAlgorithm):
         return [list(element) for element in zip(*result)]
 
     def _update_distances(self, event, signature, **kwargs):
-        self.distance.update_distance(prototypes=self._prototypes, signature_prototypes=None, )
+        self.distance.update_distance(
+            prototypes=self._prototypes,
+            signature_prototypes=None, )
         result = [value for value in self.distance.iter_on_prototypes(self._prototypes)]
         return [list(element) for element in zip(*result)]
 
     def _event_count(self, by_event=False):
-        return [[count for _ in self.prototypes] for count in self.distance.event_count(by_event=by_event)]
+        return [[count for _ in self.prototypes]
+                for count in self.distance.event_count(by_event=by_event)]

@@ -19,7 +19,8 @@ class SetStatistic(Statistic):
 
 
 class SetStatistics(Statistics):
-    def __init__(self, convert=lambda value: int(round(math.sqrt(value))), unconvert=lambda value: value**2):
+    def __init__(self, convert=lambda value: int(round(math.sqrt(value))),
+                 unconvert=lambda value: value**2):
         self._data = collections.Counter()
         self._convert = convert
         self._unconvert = unconvert

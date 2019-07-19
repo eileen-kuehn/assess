@@ -1,7 +1,6 @@
 import unittest
 
 from assess.algorithms.signatures.pqgramsignature import PQGramSignature
-from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
 
 from assess_tests.basedata import simple_prototype
 
@@ -45,5 +44,5 @@ class TestPQGramSignatureFunctionalities(unittest.TestCase):
             except AttributeError:
                 signatures.update(signature.finish_node(node.parent()))
         self.assertEqual(
-            set(['__root__', 'root__test__', 'root__muh_test_', 'root__test_muh_test',
-                 'root__muh_test_muh', 'root___muh_test', 'root___muh']), signatures)
+            {'__root__', 'root__test__', 'root__muh_test_', 'root__test_muh_test',
+             'root__muh_test_muh', 'root___muh_test', 'root___muh'}, signatures)
