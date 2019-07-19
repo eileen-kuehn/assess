@@ -87,7 +87,6 @@ class TestDistanceDecorator(unittest.TestCase):
             signature=EnsembleSignature(signatures=[ParentChildByNameTopologySignature(),
                                                     ParentChildOrderByNameTopologySignature()]))
         algorithm.prototypes = [simple_prototype(), simple_monitoring_tree()]
-
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
