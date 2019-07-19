@@ -44,7 +44,8 @@ class DistanceMatrixDecorator(Decorator):
                 results.append([])
                 for single in result:
                     # cutting on -.01 because of inaccuracies in calculation
-                    adapted = [value if value >= -.01 else None for value in single]
+                    # TODO: ensure that values are not too low in minus
+                    adapted = [value if value is None or value >= -.01 else None for value in single]
                     results[-1].append(adapted)
             return results
         return None

@@ -44,7 +44,7 @@ class StartExitSimilarity(Distance):
                     self._signature_cache[index][signature, event_type] = {"count": 0}
                 else:
                     self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value}
-        return [match.keys()[0] for match in matches]
+        return [list(match.keys())[0] for match in matches]
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False, by_event=False):
         if prototypes is not None:

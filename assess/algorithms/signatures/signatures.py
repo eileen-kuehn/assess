@@ -108,7 +108,7 @@ class Signature(object):
                         yield node.name
                     if returned_nodes >= width:
                         break
-        for _ in xrange(width - returned_nodes):
+        for _ in range(width - returned_nodes):
             yield ''
 
     def __repr__(self):

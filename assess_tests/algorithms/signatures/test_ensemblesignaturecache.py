@@ -81,7 +81,7 @@ class TestEnsembleSignatureCache(unittest.TestCase):
                 self.assertTrue(isinstance(cache.get(signature=tokens)[0], dict))
             cache[tokens, tree, ProcessExitEvent] = {"count": 0, "duration": 1}
             stats = cache.get_statistics(signature=tokens, prototype=tree, key="duration", event_type=ProcessExitEvent)
-            self.assertTrue(stats.count >= 1)
+            self.assertTrue(stats[0].count() >= 1)
         self.assertEqual([4], cache.node_count())
         self.assertEqual([4], cache.multiplicity())
 

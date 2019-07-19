@@ -56,7 +56,7 @@ class PrototypeWrapper(object):
         elif isinstance(self._signature_cache_list[0], EnsembleSignatureCache):
             # p_1 {e_1, ..., e_n}, ... p_2 {e_1, ..., e_n}
             tmp = [cache.get(signature) for cache in self._signature_cache_list]
-            result = [{} for _ in xrange(len(signature))]
+            result = [{} for _ in range(len(signature))]
             for prototype_idx, prototype in enumerate(tmp):
                 for ensemble_idx, ensemble in enumerate(prototype):
                     result[ensemble_idx].setdefault(signature[ensemble_idx], {})[self.prototype_name[prototype_idx]] = ensemble

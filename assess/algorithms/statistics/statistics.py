@@ -2,7 +2,6 @@
 Module implements possible methods to represent statistics that might be used for e.g. cluster
 representatitives. Currently only MeanVariance is supported.
 """
-from __future__ import division
 import math
 
 

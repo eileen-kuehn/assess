@@ -46,7 +46,7 @@ class TestStartExitDistance(unittest.TestCase):
         decorator = DistanceMatrixDecorator(normalized=False)
         decorator.wrap_algorithm(algorithm)
         the_tree = real_tree(
-            path="/Users/eileen/projects/Dissertation/tmp/tmpoutput/payloads/c01-007-102/1234/1146-2-process.csv",
+            path="data/c01-007-102/2/1146-2-process.csv",
             absolute=True
         )
         algorithm.prototypes = [the_tree]

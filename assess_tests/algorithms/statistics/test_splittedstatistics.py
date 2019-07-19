@@ -10,20 +10,20 @@ class TestSplittedStatistics(unittest.TestCase):
         statistics = SplittedStatistics(statistics_type=MeanVariance)
         statistics.add(value=0)
         for statistic in statistics._statistics:
-            print "mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count)
-        self.assertEqual(statistics.distance(value=1), 1)
+            print("mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count))
+        self.assertEqual(1, statistics.distance(value=1))
         # distance should stay the same, also with more 0 values
-        for _ in xrange(1000):
+        for _ in range(1000):
             statistics.add(value=0)
         for statistic in statistics._statistics:
-            print "mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count)
+            print("mean: %s, variance: %s (%s), count: %s" % (statistic.mean, statistic.variance, statistic.all_valid_variance, statistic.count))
         self.assertEqual(statistics.distance(value=1), 1)
 
     def test_all_valid_variance(self):
         statistics = SplittedStatistics(statistics_type=MeanVariance)
         statistics.add(value=0)
         self.assertEqual(statistics._statistics[0].all_valid_variance, 1)
-        for _ in xrange(1000):
+        for _ in range(1000):
             statistics.add(value=0)
         # FIXME: might better be expected to be zero
         self.assertAlmostEqual(statistics._statistics[0].all_valid_variance, 31.64, 2)
@@ -37,7 +37,7 @@ class TestSplittedStatistics(unittest.TestCase):
         self.assertEqual(len(statistics._statistics), 2)
 
         statistics = SplittedStatistics(statistics_type=MeanVariance)
-        for _ in xrange(1000):
+        for _ in range(1000):
             statistics.add(value=0)
         self.assertEqual(len(statistics._statistics), 1)
         statistics.add(value=1)
