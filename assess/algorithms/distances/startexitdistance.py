@@ -80,7 +80,7 @@ class StartExitDistance(Distance):
                 else:
                     self._signature_cache[index][signature, event_type] = {"count": 0, "duration": value if value is not None else 0}
         try:
-            return [list(match.keys())[0] for match in matches]
+            return [list(match)[0] for match in matches]
         except IndexError:
             return []
 
@@ -188,7 +188,7 @@ class StartExitDistanceWOAttributes(StartExitDistance):
                     value=value
                 )
                 self._signature_cache[index][signature, event_type] = {"count": 0}
-        return [list(match.keys())[0] for match in matches]
+        return [list(match)[0] for match in matches]
 
     def _update_distances(self, prototypes, event_type=None, index=0, prototype_nodes=None,
                           node_signature=None, value=None):
