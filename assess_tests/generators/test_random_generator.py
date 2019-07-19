@@ -33,9 +33,8 @@ class TestRandomGenerator(unittest.TestCase):
 
         vector_decorator.start_tree()
         for event in rg:
-            distance = vector_decorator.add_event(event)
+            distance = vector_decorator.add_event(event)[0]
         vector_decorator.finish_tree()
-        print(vector_decorator.data())
         self.assertEqual(distance[0], 110)
 
     def test_maximum_generator_incremental_distance(self):
@@ -48,10 +47,9 @@ class TestRandomGenerator(unittest.TestCase):
 
         decorator.start_tree()
         for event in rg:
-            distance = decorator.add_event(event)
+            distance = decorator.add_event(event)[0]
         decorator.finish_tree()
-        print(decorator.data())
-        self.assertEqual(distance[0], 0)
+        self.assertEqual(distance[0], [0])
 
     def test_maximum_generator_newerincremental_with_signature_distance(self):
         rg = RandomGenerator(relative_matching=1)
@@ -66,7 +64,7 @@ class TestRandomGenerator(unittest.TestCase):
         for event in rg:
             distance = decorator.add_event(event)
         decorator.finish_tree()
-        self.assertEqual(decorator.data()[-1][-1][-1], 0)
+        self.assertEqual(decorator.data()[-1][-1][-1][-1], 0)
 
     def test_bigger_tree(self):
         rg = RandomGenerator(
@@ -87,4 +85,4 @@ class TestRandomGenerator(unittest.TestCase):
         for event in rg:
             decorator.add_event(event)
         decorator.finish_tree()
-        self.assertAlmostEqual(decorator.data()[-1][-1][-1], 0.10, 2)
+        self.assertAlmostEqual(decorator.data()[-1][-1][-1][-1], 0.10, 2)

@@ -21,12 +21,12 @@ class TestCompressionFactorDecorator(unittest.TestCase):
         algorithm = IncrementalDistanceAlgorithm()
         decorator.wrap_algorithm(algorithm=algorithm)
         decorator.start_tree()
-        self.assertAlmostEqual(
+        self.assertEqual(
             decorator.descriptive_data(),
             {"compression": {
                 "prototypes": [],
                 "monitoring": [None],
-                "accumulated": 0
+                "accumulated": []
             }}
         )
         decorator.finish_tree()
@@ -34,8 +34,8 @@ class TestCompressionFactorDecorator(unittest.TestCase):
             decorator.descriptive_data(),
             {"compression": {
                 "prototypes": [],
-                "monitoring": [0],
-                "accumulated": 0
+                "monitoring": [[0]],
+                "accumulated": []
             }}
         )
         algorithm.prototypes = [simple_prototype()]
@@ -45,9 +45,9 @@ class TestCompressionFactorDecorator(unittest.TestCase):
         self.assertEqual(
             decorator.descriptive_data(),
             {"compression": {
-                "prototypes": [.4],
-                "monitoring": [0],
-                "accumulated": .4
+                "prototypes": [[.4]],
+                "monitoring": [[0]],
+                "accumulated": [.4]
             }}
         )
         decorator.wrap_algorithm(algorithm)
@@ -65,8 +65,28 @@ class TestCompressionFactorDecorator(unittest.TestCase):
         self.assertEqual(
             decorator.descriptive_data(),
             {"compression": {
-                "prototypes": [.4, .4],
-                "monitoring": [.25],
-                "accumulated": .7
+                "prototypes": [[.4, .4]],
+                "monitoring": [[.25]],
+                "accumulated": [.7]
             }}
         )
+
+    def test_update(self):
+        decorator = CompressionFactorDecorator()
+        decorator._data = {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.2],
+            "accumulated": .3
+        }
+        second_decorator = CompressionFactorDecorator()
+        second_decorator._data = {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.3],
+            "accumulated": .3
+        }
+        decorator.update(second_decorator)
+        self.assertEqual(decorator.data(), {
+            "prototypes": [.1, .2, .5],
+            "monitoring": [.2, .3],
+            "accumulated": .3
+        })

@@ -1,16 +1,19 @@
 """
 Module implements the different kind of events that are supported in dynamic process trees.
 """
+from __future__ import print_function
 
 
 class Event(object):
     """
     Base event class that offers convenience methods to create single events.
     """
-    def __init__(self, tme, pid, ppid, **kwargs):
-        self._tme = tme
-        self._pid = pid
-        self._ppid = ppid
+
+    def __init__(self, tme, pid, ppid, value=None, **kwargs):
+        self.tme = tme
+        self.pid = pid
+        self.ppid = ppid
+        self.value = value
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
@@ -39,6 +42,44 @@ class Event(object):
         """
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
 
+    @classmethod
+    def events_from_process(cls, process):
+        """
+        Method that returns a available events for a given process.
+
+        :param process: The process to create the events
+        :return: tuple of ProcessStartEvent and ProcessExitEvent
+        """
+        process_dict = vars(process).copy()
+        process_exit_dict = vars(process).copy()
+        process_exit_dict["start_tme"] = process_exit_dict["tme"]
+        process_exit_dict["tme"] = process_exit_dict["exit_tme"]
+        process_exit_dict["value"] = process_exit_dict["tme"] - process_exit_dict["start_tme"]
+
+        # prepare traffic events
+        traffic_list = []
+        try:
+            for traffic in process.traffic:
+                if traffic.in_rate > 0:
+                    traffic_list.append(TrafficEvent(
+                        **cls.create_traffic(traffic, "in_rate", traffic.in_rate)))
+                if traffic.out_cnt > 0:
+                    traffic_list.append(TrafficEvent(
+                        **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
+        except AttributeError:
+            pass
+        return ProcessStartEvent(**process_dict), ProcessExitEvent(**process_exit_dict), \
+            traffic_list
+
+    @staticmethod
+    def create_traffic(traffic, variant, value):
+        traffic_dict = vars(traffic).copy()
+        traffic_dict["ppid"] = traffic_dict["pid"]
+        traffic_dict["name"] = "%s_%s" % (traffic_dict["conn_cat"], variant)
+        traffic_dict["value"] = value
+        traffic_dict["tme"] = traffic_dict.get("tme", 0) + 20
+        return traffic_dict
+
     @staticmethod
     def exit(tme, pid, ppid, start_tme, **kwargs):
         """
@@ -51,7 +92,7 @@ class Event(object):
         :param kwargs: Additional parameters
         :return: Created exit event
         """
-        return ProcessExitEvent(tme, pid, ppid, start_tme, **kwargs)
+        return ProcessExitEvent(tme, pid, ppid, start_tme, value=(tme-start_tme), **kwargs)
 
     @staticmethod
     def add(tme, pid, ppid, value, **kwargs):
@@ -66,60 +107,6 @@ class Event(object):
         :return: Created traffic event
         """
         return TrafficEvent(tme, pid, ppid, value, **kwargs)
-
-    @property
-    def tme(self):
-        """
-        Property method to access the tme of the event.
-
-        :return: Timestamp of the event
-        """
-        return self._tme
-
-    @tme.setter
-    def tme(self, value=None):
-        """
-        Setter method to set the tme of the event.
-
-        :param value: Value to be set for tme
-        """
-        self._tme = value
-
-    @property
-    def pid(self):
-        """
-        Parameter to get the pid of the event.
-
-        :return: Events pid
-        """
-        return self._pid
-
-    @pid.setter
-    def pid(self, value=None):
-        """
-        Setter method to set the pid of the event.
-
-        :param value: Value to be set for pid
-        """
-        self._pid = value
-
-    @property
-    def ppid(self):
-        """
-        Parameter to get the ppid of the event.
-
-        :return: Events ppid
-        """
-        return self._ppid
-
-    @ppid.setter
-    def ppid(self, value=None):
-        """
-        Setter method to set the ppid of the event.
-
-        :param value: Value to be set for ppid
-        """
-        self._ppid = value
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -139,10 +126,19 @@ class Event(object):
         )
 
 
+class EmptyProcessEvent(object):
+    """
+    Class that represents the event for an empty node
+    """
+    def __init__(self, **kwargs):
+        pass
+
+
 class ProcessStartEvent(Event):
     """
     Class that represents a start event.
     """
+
     def __init__(self, tme, pid, ppid, **kwargs):
         Event.__init__(self, tme, pid, ppid, **kwargs)
 
@@ -151,8 +147,10 @@ class ProcessExitEvent(Event):
     """
     Class that represents an exit event.
     """
-    def __init__(self, tme, pid, ppid, start_tme, **kwargs):
-        Event.__init__(self, tme, pid, ppid, start_tme=start_tme, **kwargs)
+
+    def __init__(self, tme, pid, ppid, start_tme, value=None, **kwargs):
+        Event.__init__(self, tme, pid, ppid, start_tme=start_tme, value=value or (tme-start_tme),
+                       **kwargs)
         self._start_tme = start_tme
 
     @property
@@ -178,24 +176,6 @@ class TrafficEvent(Event):
     """
     Class that represents a traffic event.
     """
+
     def __init__(self, tme, pid, ppid, value, **kwargs):
-        Event.__init__(self, tme, pid, ppid, **kwargs)
-        self._value = value
-
-    @property
-    def value(self):
-        """
-        Method to get the amount of traffic related to the event.
-
-        :return: Traffic amount
-        """
-        return self._value
-
-    @value.setter
-    def value(self, value=None):
-        """
-        Setter to set the amount of traffic for the event.
-
-        :param value: Traffic amount to be set
-        """
-        self._value = value
+        Event.__init__(self, tme, pid, ppid, value=value, **kwargs)

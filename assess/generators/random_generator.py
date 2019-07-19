@@ -1,21 +1,11 @@
 """
 Generator for random tree events.
 """
-import string
 import random
 from assess.prototypes.simpleprototypes import Prototype
 from assess.events.events import Event
 
-
-def id_generator(size=6, chars=string.ascii_uppercase + string.digits):
-    """
-    Generation of unique IDs based on given chars and a specified size.
-
-    :param size: Length of string
-    :param chars: Chars contained in string
-    :return: Unique ID
-    """
-    return ''.join(random.choice(chars) for _ in range(size))
+from evenmoreutils.randoms import id_generator
 
 
 class RandomGenerator(object):

@@ -30,4 +30,4 @@ class TestStartExitStuff(unittest.TestCase):
         alg.add_event(Event.exit(tme=7, start_tme=5, pid=5, ppid=2, name="first_child"))
         distance = alg.add_event(Event.exit(tme=10, start_tme=0, pid=2, ppid=1, name="root_node"))
         alg.finish_tree()
-        self.assertEqual(distance[0], 0)
+        self.assertEqual(distance[0][0], [0])
