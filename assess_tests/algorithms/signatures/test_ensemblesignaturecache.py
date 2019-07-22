@@ -1,8 +1,10 @@
 import unittest
 
-from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache, EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignaturecache import \
+    EnsembleSignatureCache, EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.signatures import \
+    ParentChildByNameTopologySignature, ParentChildOrderTopologySignature
 from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
 from assess_tests.basedata import simple_unique_node_tree, simple_monitoring_tree
@@ -39,12 +41,15 @@ class TestEnsembleSignatureCache(unittest.TestCase):
         cache = signature.signature_cache_class()
 
         for node in simple_monitoring_tree().nodes():
-            cache[signature.get_signature(node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
+            cache[signature.get_signature(
+                node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
         self.assertEqual([3], cache.node_count())
         self.assertEqual([4], cache.multiplicity())
 
     def test_two_ensembles(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentChildOrderTopologySignature()])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentChildOrderTopologySignature()])
         cache = signature.signature_cache_class()
 
         for node in simple_unique_node_tree().nodes():
@@ -59,17 +64,22 @@ class TestEnsembleSignatureCache(unittest.TestCase):
         self.assertEqual([4, 4], cache.multiplicity())
 
     def test_two_ensembles_different_frequency(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentChildOrderTopologySignature()])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentChildOrderTopologySignature()])
         cache = signature.signature_cache_class()
 
         for node in simple_monitoring_tree().nodes():
-            cache[signature.get_signature(node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
+            cache[signature.get_signature(
+                node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
         self.assertEqual([3, 4], cache.node_count())
         self.assertEqual([4, 4], cache.multiplicity())
 
     def test_simple_prototype_cache(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature()])
-        cache = signature.prototype_signature_cache_class(supported={ProcessExitEvent: True})
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature()])
+        cache = signature.prototype_signature_cache_class(
+            supported={ProcessExitEvent: True})
 
         tree = simple_unique_node_tree()
         for node in tree.nodes():
@@ -80,21 +90,30 @@ class TestEnsembleSignatureCache(unittest.TestCase):
             else:
                 self.assertTrue(isinstance(cache.get(signature=tokens)[0], dict))
             cache[tokens, tree, ProcessExitEvent] = {"count": 0, "duration": 1}
-            stats = cache.get_statistics(signature=tokens, prototype=tree, key="duration", event_type=ProcessExitEvent)
+            stats = cache.get_statistics(
+                signature=tokens,
+                prototype=tree,
+                key="duration",
+                event_type=ProcessExitEvent
+            )
             self.assertTrue(stats[0].count() >= 1)
         self.assertEqual([4], cache.node_count())
         self.assertEqual([4], cache.multiplicity())
 
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature()])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature()])
         cache = signature.signature_cache_class()
 
         for node in simple_monitoring_tree().nodes():
-            cache[signature.get_signature(node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
+            cache[signature.get_signature(
+                node, parent=node.parent()), ProcessStartEvent] = {"count": 0}
         self.assertEqual([3], cache.node_count())
         self.assertEqual([4], cache.multiplicity())
 
     def test_two_prototype_ensembles(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentChildOrderTopologySignature()])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentChildOrderTopologySignature()])
         cache = signature.prototype_signature_cache_class()
 
         prototype = simple_unique_node_tree()
@@ -110,16 +129,24 @@ class TestEnsembleSignatureCache(unittest.TestCase):
             received = cache.get(signature=tokens)
             self.assertEqual(2, len(received))
             self.assertTrue(isinstance(received[0], dict))
-            self.assertTrue(received[0][prototype][ProcessStartEvent]["count"].count() >= 1)
+            self.assertTrue(
+                received[0][prototype][ProcessStartEvent]["count"].count() >= 1)
         self.assertEqual([4, 4], cache.node_count())
         self.assertEqual([4, 4], cache.multiplicity())
 
     def test_two_prototype_ensembles_different_frequency(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentChildOrderTopologySignature()])
-        cache = signature.prototype_signature_cache_class(supported={ProcessExitEvent: True})
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentChildOrderTopologySignature()])
+        cache = signature.prototype_signature_cache_class(
+            supported={ProcessExitEvent: True})
 
         prototype = simple_monitoring_tree()
         for node in prototype.nodes():
-            cache[signature.get_signature(node, parent=node.parent()), prototype, ProcessExitEvent] = {"count": 0, "duration": 1}
+            cache[signature.get_signature(
+                node, parent=node.parent()), prototype, ProcessExitEvent] = {
+                "count": 0,
+                "duration": 1
+            }
         self.assertEqual([3, 4], cache.node_count())
         self.assertEqual([4, 4], cache.multiplicity())

@@ -1,9 +1,11 @@
 import unittest
 
 from assess.algorithms.distances.startdistance import StartDistance
-from assess.algorithms.signatures.signatures import *
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
+from assess.algorithms.signatures.signatures import \
+    ParentChildByNameTopologySignature, ParentChildOrderByNameTopologySignature, \
+    ParentCountedChildrenByNameTopologySignature
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.exceptions.exceptions import EventNotSupportedException
 
@@ -27,7 +29,9 @@ class TestEnsembleSignature(unittest.TestCase):
             self.assertEqual(1, len(token))
 
     def test_two_signatures(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentChildOrderByNameTopologySignature()])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentChildOrderByNameTopologySignature()])
         self.assertEqual(2, signature.count)
 
         for node in simple_monitoring_tree().nodes():
@@ -39,7 +43,9 @@ class TestEnsembleSignature(unittest.TestCase):
             self.assertIsNot(token[0], token[1])
 
     def test_empty_nodes(self):
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentCountedChildrenByNameTopologySignature(count=3)])
+        signature = EnsembleSignature(
+            signatures=[ParentChildByNameTopologySignature(),
+                        ParentCountedChildrenByNameTopologySignature(count=3)])
         algorithm = IncrementalDistanceAlgorithm(signature=signature)
         algorithm.prototypes = [simple_prototype()]
 
@@ -54,22 +60,27 @@ class TestEnsembleSignature(unittest.TestCase):
 
     def test_ensemble_result(self):
         """
-        I recognised that apparently sometimes (or ever?) values of ensemble methods don't match
-        results from single calculations. Therefore this test should uniquely test for this.
+        I recognised that apparently sometimes (or ever?) values of ensemble
+        methods don't match results from single calculations. Therefore this
+        test should uniquely test for this.
         """
         tree = real_tree()
         tree_generator = TEDGenerator(
-            operation_generator=RandomOperation(insert_probability=.5, delete_probability=.5),
+            operation_generator=RandomOperation(
+                insert_probability=.5, delete_probability=.5),
             costs=[TreeEditDistanceCost()],
             seed=1234)
         disturbed_tree = tree_generator.generate(tree)
 
-        signatures = [ParentChildByNameTopologySignature(), ParentCountedChildrenByNameTopologySignature(count=2)]
+        signatures = [ParentChildByNameTopologySignature(),
+                      ParentCountedChildrenByNameTopologySignature(count=2)]
         # First test results from ensemble
         ensemble_signature = EnsembleSignature(signatures=signatures)
         decorator = DistanceMatrixDecorator(normalized=False)
         algorithm = IncrementalDistanceAlgorithm(
-            signature=ensemble_signature, distance=StartDistance)
+            signature=ensemble_signature,
+            distance=StartDistance
+        )
         decorator.wrap_algorithm(algorithm)
         algorithm.prototypes = [tree]
 
@@ -86,7 +97,10 @@ class TestEnsembleSignature(unittest.TestCase):
         single_data = {}
         for index, signature in enumerate(signatures):
             decorator = DistanceMatrixDecorator(normalized=False)
-            algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=StartDistance)
+            algorithm = IncrementalDistanceAlgorithm(
+                signature=signature,
+                distance=StartDistance
+            )
             decorator.wrap_algorithm(algorithm)
             algorithm.prototypes = [real_tree()]
             algorithm.start_tree()

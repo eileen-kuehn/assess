@@ -32,8 +32,9 @@ class Clustering(object):
 
     def __setitem__(self, key, value):
         """
-        Adding a new sketch from a finished dynamic tree to the underlying clustering algorithm.
-        The actual sketch is contained in key. Value is not specified so far.
+        Adding a new sketch from a finished dynamic tree to the underlying
+        clustering algorithm. The actual sketch is contained in key. Value is
+        not specified so far.
 
         :param key:
         :param value:
@@ -44,15 +45,16 @@ class Clustering(object):
 
     def __getitem__(self, item):
         """
-        This method returns the belonging cluster for a given sketch that is contained in
-        the underlying clustering algorithm.
+        This method returns the belonging cluster for a given sketch that is
+        contained in the underlying clustering algorithm.
 
         :param item:
         :return:
         """
         if item in self.clusterer.graph:
             return self.clusterer.clusters_for_node(item)
-        # TODO: here a more general exception might be raised to make algorithm exchangeable
+        # TODO: here a more general exception might be raised to make
+        # algorithm exchangeable
         raise dengraph.graph.NoSuchNode
 
     def __iter__(self):

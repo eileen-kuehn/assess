@@ -15,12 +15,13 @@ class DynamicDistance(Distance):
     def __iter__(self):
         wrapped_distance = self._wrapped_distance.current_distance()
         for prototype in self._algorithm.prototypes:
-            yield self._monitoring_results_dict.setdefault(prototype, 0) + \
-                  wrapped_distance.setdefault(prototype, 0)
+            yield self._monitoring_results_dict.setdefault(prototype, 0) \
+                + wrapped_distance.setdefault(prototype, 0)
 
     def current_distance(self):
         wrapped_distance = self._wrapped_distance.current_distance()
-        return self._add_result_dicts(wrapped_distance, self._monitoring_results_dict.copy())
+        return self._add_result_dicts(wrapped_distance,
+                                      self._monitoring_results_dict.copy())
 
     def init_distance(self, prototypes, signature_prototypes):
         Distance.init_distance(self, prototypes, signature_prototypes)
@@ -42,15 +43,18 @@ class DynamicDistance(Distance):
                 self._monitoring_results_dict[index][prototype] = 0
 
     def _distance_factor(self, index, prototype):
-        # TODO: ich denke das ist noch der falsche Faktor, nachschauen bei den Normalisierungen
+        # TODO: ich denke das ist noch der falsche Faktor,
+        # nachschauen bei den Normalisierungen
         frequency = self._order_cache[index][prototype].frequency()
         # FIXME: does not fit here...
         count = self._algorithm.event_counts()[0] + \
             self._algorithm.signature_prototypes.node_count(prototype=prototype)
         return 1 - frequency / float(count + frequency)
 
-    def update_distance(self, prototypes, signature_prototypes, event_type=None, matches=[{}],
-                        **kwargs):
+    def update_distance(self, prototypes, signature_prototypes, event_type=None,
+                        matches=None, **kwargs):
+        if matches is None:
+            matches = []
         result_dict = [dict(zip(self._algorithm.prototypes, [0] * len(
             prototypes))) for _ in range(self.signature_count)]
 
@@ -65,8 +69,8 @@ class DynamicDistance(Distance):
                     **kwargs)
                 self._last_signatures[index].append(signature)
                 for prototype in prototypes:
-                    result_dict[index][prototype] = self._distance_factor(index, prototype) if \
-                        self._order_cache[index][prototype].get(
+                    result_dict[index][prototype] = self._distance_factor(
+                        index, prototype) if self._order_cache[index][prototype].get(
                             "_".join(self._last_signatures)) == 0 else 0
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(

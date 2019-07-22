@@ -1,6 +1,6 @@
 """
-This module offers an implementation to determine the performance of distance calculation.
-The signature creation process is not measured.
+This module offers an implementation to determine the performance of distance
+calculation. The signature creation process is not measured.
 """
 
 import time
@@ -9,9 +9,10 @@ from assess.decorators.decorator import Decorator
 
 class DistancePerformanceDecorator(Decorator):
     """
-    The DistancePerformanceDecorator measures the time that is being used to update the distance
-    based on single events. Duration for signature creation etc. are excluded from this statistic.
-    The Decorator differentiates between accumulated and single measurements.
+    The DistancePerformanceDecorator measures the time that is being used to update
+    the distance based on single events. Duration for signature creation etc.
+    are excluded from this statistic. The Decorator differentiates between
+    accumulated and single measurements.
 
     Format looks like this:
     [
@@ -43,7 +44,8 @@ class DistancePerformanceDecorator(Decorator):
 
     def update_distance(self, event, signature, **kwargs):
         """
-        Method that encapsulates the actual call of the update_distance method from the algorithm.
+        Method that encapsulates the actual call of the update_distance method
+        from the algorithm.
 
         :param event: Event being processed
         :param signature: Signature being processed
@@ -59,7 +61,7 @@ class DistancePerformanceDecorator(Decorator):
         )
         end = time.time()
 
-        self._data[-1].append(end-start)
+        self._data[-1].append(end - start)
         return result
 
     def data(self):

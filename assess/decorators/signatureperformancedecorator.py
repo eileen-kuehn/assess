@@ -1,5 +1,6 @@
 """
-This module provides a decorator that takes care to measure performance of signature generation.
+This module provides a decorator that takes care to measure performance of
+signature generation.
 """
 
 import time
@@ -8,8 +9,9 @@ from assess.decorators.decorator import Decorator
 
 class SignaturePerformanceDecorator(Decorator):
     """
-    The SignaturePerformanceDecorator measures performance for calculation of signatures.
-    It differs between accumulated performance as well as single performance measurements.
+    The SignaturePerformanceDecorator measures performance for calculation
+    of signatures. It differs between accumulated performance as well as single
+    performance measurements.
 
     Format looks like this:
     [
@@ -40,15 +42,16 @@ class SignaturePerformanceDecorator(Decorator):
 
     def create_signature(self, node, parent):
         """
-        This method encapsulates the signature creation process. It measures time from start to
-        finish of the process.
+        This method encapsulates the signature creation process. It measures time
+        from start to finish of the process.
 
         :param node: Node for which the signature is calculated
         :param parent: Parent of node
         :return: Resulting signature
         """
         start = time.time()
-        result = self._algorithm.__class__.create_signature(self._algorithm, node, parent)
+        result = self._algorithm.__class__.create_signature(
+            self._algorithm, node, parent)
         end = time.time()
 
         self._data[-1].append(end - start)
@@ -56,17 +59,19 @@ class SignaturePerformanceDecorator(Decorator):
 
     def create_signature_for_finished_node(self, node):
         """
-        This method encapsulates the signature creation process for nodes that are finished.
-        Thus those signature that need to be appended at the end of sibling lists.
+        This method encapsulates the signature creation process for nodes that
+        are finished. Thus those signature that need to be appended at the end
+        of sibling lists.
 
         :param node:
         :return:
         """
         start = time.time()
-        result = self._algorithm.__class__.create_signature_for_finished_node(self._algorithm, node)
+        result = self._algorithm.__class__.create_signature_for_finished_node(
+            self._algorithm, node)
         end = time.time()
 
-        self._data[-1].append(end-start)
+        self._data[-1].append(end - start)
         return result
 
     def data(self):

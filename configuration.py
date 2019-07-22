@@ -1,5 +1,7 @@
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.algorithms.signatures.signatures import *
+from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature,\
+    ParentChildOrderTopologySignature, ParentChildOrderByNameTopologySignature, \
+    ParentCountedChildrenByNameTopologySignature
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.decorators.datadecorator import DataDecorator
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
@@ -28,4 +30,3 @@ configurations = [{
         lambda: ParentCountedChildrenByNameTopologySignature(count=4)
     ], "decorator": distance
 }]
-

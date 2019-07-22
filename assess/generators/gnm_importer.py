@@ -26,7 +26,7 @@ class GNMImporter(object):
         'int_out_volume': float,
         'int_in_volume': float,
         'ext_out_volume': float,
-        'ext_in_volume' : float,
+        'ext_in_volume': float,
         'uid': int,
         'pid': int,
         'gpid': int,
@@ -59,18 +59,22 @@ class PrototypeCache(object):
     `DISS_PROTOTYPE_CACHE_PRELOADED_ONLY`
       Only use prototypes that have already been cached
     """
-    def __init__(self, path, data_source=FileDataSource()):
+    def __init__(self, path, data_source=None):
         self.path = path
-        self.data_source = data_source
+        self.data_source = data_source if data_source is not None else FileDataSource()
         self._logger = logging.getLogger('cache.prototypes')
-        self.force_refresh = bool(os.environ.get('DISS_PROTOTYPE_CACHE_REFRESH', False))
+        self.force_refresh = bool(os.environ.get(
+            'DISS_PROTOTYPE_CACHE_REFRESH', False))
         if self.force_refresh:
-            self._logger.warning('Forcefully refreshing caches '
-                                 '(enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
-        self.preloaded_only = bool(os.environ.get('DISS_PROTOTYPE_CACHE_PRELOADED_ONLY', False))
+            self._logger.warning(
+                'Forcefully refreshing caches '
+                '(enabled via $DISS_PROTOTYPE_CACHE_REFRESH)')
+        self.preloaded_only = bool(os.environ.get(
+            'DISS_PROTOTYPE_CACHE_PRELOADED_ONLY', False))
         if self.preloaded_only:
-            self._logger.warning('Only working with preloaded caches '
-                                 '(enabled via $DISS_PROTOTYPE_CACHE_PRELOADED_ONLY)')
+            self._logger.warning(
+                'Only working with preloaded caches '
+                '(enabled via $DISS_PROTOTYPE_CACHE_PRELOADED_ONLY)')
 
     def __iter__(self):
         if os.path.isdir(self.path):
@@ -98,15 +102,18 @@ class PrototypeCache(object):
         except (OSError, IOError, EOFError):
             if self.preloaded_only:
                 yield None
-            # serialize pickle creation in case multiple processes use the same prototype
-            cache_prototype_lock = filelock.FileLock(os.path.splitext(cache_path)[0] + '.lock')
+            # serialize pickle creation in case multiple processes use the
+            # same prototype
+            cache_prototype_lock = filelock.FileLock(
+                os.path.splitext(cache_path)[0] + '.lock')
             try:
                 # try to become the writer and create the pickle
                 with cache_prototype_lock.acquire(timeout=0):
                     # clean up broken pickles
                     if os.path.exists(cache_path):
                         os.unlink(cache_path)
-                        self._logger.warning('Refreshing existing cache %r', cache_path)
+                        self._logger.warning(
+                            'Refreshing existing cache %r', cache_path)
                     data_source = self.data_source
                     prototypes = []
                     for job in data_source.jobs(path=csv_path):
@@ -117,7 +124,8 @@ class PrototypeCache(object):
                         with open(cache_path, 'wb') as cache_pkl:
                             pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
             except filelock.Timeout:
-                # we are NOT the writer - acquire the lock to see when the writer is done
+                # we are NOT the writer - acquire the lock to see when the
+                # writer is done
                 with cache_prototype_lock:
                     with open(cache_path, 'rb') as cache_pkl:
                         prototypes = pickle.load(cache_pkl)
@@ -141,13 +149,15 @@ class PrototypeCache(object):
                 for prototype in self._prototypes_from_csv(job_csv_path):
                     yield prototype
         except (OSError, IOError, EOFError):
-            dir_prototype_lock = filelock.FileLock(os.path.splitext(cache_path)[0] + '.lock')
+            dir_prototype_lock = filelock.FileLock(
+                os.path.splitext(cache_path)[0] + '.lock')
             try:
                 with dir_prototype_lock.acquire(timeout=0):
                     # clean up broken pickles
                     if os.path.exists(cache_path):
                         os.unlink(cache_path)
-                        self._logger.warning('Refreshing existing cache %r', cache_path)
+                        self._logger.warning(
+                            'Refreshing existing cache %r', cache_path)
             except filelock.Timeout:
                 pass
             data_source = self.data_source
@@ -159,12 +169,14 @@ class PrototypeCache(object):
                 assert job.path not in job_files, \
                     "Job file may not contain multiple jobs (%r)" % job.path
                 job_cache_path = self._cache_path(job.path)
-                cache_prototype_lock = filelock.FileLock(os.path.splitext(job_cache_path)[0] + '.lock')
+                cache_prototype_lock = filelock.FileLock(os.path.splitext(
+                    job_cache_path)[0] + '.lock')
                 try:
                     with cache_prototype_lock.acquire(timeout=0):
                         # store the job individually, just remember its file
                         with open(job_cache_path, 'wb') as job_cache_pkl:
-                            pickle.dump([prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
+                            pickle.dump(
+                                [prototype], job_cache_pkl, pickle.HIGHEST_PROTOCOL)
                 except filelock.Timeout:
                     pass
                 job_files.append(job.path)
@@ -178,7 +190,8 @@ class PrototypeCache(object):
 
 class PKLTreeBuilder(GNMImporter):
     """
-    The PKLTreeBuilder builds a tree from an explicit pickle dump based on a log file.
+    The PKLTreeBuilder builds a tree from an explicit pickle dump based on a
+    log file.
     """
     @staticmethod
     def build(pkl_path):
@@ -258,7 +271,8 @@ class EventStreamPruner(EventGenerator, NodeGenerator):
                 if keep_node:
                     parent = node.parent()
                     while parent is not None and \
-                            not self._kept[self.signature.get_signature(parent, parent.parent())]:
+                            not self._kept[self.signature.get_signature(
+                                parent, parent.parent())]:
                         parent = parent.parent()
                     if parent is not None or tree.root() is None:
                         node_dict = node.dao().copy()
@@ -267,8 +281,10 @@ class EventStreamPruner(EventGenerator, NodeGenerator):
                         except AttributeError:
                             pass
 
-                        tree.add_node(parent_node_id=parent.node_id if parent is not None else None,
-                                      **node_dict)
+                        tree.add_node(
+                            parent_node_id=parent.node_id
+                            if parent is not None else None,
+                            **node_dict)
             self._tree = tree
         return self._tree
 
@@ -321,8 +337,10 @@ class EventStreamBranchPruner(EventStreamPruner):
             return self._kept[process_signature]
         except KeyError:
             # see if *parent/branch* has been pruned already
-            keep_this = self._kept[self.signature.get_signature(parent, parent.parent())]
-            # if parent/branch is kept, this child *may* be pruned, otherwise it *must* be pruned
+            keep_this = self._kept[self.signature.get_signature(
+                parent, parent.parent())]
+            # if parent/branch is kept, this child *may* be pruned,
+            # otherwise it *must* be pruned
             self._kept[process_signature] = False if not keep_this else \
                 (random.random() > self.chance)
             return self._kept[process_signature]
@@ -333,8 +351,12 @@ class EventStreamDuplicator(EventStreamPruner):
     Duplicate individual nodes from a node stream
     """
     def __init__(self, signature, chance=0.0, streamer=None, seed=None):
-        super(EventStreamDuplicator, self).__init__(signature=signature, chance=chance,
-                                                    streamer=streamer, seed=seed)
+        super(EventStreamDuplicator, self).__init__(
+            signature=signature,
+            chance=chance,
+            streamer=streamer,
+            seed=seed
+        )
 
     def _get_tree(self):
         if self._tree is None:
@@ -347,10 +369,13 @@ class EventStreamDuplicator(EventStreamPruner):
                     if parent is not None:
                         duplicate_dict = node_dict.copy()
                         duplicate_dict["exit_tme"] = duplicate_dict["tme"]
-                        tree.add_node(parent_node_id=parent.node_id if parent is not None else None,
-                                      **node_dict)
-                tree.add_node(parent_node_id=parent.node_id if parent is not None else None,
-                              **node_dict)
+                        tree.add_node(
+                            parent_node_id=parent.node_id
+                            if parent is not None else None,
+                            **node_dict)
+                tree.add_node(
+                    parent_node_id=parent.node_id if parent is not None else None,
+                    **node_dict)
             self._tree = tree
         return self._tree
 
@@ -362,8 +387,12 @@ class EventStreamDuplicator(EventStreamPruner):
 class EventStreamRelabelerMixin(object):
     def __init__(
             self,  # type: EventStreamer | EventStreamRelabelerMixin
-            signature, chance=0.0, streamer=None, label_generator=lambda name: name + '_relabel',
-            seed=None):
+            signature,
+            chance=0.0,
+            streamer=None,
+            label_generator=lambda name: name + '_relabel',
+            seed=None
+    ):
         super(EventStreamRelabelerMixin, self).__init__(
             signature=signature, chance=chance, streamer=streamer, seed=seed
         )

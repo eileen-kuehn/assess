@@ -27,7 +27,8 @@ class TestClustering(unittest.TestCase):
         tree = builder.build(self.file_path_one)
         tree_two = builder.build(self.file_path_two)
         tree_index = tree.to_index(signature=ParentChildByNameTopologySignature())
-        tree_two_index = tree_two.to_index(signature=ParentChildByNameTopologySignature())
+        tree_two_index = tree_two.to_index(
+            signature=ParentChildByNameTopologySignature())
         clusterer[1] = tree_index
         clusterer[1] = tree_two_index
         self.assertEqual(0, len(clusterer.clusterer.clusters))

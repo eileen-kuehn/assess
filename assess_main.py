@@ -7,10 +7,10 @@ import datetime
 from utility.report import update_parser, argparse_init, LVL
 from utility.exceptions import mainExceptionFrame
 
+from assess.algorithms.signatures.signatures import Signature
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.generators.gnm_importer import GNMCSVEventStreamer, CSVTreeBuilder
-from assess.algorithms.signatures.signatures import *
 
 
 CLI = argparse.ArgumentParser()
@@ -59,7 +59,7 @@ CLI.add_argument(
 
 def main():
     configdict = {}
-    execfile(options.configuration, configdict)
+    exec(open(options.configuration).read(), configdict)
     assert configdict["configurations"] is not None
 
     if options.file is not None:
@@ -67,8 +67,8 @@ def main():
         paths = []
         with open(options.file) as input_file:
             for index, line in enumerate(input_file):
-                if options.maximum_number_of_files is not None and \
-                                index >= options.maximum_number_of_files:
+                if options.maximum_number_of_files is not None \
+                        and index >= options.maximum_number_of_files:
                     break
                 paths.append(line.strip())
     else:
@@ -90,7 +90,11 @@ def main():
         print(results)
 
 
-def check_algorithms(paths=[], configurations=[]):
+def check_algorithms(paths=None, configurations=None):
+    if paths is None:
+        paths = []
+    if configurations is None:
+        configurations = []
     results = {
         "files": paths[:],
         "version": subprocess.check_output(["git", "describe"]).strip(),
@@ -115,7 +119,8 @@ def check_algorithms(paths=[], configurations=[]):
                 decorator.wrap_algorithm(alg)
                 for index, path in enumerate(paths):
                     if options.no_upper:
-                        # TODO: is it ok to ignore no_diagonal when no_upper is not given?
+                        # TODO: is it ok to ignore no_diagonal when no_upper
+                        # is not given?
                         alg.start_tree(maxlen=index + (0 if options.no_diagonal else 1))
                     else:
                         alg.start_tree()
@@ -130,7 +135,9 @@ def check_algorithms(paths=[], configurations=[]):
     return results
 
 
-def calculate_distance_matrix(paths=[], algorithm=None, signature=Signature):
+def calculate_distance_matrix(paths=None, algorithm=None, signature=Signature):
+    if paths is None:
+        paths = []
     compression = CompressionFactorDecorator()
     decorator = DistanceMatrixDecorator(normalized=True)
     decorator.decorator = compression
@@ -144,7 +151,8 @@ def calculate_distance_matrix(paths=[], algorithm=None, signature=Signature):
         decorator.wrap_algorithm(alg)
         for event in GNMCSVEventStreamer(csv_path=path):
             alg.add_event(event=event)
-    print("%s" % ", ".join("%.2f" % value for value in compression.compression_factors()))
+    print("%s" % ", ".join("%.2f" % value for value
+                           in compression.compression_factors()))
     print("----------------------")
     for values in decorator.distance_matrix:
         print(", ".join("%.2f" % value for value in values))

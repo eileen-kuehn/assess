@@ -10,7 +10,7 @@ import os
 import random
 
 from utility.report import update_parser, argparse_init, LVL
-from utility.exceptions import mainExceptionFrame, ExceptionFrame
+from utility.exceptions import ExceptionFrame
 
 from assess.generators.gnm_importer import GNMCSVEventStreamer, CSVTreeBuilder
 from assess.algorithms.signatures.signaturecache import PrototypeSignatureCache
@@ -84,7 +84,8 @@ CLI.add_argument(
 CLI.add_argument(
     "--matrix",
     action="store_true",
-    help="When given, the prototypes/files are calculated to construct a distance matrix"
+    help="When given, the prototypes/files are calculated to construct "
+         "a distance matrix"
 )
 CLI.add_argument(
     "--no_diagonal",
@@ -122,7 +123,7 @@ def read_paths(path, minimum=0, maximum=None):
 
 def main():
     configdict = {}
-    execfile(options.configuration, configdict)
+    exec(open(options.configuration).read(), configdict)
     assert configdict["configurations"] is not None
 
     if options.tree_file is not None:
@@ -130,7 +131,7 @@ def main():
         tree_paths = read_paths(
             options.tree_file,
             minimum=options.start_index_of_trees,
-            maximum=options.start_index_of_trees+options.maximum_number_of_trees
+            maximum=options.start_index_of_trees + options.maximum_number_of_trees
         )
     else:
         tree_paths = options.trees
@@ -139,7 +140,8 @@ def main():
         prototype_paths = tree_paths[:]
         if options.hosts:
             # FIXME: that is a hack to overwrite shortening of tree list...
-            if options.tree_file is not None and options.maximum_number_of_trees < float("inf"):
+            if options.tree_file is not None and \
+                    options.maximum_number_of_trees < float("inf"):
                 prototype_paths = read_paths(options.tree_file)
             for prototype_index, prototype_path in enumerate(prototype_paths):
                 current_index = 0
@@ -148,22 +150,24 @@ def main():
                     if options.no_diagonal:
                         current_index += 1
                 while current_index < len(prototype_paths):
+                    environment = configdict["configurations"][0]["environment"]
                     log_host_calculation(
                         start_index=current_index,
                         maximum_count=options.maximum_number_of_trees,
                         prototype=prototype_path,
                         name="%d_%d" % (
-                            prototype_index, current_index / options.maximum_number_of_trees),
-                        hosts=configdict["configurations"][0]["environment"]["hosts"],
-                        assess_path=configdict["configurations"][0]["environment"]["assess_path"],
-                        config_name=configdict["configurations"][0]["environment"]["config_name"],
-                        base_path=configdict["configurations"][0]["environment"]["base_path"],
-                        port=configdict["configurations"][0]["environment"].get("port", 22)
+                            prototype_index,
+                            current_index / options.maximum_number_of_trees),
+                        hosts=environment["hosts"],
+                        assess_path=environment["assess_path"],
+                        config_name=environment["config_name"],
+                        base_path=environment["base_path"],
+                        port=environment.get("port", 22)
                     )
                     current_index += options.maximum_number_of_trees
         else:
             global max_count
-            max_count = ((len(prototype_paths)**2)-len(prototype_paths))/2
+            max_count = ((len(prototype_paths)**2) - len(prototype_paths)) / 2
             for tree_index, tree_path in enumerate(tree_paths):
                 for prototype_index, prototype_path in enumerate(prototype_paths):
                     if options.no_upper and tree_index < prototype_index:
@@ -186,8 +190,9 @@ def main():
         results = check_algorithms(
             tree_paths=tree_paths,
             prototype_paths=prototype_paths if prototype_paths is not None else [],
-            cluster_representatives_paths=([options.cluster_representatives] if
-                                           options.cluster_representatives is not None else []),
+            cluster_representatives_paths=(
+                [options.cluster_representatives]
+                if options.cluster_representatives is not None else []),
             configurations=configdict["configurations"]
         )
 
@@ -214,15 +219,17 @@ def do_multicore(count=1, target=None, data=None):
 def check_single_algorithm(args):
     """
     This method expects several parameters to be passed:
+
     * signature - functor containing the signature to be created
     * algorithm - functor containing the algorithm to be created
     * decorator - functor containing the decorator to be created
     * tree - path to the tree to be processed
     * prototypes - List of prototypes
-    * prototype_signature - Converted signatures of prototypes for cluster representatives
+    * prototype_signature - Converted signatures of prototypes for cluster
+    representatives
 
-    :param args: Arguments to be passed to the method containing signature, algorithm, decorator,
-                 tree, and prototypes
+    :param args: Arguments to be passed to the method containing signature, algorithm,
+        decorator, tree, and prototypes
     :return: Decorator containing resulting data
     """
     with ExceptionFrame():
@@ -230,7 +237,8 @@ def check_single_algorithm(args):
         algorithm = args.get("algorithm", None)(signature=signature)
         prototype_signature = args.get("prototype_signature", None)
         if prototype_signature is not None:
-            # the list of prototypes is somewhat abused for cluster names when loading CRs
+            # the list of prototypes is somewhat abused for cluster names
+            # when loading CRs
             algorithm.cluster_representatives(
                 signature_prototypes=prototype_signature,
                 prototypes=args.get("prototypes", [])
@@ -247,22 +255,26 @@ def check_single_algorithm(args):
         return decorator
 
 
-def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None, hosts=[],
-                         assess_path=None, config_name=None, base_path=None, port=22):
+def log_host_calculation(start_index=0, maximum_count=None, prototype=None, name=None,
+                         hosts=None, assess_path=None, config_name=None, base_path=None,
+                         port=22):
+    if hosts is None:
+        hosts = []
     while len(host_dictionary) >= len(hosts):
         for host in host_dictionary.keys():
             if host_dictionary[host].poll() is not None:
-                process = host_dictionary.pop(host, None)
+                _ = host_dictionary.pop(host, None)
         time.sleep(1)
 
     # start on an idle host
     idle_hosts = [host for host in hosts if host not in host_dictionary]
     ssh_host = random.choice(idle_hosts)
     filename = "%s/%s.json" % (options.output_path, name)
-    command = "python %s --tree_file %s --start_index_of_trees %d --maximum_number_of_trees %d " \
-              "--prototypes %s --configuration %s --pcount %d --json" % (
-                __file__, os.path.join(base_path, os.path.basename(options.tree_file)), start_index,
-                maximum_count, prototype, os.path.join(base_path, config_name), options.pcount)
+    command = "python %s --tree_file %s --start_index_of_trees %d --maximum_number_" \
+              "of_trees %d --prototypes %s --configuration %s --pcount %d --json" % (
+                  __file__, os.path.join(base_path, os.path.basename(
+                      options.tree_file)), start_index, maximum_count,
+                  prototype, os.path.join(base_path, config_name), options.pcount)
     ssh_command = "ssh -p %d %s 'cd %s && source .pyenv/bin/activate && %s'" % (
         port, ssh_host, assess_path, command)
     # TODO: I maybe shouldn't write the result from the master but worker
@@ -282,15 +294,23 @@ def log_single_calculation(tree=None, prototype=None, name=None):
                 print("finished %d / %d processes" % (current_count, max_count))
         time.sleep(1)
 
-    command = "pypy %s --trees %s --prototypes %s --configuration %s --pcount 1 --json" % (
-        os.path.realpath(__file__), tree, prototype, options.configuration
-    )
+    command = "pypy %s --trees %s --prototypes %s --configuration %s --pcount 1 --json"\
+              % (os.path.realpath(__file__), tree, prototype, options.configuration)
     filename = "%s/%s.json" % (options.output_path, name)
-    process_list.append(subprocess.Popen(shlex.split(command), stdout=open(filename, "w")))
+    process_list.append(
+        subprocess.Popen(shlex.split(command), stdout=open(filename, "w")))
 
 
-def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_paths=[],
-                     configurations=[]):
+def check_algorithms(tree_paths=None, prototype_paths=None,
+                     cluster_representatives_paths=None, configurations=None):
+    if tree_paths is None:
+        tree_paths = []
+    if prototype_paths is None:
+        prototype_paths = []
+    if cluster_representatives_paths is None:
+        cluster_representatives_paths = []
+    if configurations is None:
+        configurations = []
     results = {
         "files": tree_paths[:],
         "prototypes": prototype_paths[:],
@@ -339,7 +359,8 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
             for result in result_list:
                 if decorator is not None:
                     if repr(decorator.algorithm) == repr(result.algorithm) and \
-                            repr(decorator.algorithm.signature) == repr(result.algorithm.signature):
+                            repr(decorator.algorithm.signature) == repr(
+                            result.algorithm.signature):
                         decorator.update(result)
                     else:
                         # we identified a new decorator, so save the last one
@@ -378,7 +399,7 @@ def check_algorithms(tree_paths=[], prototype_paths=[], cluster_representatives_
                         decorator = configuration["decorator"]()
                         decorator.wrap_algorithm(alg)
                         streamer = None
-                        for index, path in enumerate(tree_paths):
+                        for path in tree_paths:
                             alg.start_tree()
                             streamer = event_streamer(csv_path=path)
                             for event in streamer:

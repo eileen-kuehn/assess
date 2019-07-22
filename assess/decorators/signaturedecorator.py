@@ -3,8 +3,8 @@ from assess.decorators.decorator import Decorator
 
 class SignatureDecorator(Decorator):
     """
-    The SignatureDecorator outputs for each event the current signature it calculated and returns
-    in form of a vector.
+    The SignatureDecorator outputs for each event the current signature it
+    calculated and returns in form of a vector.
 
     The format looks like:
     [

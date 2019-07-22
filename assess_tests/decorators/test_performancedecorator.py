@@ -11,7 +11,9 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         decorator = PerformanceDecorator()
         self.assertEqual(decorator._name, "accumulated_performance")
         self.assertIsNone(decorator.data())
-        self.assertEqual(decorator.descriptive_data(), {"accumulated_performance": None})
+        self.assertEqual(decorator.descriptive_data(), {
+            "accumulated_performance": None
+        })
 
     def test_creation(self):
         decorator = PerformanceDecorator(accumulated=False)
@@ -51,9 +53,13 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {"accumulated_performance": [[None]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            "accumulated_performance": [[None]]
+        })
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {"accumulated_performance": [[None]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            "accumulated_performance": [[None]]
+        })
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
@@ -108,13 +114,14 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
                                   [0.03, 0.01],
                                   [0.06, 0.04]]
         decorator.update(second_decorator)
-        self.assertEqual(decorator.data(), [[0.0, 0.0],
-                                            [0.0, 0.0],
-                                            [6.919999837875366, 3.8499999046325684],
-                                            [0.029999999999972715, 0.009999999999990905],
-                                            [0.05999999999949068, 0.03999999999996362],
-                                            [1.0, 1.0],
-                                            [0.0, 0.0],
-                                            [7.9, 3.8],
-                                            [0.03, 0.01],
-                                            [0.06, 0.04]])
+        self.assertEqual(
+            decorator.data(), [[0.0, 0.0],
+                               [0.0, 0.0],
+                               [6.919999837875366, 3.8499999046325684],
+                               [0.029999999999972715, 0.009999999999990905],
+                               [0.05999999999949068, 0.03999999999996362],
+                               [1.0, 1.0],
+                               [0.0, 0.0],
+                               [7.9, 3.8],
+                               [0.03, 0.01],
+                               [0.06, 0.04]])

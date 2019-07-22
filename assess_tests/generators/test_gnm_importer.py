@@ -3,13 +3,13 @@ import os
 import assess_tests
 import random
 
+from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
 from assess.generators.gnm_importer import CSVTreeBuilder, GNMCSVEventStreamer, \
     EventStreamer, EventStreamPruner, EventStreamBranchPruner, EventStreamRelabeler, \
     EventStreamBranchRelabeler, EventStreamDuplicator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.events.events import TrafficEvent, EmptyProcessEvent
 from assess.exceptions.exceptions import EventNotSupportedException
-from assess.algorithms.signatures.signatures import *
 
 
 class TestGNMImporter(unittest.TestCase):
@@ -38,34 +38,40 @@ class TestGNMImporter(unittest.TestCase):
         alg = IncrementalDistanceAlgorithm()
         alg.prototypes = [tree_builder.build(self.file_path)]
         alg.start_tree()
-        for index, event in enumerate(EventStreamer(streamer=GNMCSVEventStreamer(self.file_path))):
+        last_index = 0
+        for index, event in enumerate(EventStreamer(
+                streamer=GNMCSVEventStreamer(self.file_path))):
             try:
                 distance = alg.add_event(event)[0]
             except EventNotSupportedException:
                 pass
+            last_index = index
         alg.finish_tree()
 
-        #self.assertEqual(index + 1, (9109 * 3) + (3155 * 2))  # number processes + traffic
-        self.assertEqual(33605, index + 1)
+        self.assertEqual(33605, last_index + 1)
         self.assertEqual(distance[0], [0])
 
     def test_correct_order(self):
         last_tme = 0
-        for index, event in enumerate(EventStreamer(streamer=GNMCSVEventStreamer(self.file_path))):
+        for index, event in enumerate(EventStreamer(
+                streamer=GNMCSVEventStreamer(self.file_path))):
             if type(event) == EmptyProcessEvent:
                 continue
             self.assertTrue(
-                last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
-                "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
+                last_tme <= event.tme or (
+                    isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
+                "%d: tme of current event should be bigger/equal (%f vs %f)" %
+                (index, last_tme, event.tme)
             )
             last_tme = event.tme
 
     def test_gnm_csv_event_streamer(self):
         # FIXME: I would expect also traffic to be streamed here...
         last_tme = 0
-        for index, event in enumerate(GNMCSVEventStreamer(csv_path=self.file_path)):
+        for event in GNMCSVEventStreamer(csv_path=self.file_path):
             self.assertTrue(last_tme <= event.tme)
             last_tme = event.tme
+        self.assertEquals(1405065581, last_tme)
 
     def test_gnm_event_streamer(self):
         csv_event_streamer = GNMCSVEventStreamer(csv_path=self.file_path)
@@ -74,8 +80,10 @@ class TestGNMImporter(unittest.TestCase):
             if type(event) == EmptyProcessEvent:
                 continue
             self.assertTrue(
-                last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
-                "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
+                last_tme <= event.tme or (
+                    isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
+                "%d: tme of current event should be bigger/equal (%f vs %f)" %
+                (index, last_tme, event.tme)
             )
             last_tme = event.tme
 
@@ -87,10 +95,13 @@ class TestGNMImporter(unittest.TestCase):
             chance=.1,
             streamer=csv_event_streamer)
         last_tme = 0
-        for index, event in enumerate(EventStreamer(streamer=node_stream_pruner)._streamer.node_iter()):
+        for index, event in enumerate(EventStreamer(
+                streamer=node_stream_pruner)._streamer.node_iter()):
             self.assertTrue(
-                last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
-                "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
+                last_tme <= event.tme or (
+                    isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
+                "%d: tme of current event should be bigger/equal (%f vs %f)" %
+                (index, last_tme, event.tme)
             )
             last_tme = event.tme
 
@@ -103,10 +114,13 @@ class TestGNMImporter(unittest.TestCase):
             streamer=csv_event_streamer
         )
         last_tme = 0
-        for index, event in enumerate(EventStreamer(streamer=node_stream_branch_pruner)._streamer.node_iter()):
+        for index, event in enumerate(EventStreamer(
+                streamer=node_stream_branch_pruner)._streamer.node_iter()):
             self.assertTrue(
-                last_tme <= event.tme or (isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
-                "%d: tme of current event should be bigger/equal (%f vs %f)" % (index, last_tme, event.tme)
+                last_tme <= event.tme or (
+                    isinstance(event, TrafficEvent) and last_tme <= event.tme + 20),
+                "%d: tme of current event should be bigger/equal (%f vs %f)" %
+                (index, last_tme, event.tme)
             )
             last_tme = event.tme
 
@@ -121,14 +135,18 @@ class TestGNMImporter(unittest.TestCase):
         )
         count = 0
         traffic_events = 0
-        for index, event in enumerate(EventStreamer(streamer=event_stream_relabeler)._streamer.node_iter()):
+        last_index = 0
+        for index, event in enumerate(EventStreamer(
+                streamer=event_stream_relabeler)._streamer.node_iter()):
             try:
                 if "_relabel" in event.name:
                     count += 1
             except AttributeError:
                 traffic_events += 1
+            last_index = index
         self.assertEqual(757, count)
-        self.assertAlmostEqual(chance, count / float(index - traffic_events), 1)
+        self.assertAlmostEqual(
+            chance, count / float(last_index - traffic_events), 1)
 
     def test_event_stream_branch_relabeler(self):
         random.seed(815)
@@ -141,14 +159,18 @@ class TestGNMImporter(unittest.TestCase):
         )
         count = 0
         traffic_events = 0
-        for index, event in enumerate(EventStreamer(streamer=event_stream_relabeler)._streamer.node_iter()):
+        last_index = 0
+        for index, event in enumerate(EventStreamer(
+                streamer=event_stream_relabeler)._streamer.node_iter()):
             try:
                 if "_relabel" in event.name:
                     count += 1
             except AttributeError:
                 traffic_events += 1
+            last_index = index
         self.assertEqual(4608, count)
-        self.assertAlmostEqual(chance*5, count / float(index - traffic_events), 1)
+        self.assertAlmostEqual(
+            chance * 5, count / float(last_index - traffic_events), 1)
 
     def test_node_stream_duplicator(self):
         random.seed(815)
@@ -160,12 +182,15 @@ class TestGNMImporter(unittest.TestCase):
             streamer=csv_event_streamer
         )
         last_event = None
-        for index, event in enumerate(EventStreamer(streamer=event_stream_duplicator)._streamer.node_iter()):
+        last_index = 0
+        for index, event in enumerate(EventStreamer(
+                streamer=event_stream_duplicator)._streamer.node_iter()):
             if last_event is not None:
                 if last_event.pid == event.pid:
                     self.assertEqual(0, last_event.exit_tme - last_event.tme)
             last_event = event
-        self.assertAlmostEqual(chance, (index-9108)/float(9108), 1)
+            last_index = index
+        self.assertAlmostEqual(chance, (last_index - 9108) / float(9108), 1)
 
     def test_correct_ppids(self):
         # TODO: implement me (when removing nodes from tree, ppids need to be set)

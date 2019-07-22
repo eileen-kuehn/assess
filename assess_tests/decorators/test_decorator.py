@@ -44,7 +44,8 @@ class TestDecorator(unittest.TestCase):
 
         decorator = Decorator()
         second_decorator = CompressionFactorDecorator()
-        self.assertRaises(DecoratorNotFoundException, decorator.update, second_decorator)
+        self.assertRaises(
+            DecoratorNotFoundException, decorator.update, second_decorator)
 
     def test_decorator_from_name(self):
         decorator = Decorator.from_name("matrix")

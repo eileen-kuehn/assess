@@ -1,11 +1,12 @@
 import unittest
 
 from assess.algorithms.distances.distance import Distance
+from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
 from assess.events.events import ProcessExitEvent
 from assess.prototypes.simpleprototypes import Prototype, Tree
-from assess.algorithms.signatures.ensemblesignaturecache import EnsemblePrototypeSignatureCache
+from assess.algorithms.signatures.ensemblesignaturecache import \
+    EnsemblePrototypeSignatureCache
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.algorithms.signatures.signatures import *
 
 
 def prototype():
@@ -39,10 +40,13 @@ def additional_monitoring_tree():
 
 
 def prototype_signature(prototype=None, signature=None):
-    signature_prototype = EnsemblePrototypeSignatureCache(supported={ProcessExitEvent: True})
+    signature_prototype = EnsemblePrototypeSignatureCache(
+        supported={ProcessExitEvent: True})
     for node in prototype.nodes():
         node_signature = signature.get_signature(node, node.parent())
-        signature_prototype[node_signature, prototype, ProcessExitEvent] = {"duration": (float(node.exit_tme)-float(node.tme))}
+        signature_prototype[node_signature, prototype, ProcessExitEvent] = {
+            "duration": (float(node.exit_tme) - float(node.tme))
+        }
     return signature_prototype
 
 
@@ -65,11 +69,18 @@ class TestDistance(unittest.TestCase):
     def test_creation(self):
         test_algorithm = algorithm(ParentChildByNameTopologySignature())
         test_algorithm.prototypes = ["1", "2", "3"]
-        distance = Distance(signature_count=test_algorithm.signature.count)
-        distance.init_distance(prototypes=test_algorithm.prototypes, signature_prototypes=test_algorithm.signature_prototypes)
-        for index, dist in enumerate(distance.iter_on_prototypes(test_algorithm.prototypes)):
+        distance = Distance(
+            signature_count=test_algorithm.signature.count)
+        distance.init_distance(
+            prototypes=test_algorithm.prototypes,
+            signature_prototypes=test_algorithm.signature_prototypes
+        )
+        last_index = 0
+        for index, dist in enumerate(distance.iter_on_prototypes(
+                test_algorithm.prototypes)):
             self.assertEqual(dist, [0])
-        self.assertEqual(index, 2)
+            last_index = index
+        self.assertEqual(last_index, 2)
         self.assertEqual(distance.node_count(), [0])
         self.assertFalse(distance.is_prototype_based_on_original())
 
@@ -80,8 +91,10 @@ class TestDistance(unittest.TestCase):
     def test_adding_of_results(self):
         distance = Distance()
         self.assertEqual(
-            distance._add_result_dicts(base=[{"1": 0, "2": 0}], to_add=[{"1": 1, "2": 1}]),
-            [{"1": 1, "2": 1}]
+            distance._add_result_dicts(
+                base=[{"1": 0, "2": 0}],
+                to_add=[{"1": 1, "2": 1}]
+            ), [{"1": 1, "2": 1}]
         )
         self.assertEqual(
             distance._add_result_dicts([{"1": 1, "2": 1}], [{"1": 2, "2": -1}]),

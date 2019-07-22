@@ -1,6 +1,6 @@
 """
-Module offers an incremental method to split underlying distributions to more correctly represent
-the underlying data for distance measurement.
+Module offers an incremental method to split underlying distributions to more
+correctly represent the underlying data for distance measurement.
 """
 import bisect
 
@@ -9,19 +9,20 @@ from assess.algorithms.statistics.statistics import Statistics, MeanVariance
 
 class SplittedStatistics(Statistics):
     """
-    The class SplittedStatistics takes different values and incrementally clusters given values
-    while summarising using a specified statistic type. The clustering concept is based on
+    The class SplittedStatistics takes different values and incrementally
+    clusters given values while summarising using a specified statistic type.
+    The clustering concept is based on
 
     * density based clustering, and
     * gravity based cluster merging (currently not implemented)
 
-    It is taken care, that at least statistics as possible are stored. This can be configured
-    via specifying threshold and attraction factor.
+    It is taken care, that at least statistics as possible are stored.
+    This can be configured via specifying threshold and attraction factor.
 
     Attention: the attraction factor is currently not in use.
     """
-    def __init__(self, statistics_type=MeanVariance, threshold=.5, distribution_threshold=1.2,
-                 attraction_factor=None):
+    def __init__(self, statistics_type=MeanVariance, threshold=.5,
+                 distribution_threshold=1.2, attraction_factor=None):
         self._statistics_type = statistics_type
         self._statistics = [statistics_type()]
         self._threshold = threshold
@@ -58,8 +59,8 @@ class SplittedStatistics(Statistics):
                 if distance > self._threshold:
                     new_statistic = self._statistics_type()
                     new_statistic += statistic
-                    if (self._statistics[index - 1].mean if index > 0 else -float("inf")) \
-                            < value < self._statistics[index].mean:
+                    if (self._statistics[index - 1].mean if index > 0 else -float(
+                            "inf")) < value < self._statistics[index].mean:
                         self._statistics.insert(index, new_statistic)
                         self._perform_merging(index)
                     else:
@@ -80,8 +81,8 @@ class SplittedStatistics(Statistics):
 
     def add(self, value):
         """
-        Method to add a specific value. Depending on the value, it is either added to existing
-        statistics data set, or a new one is created.
+        Method to add a specific value. Depending on the value, it is either
+        added to existing statistics data set, or a new one is created.
 
         :param value: New value to add
         """
@@ -93,11 +94,13 @@ class SplittedStatistics(Statistics):
             distance, index = self._closest_value_and_index(value=value)
             if distance > self._threshold:
                 # check where to insert value
-                if (self._statistics[index - 1].mean if index > 0 else -float("inf")) < value < \
-                        (self._statistics[index].mean):
-                    self._statistics.insert(index, self._statistics_type(value=value))
+                if (self._statistics[index - 1].mean if index > 0 else -float(
+                        "inf")) < value < self._statistics[index].mean:
+                    self._statistics.insert(index, self._statistics_type(
+                        value=value))
                 else:
-                    self._statistics.insert(index + 1, self._statistics_type(value=value))
+                    self._statistics.insert(index + 1, self._statistics_type(
+                        value=value))
             else:
                 self._statistics[index].add(value=value)
                 # perform merging
@@ -112,13 +115,15 @@ class SplittedStatistics(Statistics):
         merged = True
         while merged:
             merged = False
-            if self._distribution_distance(index, index + 1) <= self._distribution_threshold:
+            if self._distribution_distance(index, index + 1) <= \
+                    self._distribution_threshold:
                 self._statistics[index] += self._statistics[index + 1]
                 del self._statistics[index + 1]
                 merged = True
             # don't look at index 0, because there 0 objects are dumped
             if index > 1:
-                if self._distribution_distance(index - 1, index) <= self._distribution_threshold:
+                if self._distribution_distance(index - 1, index) <= \
+                        self._distribution_threshold:
                     self._statistics[index - 1] += self._statistics[index]
                     del self._statistics[index]
                     index -= 1
@@ -172,12 +177,14 @@ class SplittedStatistics(Statistics):
 
     def _closest_value_and_index(self, value):
         """
-        Method determines the closest value and index for given value from current statistics.
+        Method determines the closest value and index for given value from
+        current statistics.
 
         :param value: reference value to look for
         :return: tuple from distance and index of closest value
         """
-        index = bisect.bisect_left([statistic.mean for statistic in self._statistics], value)
+        index = bisect.bisect_left([statistic.mean for
+                                    statistic in self._statistics], value)
         left_distance = self._statistics[index - 1].distance(value=value) \
             if index > 1 else float("inf")
         right_distance = self._statistics[index].distance(value=value) \
@@ -188,4 +195,5 @@ class SplittedStatistics(Statistics):
             if right_distance < left_distance else index - 1
 
     def __repr__(self):
-        return "%s (%s)" % (self.__class__.__name__, [{statistic.value: statistic.count} for statistic in self._statistics])
+        return "%s (%s)" % (self.__class__.__name__, [
+            {statistic.value: statistic.count} for statistic in self._statistics])

@@ -1,6 +1,7 @@
 import unittest
 
-from assess.events.events import *
+from assess.events.events import ProcessStartEvent, Event, ProcessExitEvent, \
+    TrafficEvent
 
 
 class TestEventFunctionality(unittest.TestCase):

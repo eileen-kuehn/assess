@@ -1,15 +1,18 @@
 """
-Module describes a general tree as well as a more specialised prototype. Also the definition for
-the single nodes is defined.
+Module describes a general tree as well as a more specialised prototype. Also
+the definition for the single nodes is defined.
 """
 import bisect
 
+from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
+from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
 from assess.exceptions.exceptions import TreeInvalidatedException, \
     NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException, DataNotInCacheException
-from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, TrafficEvent, EmptyProcessEvent
-from assess.algorithms.signatures.signaturecache import SignatureCache, PrototypeSignatureCache
-from assess.algorithms.signatures.ensemblesignature import *
+from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, \
+    TrafficEvent, EmptyProcessEvent
+from assess.algorithms.signatures.signaturecache import SignatureCache, \
+    PrototypeSignatureCache
 
 from assess.utility.objectcache import ObjectCache
 from assess.utility.randoms import id_generator
@@ -19,7 +22,8 @@ from gnmutils.exceptions import ObjectIsRootException
 
 class OrderedTreeNode(object):
     """
-    Class describes a node of a tree that ensures the correct order of nodes within the tree.
+    Class describes a node of a tree that ensures the correct order of nodes
+    within the tree.
 
     :param node_id: ID of node
     :param name: Name of node
@@ -28,8 +32,8 @@ class OrderedTreeNode(object):
     :param tree: Tree where node belongs to
     :param kwargs: Additional arguments
     """
-    def __init__(self, node_id, name=None, parent=None, previous_node=None, next_node=None,
-                 position=0, tree=None, **kwargs):
+    def __init__(self, node_id, name=None, parent=None, previous_node=None,
+                 next_node=None, position=0, tree=None, **kwargs):
         self.name = name
         self.node_id = node_id
         self._parent = parent
@@ -51,14 +55,19 @@ class OrderedTreeNode(object):
 
     def dao(self):
         def check_keys(key):
-            return not ("signature_id" in key or "position" in key or "previous_node" in key or
-                        "next_node" in key or key.startswith("_"))
-        return {key: getattr(self, key) for key in vars(self) if check_keys(key)}
+            return not ("signature_id" in key
+                        or "position" in key
+                        or "previous_node" in key
+                        or "next_node" in key
+                        or key.startswith("_"))
+        return {
+            key: getattr(self, key) for key in vars(self) if check_keys(key)
+        }
 
     def depth(self):
         """
-        Method returns the depth of the current node within the tree. If the node is the root, then
-        0 is returned. So depth equals the number of parents.
+        Method returns the depth of the current node within the tree. If the node
+        is the root, then 0 is returned. So depth equals the number of parents.
 
         :return: Depth of the node within the tree
         """
@@ -108,8 +117,8 @@ class OrderedTreeNode(object):
 
     def node_number(self):
         """
-        Method returns the position of the node regarding its siblings. If the node is the first
-        element, 0 is returned.
+        Method returns the position of the node regarding its siblings.
+        If the node is the first element, 0 is returned.
 
         :return: Node position
         """
@@ -117,7 +126,8 @@ class OrderedTreeNode(object):
 
     def parent(self):
         """
-        Method returns the parent of the node, if it does not have a parent, it returns None.
+        Method returns the parent of the node, if it does not have a parent,
+        it returns None.
 
         :return: Parent, None otherwise
         """
@@ -125,8 +135,8 @@ class OrderedTreeNode(object):
 
     def add_node(self, name=None, **kwargs):
         """
-        Method to add a new node to the list of children of the node. It is appended to the end
-        of the children's list.
+        Method to add a new node to the list of children of the node.
+        It is appended to the end of the children's list.
 
         :param name: Name of the new node to add
         :param kwargs: Params to be added to the node
@@ -153,7 +163,9 @@ class OrderedTreeNode(object):
         # NOTE: prev/next node resolution MUST be called externally
 
     def resolve_siblings(self):
-        """Tell the node to load its siblings by ID; must be called once after unpickling"""
+        """
+        Tell the node to load its siblings by ID; must be called once after unpickling
+        """
         try:
             self.previous_node = self._prototype.node_by_node_id(self.previous_node)
         except NodeNotFoundException:
@@ -175,8 +187,8 @@ class OrderedTreeNode(object):
 
 class OrderedTree(object):
     """
-    Class that builds up a tree that takes care of the order of nodes, so it does implement an
-    ordered tree.
+    Class that builds up a tree that takes care of the order of nodes, so it
+    does implement an ordered tree.
     """
     def __init__(self):
         self.root = None
@@ -226,11 +238,11 @@ class OrderedTree(object):
                 node.previous_node.next_node = node.next_node
                 node.next_node.previous_node = node.previous_node
 
-    def add_node(self, name=None, parent=None, previous_node=None, next_node=None, node_id=None,
-                 **kwargs):
+    def add_node(self, name=None, parent=None, previous_node=None, next_node=None,
+                 node_id=None, **kwargs):
         """
-        Method adds a new node to the actual tree. If parent is not given, the node gets the root
-        ndoe of the tree.
+        Method adds a new node to the actual tree. If parent is not given,
+        the node gets the root node of the tree.
 
         :param name: Name of the node to create
         :param parent: Parent of the node to attach to
@@ -302,8 +314,8 @@ class Tree(object):
 
     def remove_node(self, node=None, node_id=None):
         """
-        Method removes a node from the actual tree. The method raises an error if the node still
-        has children attached.
+        Method removes a node from the actual tree. The method raises an error
+        if the node still has children attached.
 
         :param node: The node to be removed
         :param node_id: unique ID of node
@@ -314,8 +326,8 @@ class Tree(object):
 
     def remove_subtree(self, node=None, node_id=None):
         """
-        Method removes a subtree from the actual tree, meaning, that a node and all its children
-        are removed.
+        Method removes a subtree from the actual tree, meaning, that a node and
+        all its children are removed.
 
         :param node: The node where subtree removal starts from
         :param node_id: unique ID of node is removed recursively
@@ -331,8 +343,8 @@ class Tree(object):
 
     def add_node(self, name, parent=None, parent_node_id=None, **kwargs):
         """
-        Method to add a new node to the tree. If given parent is None, and there is currently no
-        root, then the node becomes the root of the tree.
+        Method to add a new node to the tree. If given parent is None, and there
+        is currently no root, then the node becomes the root of the tree.
 
         :param name: Name of the node to be created
         :param parent: Parent where to attach the node
@@ -365,15 +377,17 @@ class Tree(object):
         return self._graph.node_count()
 
     # TODO: implement stop condition for depth and width first
-    def nodes(self, node=None, depth_first=True, order_first=False, include_marker=False):
+    def nodes(self, node=None, depth_first=True, order_first=False,
+              include_marker=False):
         """
-        Method that returns a generator yielding all nodes inside the tree, either in
-        depth first or width first order.
+        Method that returns a generator yielding all nodes inside the tree,
+        either in depth first or width first order.
 
         :param node: The node to start at
         :param depth_first: Depth first order if True, otherwise width first.
         :param order_first: Returns nodes by order they have been added.
-        :param include_marker: Defines if empty nodes for marking end of children are included.
+        :param include_marker: Defines if empty nodes for marking end of children
+            are included.
         :return: Generator for tree nodes.
         """
         def ofs(root):
@@ -399,8 +413,8 @@ class Tree(object):
 
         def dfs(root):
             """
-            Method recursively implements a depth first generator for nodes of the tree.
-            The given node defines which subtree is used for traversal.
+            Method recursively implements a depth first generator for nodes of
+            the tree. The given node defines which subtree is used for traversal.
 
             :param root: Where to start node traversal
             :return: Depth first node generator
@@ -419,8 +433,8 @@ class Tree(object):
 
         def wfs(root):
             """
-            Method recursively implements a width first generator for nodes of the tree.
-            The given node defines which subtree is used for traversal.
+            Method recursively implements a width first generator for nodes of
+            the tree. The given node defines which subtree is used for traversal.
 
             :param root: Where to start node traversal
             :return: Width first node generator
@@ -508,8 +522,9 @@ class Tree(object):
 
     def subtree_node_count(self, node=None):
         """
-        Method that gives the number of nodes in subtree rooted at node. If node is not given,
-        the node count of the complete tree is returned.
+        Method that gives the number of nodes in subtree rooted at node.
+        If node is not given, the node count of the complete tree is returned.
+
         :param node: Node where subtree is rooted.
         :return: Node count of subtree rooted at ndoe.
         """
@@ -544,7 +559,8 @@ class Tree(object):
         return sequence_fmt % (subtree_repr(self.root()))
 
     def __repr__(self):
-        return self.__class__.__name__ + " (" + ", ".join(str(node) for node in self.nodes()) + ")"
+        return self.__class__.__name__ + " (" + ", ".join(
+            str(node) for node in self.nodes()) + ")"
 
 
 class Prototype(Tree):
@@ -555,7 +571,7 @@ class Prototype(Tree):
     def from_tree(tree):
         result = Prototype()
         object_cache = ObjectCache()
-        for node, depth in tree.walkDFS():
+        for node, _ in tree.walkDFS():
             try:
                 parent = object_cache.get_data(
                     value=node.value.tme,
@@ -583,8 +599,8 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, start_support=True, exit_support=True, traffic_support=False,
-                 cache=None, statistics_cls=None):
+    def to_index(self, signature, start_support=True, exit_support=True,
+                 traffic_support=False, cache=None, statistics_cls=None):
         if cache is None:
             if isinstance(signature, EnsembleSignature):
                 cache = EnsembleSignatureCache(
@@ -600,12 +616,19 @@ class Prototype(Tree):
                         ProcessExitEvent: exit_support,
                         TrafficEvent: traffic_support
                     }, statistics_cls=statistics_cls)
-        return self.to_prototype(signature=signature, start_support=start_support,
-                                 exit_support=exit_support, traffic_support=traffic_support,
-                                 cache=cache, statistics_cls=statistics_cls, _is_prototype=False)
+        return self.to_prototype(
+            signature=signature,
+            start_support=start_support,
+            exit_support=exit_support,
+            traffic_support=traffic_support,
+            cache=cache,
+            statistics_cls=statistics_cls,
+            _is_prototype=False
+        )
 
-    def to_prototype(self, signature, start_support=True, exit_support=True, traffic_support=False,
-                     cache=None, statistics_cls=None, _is_prototype=True):
+    def to_prototype(self, signature, start_support=True, exit_support=True,
+                     traffic_support=False, cache=None, statistics_cls=None,
+                     _is_prototype=True):
         if cache is None:
             cache = PrototypeSignatureCache(
                 {
@@ -623,10 +646,13 @@ class Prototype(Tree):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
-                    add_signature(event, ensemble_signature, cache, start_support, exit_support)  # FIXME: turn into ExitEvent
+                    # FIXME: turn into ExitEvent
+                    add_signature(
+                        event, ensemble_signature, cache, start_support, exit_support)
                 continue
             else:
-                current_signature = signature.get_signature(event.node, event.node.parent())
+                current_signature = signature.get_signature(
+                    event.node, event.node.parent())
             add_signature(event, current_signature, cache, start_support, exit_support)
         del cache.supported[EmptyProcessEvent]
         return cache
@@ -634,24 +660,37 @@ class Prototype(Tree):
     def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache,
                                         start_support=False, exit_support=False):
         if type(event) == ProcessStartEvent:
-            cache[ensemble_signature_list, ProcessStartEvent] = {"count": 0}
+            cache[ensemble_signature_list, ProcessStartEvent] = {
+                "count": 0
+            }
         if type(event) == ProcessExitEvent:
-            cache[ensemble_signature_list, ProcessExitEvent] = {"count": 0,
-                                                                "duration": event.value}
+            cache[ensemble_signature_list, ProcessExitEvent] = {
+                "count": 0,
+                "duration": event.value
+            }
         if type(event) == TrafficEvent:
-            cache[ensemble_signature_list, TrafficEvent] = {"count": 0,
-                                                            "duration": event.value}
+            cache[ensemble_signature_list, TrafficEvent] = {
+                "count": 0,
+                "duration": event.value
+            }
         if type(event) == EmptyProcessEvent:
             if start_support:
-                cache[ensemble_signature_list, ProcessStartEvent] = {"count": 0}
+                cache[ensemble_signature_list, ProcessStartEvent] = {
+                    "count": 0
+                }
             if exit_support:
-                cache[ensemble_signature_list, ProcessExitEvent] = {"count": 0,
-                                                                    "duration": 0}
+                cache[ensemble_signature_list, ProcessExitEvent] = {
+                    "count": 0,
+                    "duration": 0
+                }
 
-    def _handle_prototype_ensemble_signature_list(self, event, ensemble_signature_list, cache,
-                                                  start_support=False, exit_support=False):
+    def _handle_prototype_ensemble_signature_list(
+            self, event, ensemble_signature_list, cache, start_support=False,
+            exit_support=False):
         if type(event) == ProcessStartEvent:
-            cache[ensemble_signature_list, self, ProcessStartEvent] = {"count": 0}
+            cache[ensemble_signature_list, self, ProcessStartEvent] = {
+                "count": 0
+            }
         if type(event) == ProcessExitEvent:
             cache[ensemble_signature_list, self, ProcessExitEvent] = {
                 "count": 0,
@@ -687,7 +726,8 @@ class Prototype(Tree):
             try:
                 now = node.tme
                 # create the events for the current process
-                start_event, exit_event, traffic_events = Event.events_from_process(node)
+                start_event, exit_event, traffic_events = Event.events_from_process(
+                    node)
                 exit_event.node = node
             except AttributeError:
                 # received an EmptyNode Marker, it only needs to be forwarded
@@ -709,19 +749,22 @@ class Prototype(Tree):
                 try:
                     current_node = existing_nodes[traffic_event.name]
                 except KeyError:
-                    existing_nodes[traffic_event.name] = OrderedTreeNode(1, **traffic_event.__dict__)
+                    existing_nodes[traffic_event.name] = OrderedTreeNode(
+                        1, **traffic_event.__dict__)
                     current_node = existing_nodes[traffic_event.name]
                     current_node._parent = node
                 traffic_event.node = current_node
             # process starts NOW, exits LATER
             yield start_event
             try:
-                bisect.insort_right(exit_event_queue, (-exit_event.tme, events, exit_event))
+                bisect.insort_right(
+                    exit_event_queue, (-exit_event.tme, events, exit_event))
             except AttributeError:
                 pass
             for traffic in traffic_events:
                 events += 1
-                bisect.insort_right(exit_event_queue, (-(traffic.tme), events, traffic))
+                bisect.insort_right(
+                    exit_event_queue, (-(traffic.tme), events, traffic))
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 

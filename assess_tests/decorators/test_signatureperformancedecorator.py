@@ -1,6 +1,7 @@
 import unittest
 
-from assess.decorators.signatureperformancedecorator import SignaturePerformanceDecorator
+from assess.decorators.signatureperformancedecorator import \
+    SignaturePerformanceDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.events.events import Event
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
@@ -11,7 +12,9 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         decorator = SignaturePerformanceDecorator()
         self.assertEqual(decorator._name, "accumulated_signature_performance")
         self.assertIsNone(decorator.data())
-        self.assertEqual(decorator.descriptive_data(), {"accumulated_signature_performance": None})
+        self.assertEqual(decorator.descriptive_data(), {
+            "accumulated_signature_performance": None
+        })
 
     def test_creation(self):
         decorator = SignaturePerformanceDecorator(accumulated=False)
@@ -51,9 +54,13 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         decorator.start_tree()
-        self.assertEqual(decorator.descriptive_data(), {'accumulated_signature_performance': [[None]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            'accumulated_signature_performance': [[None]]
+        })
         decorator.finish_tree()
-        self.assertEqual(decorator.descriptive_data(), {'accumulated_signature_performance': [[None]]})
+        self.assertEqual(decorator.descriptive_data(), {
+            'accumulated_signature_performance': [[None]]
+        })
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
@@ -61,15 +68,18 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
-        self.assertEqual(type(description["accumulated_signature_performance"][0][0]), float)
+        self.assertEqual(
+            type(description["accumulated_signature_performance"][0][0]), float)
         decorator.start_tree()
         for event in Event.from_tree(simple_monitoring_tree()):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
         print(description)
-        self.assertEqual(len(description["accumulated_signature_performance"]), 2)
-        self.assertEqual(type(description["accumulated_signature_performance"][1][0]), float)
+        self.assertEqual(
+            len(description["accumulated_signature_performance"]), 2)
+        self.assertEqual(
+            type(description["accumulated_signature_performance"][1][0]), float)
 
     def test_update(self):
         decorator = SignaturePerformanceDecorator(accumulated=True)
@@ -109,13 +119,14 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
                                   [0.03, 0.01],
                                   [0.06, 0.04]]
         decorator.update(second_decorator)
-        self.assertEqual(decorator.data(), [[0.0, 0.0],
-                                            [0.0, 0.0],
-                                            [6.919999837875366, 3.8499999046325684],
-                                            [0.029999999999972715, 0.009999999999990905],
-                                            [0.05999999999949068, 0.03999999999996362],
-                                            [1.0, 1.0],
-                                            [0.0, 0.0],
-                                            [7.9, 3.8],
-                                            [0.03, 0.01],
-                                            [0.06, 0.04]])
+        self.assertEqual(
+            decorator.data(), [[0.0, 0.0],
+                               [0.0, 0.0],
+                               [6.919999837875366, 3.8499999046325684],
+                               [0.029999999999972715, 0.009999999999990905],
+                               [0.05999999999949068, 0.03999999999996362],
+                               [1.0, 1.0],
+                               [0.0, 0.0],
+                               [7.9, 3.8],
+                               [0.03, 0.01],
+                               [0.06, 0.04]])

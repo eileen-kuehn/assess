@@ -4,10 +4,10 @@ import assess_tests
 
 from gnmutils.sources.filedatasource import FileDataSource
 
-from assess.prototypes.simpleprototypes import Prototype, Tree
+from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature
+from assess.prototypes.simpleprototypes import Prototype
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
-from assess.algorithms.signatures.signatures import *
 from assess.events.events import ProcessExitEvent, ProcessStartEvent
 
 
@@ -17,11 +17,13 @@ class TestPrototypeFunctions(unittest.TestCase):
 
     def test_empty_tree(self):
         prototype = Prototype()
-        self.assertEqual(prototype.node_count(), 0, "The node count for an empty prototype should be 0")
+        self.assertEqual(prototype.node_count(), 0,
+                         "The node count for an empty prototype should be 0")
 
     def test_empty_tree_root(self):
         prototype = Prototype()
-        self.assertEqual(prototype.root(), None, "The root of an empty prototype should be None")
+        self.assertEqual(prototype.root(), None,
+                         "The root of an empty prototype should be None")
 
     def test_invalid_tree(self):
         prototype = Prototype()
@@ -77,24 +79,36 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_tree_creation(self):
         prototype = Prototype()
         node_1 = prototype.add_node("node_1")
-        self.assertEqual(node_1.name, "node_1", "The name of created node should be node_1")
+        self.assertEqual(
+            node_1.name, "node_1", "The name of created node should be node_1")
         node_2 = prototype.add_node("node_2", node_1)
-        self.assertEqual(node_2.name, "node_2", "The name of created node should be node_2")
-        self.assertEqual(node_2.parent(), node_1, "The parent of node_2 should be node_1")
+        self.assertEqual(
+            node_2.name, "node_2", "The name of created node should be node_2")
+        self.assertEqual(
+            node_2.parent(), node_1, "The parent of node_2 should be node_1")
         node_3 = prototype.add_node("node_3", node_2)
         node_4 = prototype.add_node("node_4", node_2)
-        self.assertEqual(node_1.child_count(), 1, "Node_1 should have only one child")
-        self.assertEqual(node_2.child_count(), 2, "Node_2 should have two children")
-        self.assertEqual(prototype.subtree_node_count(node_1), 4, "Subtree of node_1 should have 4 nodes")
-        self.assertEqual(prototype.subtree_node_count(node_2), 3, "Subtree of node_2 should have 3 nodes")
-        self.assertEqual(prototype.subtree_node_count(node_3), 1, "Subtree of node_3 should have 1 node")
+        self.assertEqual(
+            node_1.child_count(), 1, "Node_1 should have only one child")
+        self.assertEqual(
+            node_2.child_count(), 2, "Node_2 should have two children")
+        self.assertEqual(
+            prototype.subtree_node_count(node_1), 4,
+            "Subtree of node_1 should have 4 nodes")
+        self.assertEqual(
+            prototype.subtree_node_count(node_2), 3,
+            "Subtree of node_2 should have 3 nodes")
+        self.assertEqual(
+            prototype.subtree_node_count(node_3), 1,
+            "Subtree of node_3 should have 1 node")
 
         nodes = [node_1, node_2, node_3, node_4]
         self.assertEqual(len(list(prototype.nodes())), len(nodes))
         for node in prototype.nodes():
             self.assertTrue(node in nodes)
 
-        self.assertEqual(prototype.subtree_node_count(prototype.root()), prototype.node_count())
+        self.assertEqual(
+            prototype.subtree_node_count(prototype.root()), prototype.node_count())
         self.assertEqual(prototype.node_count(), 4)
 
     def test_node_properties(self):
@@ -141,7 +155,9 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(prototype.child_count(root), 20)
         # check order of nodes
         for node in prototype.children(root):
-            self.assertEqual(prototype.node_number(node), int(node.name), "Number of node does not match")
+            self.assertEqual(
+                prototype.node_number(node), int(node.name),
+                "Number of node does not match")
 
     def test_creation_via_node(self):
         prototype = Prototype()
@@ -156,10 +172,10 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_unique_tree_ids(self):
         prototype = Prototype()
         root = prototype.add_node("node", pid=1, ppid=0)
-        for i in range(20):
+        for _ in range(20):
             root.add_node("node")
         one_child = list(root.children())[0]
-        for i in range(20):
+        for _ in range(20):
             one_child.add_node("node")
 
         self.assertEqual(prototype.node_count(), 41)
@@ -195,10 +211,13 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_representation(self):
         prototype = simple_prototype()
         self.assertEqual(prototype.tree_repr(), "[root: [test, muh, test, muh]]")
-        self.assertEqual(prototype.tree_repr(node_repr=lambda node: str(node.pid)), "[1: [2, 3, 4, 5]]")
+        self.assertEqual(prototype.tree_repr(
+            node_repr=lambda node: str(node.pid)), "[1: [2, 3, 4, 5]]")
         self.assertEqual(
-            prototype.tree_repr(node_repr=lambda node: "%d (%d)" % (node.pid, node.ppid), sequence_fmt="(%s)"),
-            "(1 (0): (2 (1), 3 (1), 4 (1), 5 (1)))"
+            prototype.tree_repr(
+                node_repr=lambda node: "%d (%d)" % (node.pid, node.ppid),
+                sequence_fmt="(%s)"
+            ), "(1 (0): (2 (1), 3 (1), 4 (1), 5 (1)))"
         )
 
     def test_global_order(self):
@@ -212,11 +231,13 @@ class TestPrototypeFunctions(unittest.TestCase):
         prototype.add_node("node_6", parent=node_1)
 
         # test depth first
-        self.assertEqual([node.name for node in list(prototype.nodes())],
-                         ["root", "node_1", "node_4", "node_6", "node_2", "node_3", "node_5"])
+        self.assertEqual(
+            [node.name for node in list(prototype.nodes())],
+            ["root", "node_1", "node_4", "node_6", "node_2", "node_3", "node_5"])
         # test order first
-        self.assertEqual([node.name for node in list(prototype.nodes(order_first=True))],
-                         ["root", "node_1", "node_2", "node_3", "node_4", "node_5", "node_6"])
+        self.assertEqual(
+            [node.name for node in list(prototype.nodes(order_first=True))],
+            ["root", "node_1", "node_2", "node_3", "node_4", "node_5", "node_6"])
         # test linkage
         self.assertEqual(node_2.previous_node, node_1)
         self.assertEqual(node_2.next_node.name, "node_3")
@@ -282,11 +303,16 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(4, index.multiplicity(signature="muh_149160533"))
         self.assertEqual(3, index.node_count())
         self.assertEqual(2, index.get_statistics(
-            signature="muh_149160533", key="duration", event_type=ProcessExitEvent)._statistics[1].mean)
+            signature="muh_149160533",
+            key="duration",
+            event_type=ProcessExitEvent)._statistics[1].mean)
         self.assertEqual(0, index.get_statistics(
-            signature="muh_149160533", key="duration", event_type=ProcessExitEvent).distance(2))
+            signature="muh_149160533",
+            key="duration",
+            event_type=ProcessExitEvent).distance(2))
 
-        index = prototype.to_index(signature=ParentChildByNameTopologySignature(), exit_support=False)
+        index = prototype.to_index(
+            signature=ParentChildByNameTopologySignature(), exit_support=False)
         self.assertEqual(3, index.node_count())
         self.assertEqual(1, index.multiplicity(signature="root_1"))
         self.assertEqual(2, index.multiplicity(signature="test_149160533"))
@@ -302,9 +328,13 @@ class TestPrototypeFunctions(unittest.TestCase):
         finished = set()
         for event in prototype.event_iter():
             if isinstance(event, ProcessStartEvent):
-                self.assertTrue(event.ppid not in finished, "Node with pid %s is already gone..." % event.ppid)
+                self.assertTrue(
+                    event.ppid not in finished,
+                    "Node with pid %s is already gone..." % event.ppid)
             if isinstance(event, ProcessExitEvent):
-                self.assertTrue(event.ppid not in finished, "Node with pid %s has already been finished" % event.ppid)
+                self.assertTrue(
+                    event.ppid not in finished,
+                    "Node with pid %s has already been finished" % event.ppid)
                 finished.add(event.pid)
 
     def test_streaming_order(self):

@@ -3,7 +3,8 @@ import unittest
 from assess.algorithms.distances.startexitdistance import StartExitDistance
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.algorithms.signatures.signatures import ParentChildByNameTopologySignature, ParentSiblingSignature
+from assess.algorithms.signatures.signatures import ParentSiblingSignature, \
+    ParentChildByNameTopologySignature
 from assess.algorithms.statistics.setstatistics import SetStatistics
 from assess.algorithms.statistics.splittedstatistics import SplittedStatistics
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
@@ -19,9 +20,11 @@ class TestStartExitDistance(unittest.TestCase):
             distance = StartExitDistance(weight=1, **kwargs)
             distance.supported[TrafficEvent] = True
             return distance
-        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature(),
-                                                 distance=distance,
-                                                 cache_statistics=SetStatistics)
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=ParentChildByNameTopologySignature(),
+            distance=distance,
+            cache_statistics=SetStatistics
+        )
         decorator = DistanceMatrixDecorator(normalized=False)
         decorator.wrap_algorithm(algorithm)
         algorithm.prototypes = [real_tree("data/c01-007-102/2/1129-2-process.csv")]
@@ -41,9 +44,10 @@ class TestStartExitDistance(unittest.TestCase):
             distance = StartExitDistance(weight=0, **kwargs)
             distance.supported[TrafficEvent] = True
             return distance
-        algorithm = IncrementalDistanceAlgorithm(signature=ParentChildByNameTopologySignature(),
-                                                 distance=distance,
-                                                 cache_statistics=SplittedStatistics)
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=ParentChildByNameTopologySignature(),
+            distance=distance,
+            cache_statistics=SplittedStatistics)
         decorator = DistanceMatrixDecorator(normalized=False)
         decorator.wrap_algorithm(algorithm)
         the_tree = real_tree(
@@ -66,8 +70,14 @@ class TestStartExitDistance(unittest.TestCase):
             distance = StartExitDistance(weight=.5, **kwargs)
             distance.supported[TrafficEvent] = False
             return distance
-        signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature(), ParentSiblingSignature(width=2)])
-        algorithm = IncrementalDistanceAlgorithm(signature=signature, distance=distance, cache_statistics=SetStatistics)
+        signature = EnsembleSignature(
+            signatures=[
+                ParentChildByNameTopologySignature(), ParentSiblingSignature(width=2)])
+        algorithm = IncrementalDistanceAlgorithm(
+            signature=signature,
+            distance=distance,
+            cache_statistics=SetStatistics
+        )
         decorator = DistanceMatrixDecorator(normalized=True)
         decorator.wrap_algorithm(algorithm)
         algorithm.prototypes = [simple_prototype()]
@@ -75,7 +85,7 @@ class TestStartExitDistance(unittest.TestCase):
         for event in simple_monitoring_tree().event_iter():
             try:
                 algorithm.add_event(event)
-            except:
+            except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
         print(decorator.data())
