@@ -118,7 +118,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
             root.add_node("child2", tme=0, pid=pid_count, ppid=1, exit_tme=0)
             pid_count += 1
         child = list(root.children())[1]
-        for _ in range(10):
+        for i in range(10):
             child.add_node(str(i), tme=0, pid=pid_count, ppid=3, exit_tme=0)
             pid_count += 1
         child_child = list(child.children())[5]

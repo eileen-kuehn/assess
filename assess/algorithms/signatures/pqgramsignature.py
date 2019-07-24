@@ -18,9 +18,9 @@ class PQGramSignature(Signature):
         parents = self.parent_generator(node)
         siblings = self.sibling_generator(node, self._width)
         # Attention: this ordering is different from original pq-grams!
-        algorithm_id = "_".join([next(parents) for _ in range(self._height)]) + \
+        algorithm_id = "_".join(str(next(parents)) for _ in range(self._height)) + \
                        ("_%s_" % node.name) + \
-                       "_".join([next(siblings) for _ in range(self._width)])
+                       "_".join(str(next(siblings)) for _ in range(self._width))
         self._prepare_signature(node, algorithm_id)
 
     def finish_node(self, node):

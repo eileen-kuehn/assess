@@ -62,6 +62,17 @@ class Event(object):
         process_exit_dict["value"] = process_exit_dict["tme"] - \
             process_exit_dict["start_tme"]
 
+        if process_dict.get("pid", None) is None:
+            process_dict["pid"] = process_dict.get("node_id", None)
+            process_exit_dict["pid"] = process_dict.get("node_id", None)
+            if process_dict.get("_parent", None) is not None:
+                ppid = process_dict.get("_parent", None).node_id
+                process_dict["ppid"] = ppid
+                process_exit_dict["ppid"] = ppid
+            else:
+                process_dict["ppid"] = None
+                process_exit_dict["ppid"] = None
+
         # prepare traffic events
         traffic_list = []
         try:
@@ -125,7 +136,7 @@ class Event(object):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "%s(tme=%.1f, pid=%d, ppid=%d, %s)" % (
+        return "%s(tme=%.1f, pid=%s, ppid=%s, %s)" % (
             self.__class__.__name__,
             self.tme,
             self.pid,
