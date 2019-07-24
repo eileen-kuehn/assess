@@ -62,7 +62,7 @@ class Event(object):
         process_exit_dict["value"] = process_exit_dict["tme"] - \
             process_exit_dict["start_tme"]
 
-        if process_dict.get("pid", None) is None:
+        if "pid" not in process_dict:
             process_dict["pid"] = process_dict.get("node_id", None)
             process_exit_dict["pid"] = process_dict.get("node_id", None)
             if process_dict.get("_parent", None) is not None:
