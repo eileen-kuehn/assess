@@ -66,7 +66,7 @@ class Event(object):
             process_dict["pid"] = process_dict.get("node_id", None)
             process_exit_dict["pid"] = process_dict.get("node_id", None)
             if process_dict.get("_parent", None) is not None:
-                ppid = process_dict.get("_parent", None).node_id
+                ppid = process_dict["_parent"].node_id
                 process_dict["ppid"] = ppid
                 process_exit_dict["ppid"] = ppid
             else:
