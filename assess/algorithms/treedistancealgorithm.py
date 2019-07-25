@@ -249,11 +249,12 @@ class TreeDistanceAlgorithm(object):
 
         :param eventgenerator: Event generator yielding events.
         :param kwargs:
-        :return: Returns final distances after all events have been applied.
         """
         for event in eventgenerator:
-            result = self.add_event(event, **kwargs)
-        return result
+            try:
+                self.add_event(event, **kwargs)
+            except EventNotSupportedException:
+                pass
 
     def add_event(self, event, **kwargs):
         """
@@ -271,11 +272,12 @@ class TreeDistanceAlgorithm(object):
         :param kwargs:
         :return: Returns the current distances after the event has been applied.
         """
-        result = []
         # TODO: why are we actually still getting EmptyProcessEvent instances here?
+        result = None
         self._event_counter += 1
         if isinstance(event, ProcessStartEvent):
             if self.supported.get(ProcessStartEvent, False):
+                result = []
                 event.signature = []
                 # create node
                 node, parent = self.create_node(event, **kwargs)
@@ -285,6 +287,7 @@ class TreeDistanceAlgorithm(object):
                 result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, ProcessExitEvent):
             # finish node to take care on empty nodes
+            result = []
             event.signature = []
             node, parent = self.finish_node(event, **kwargs)
             signatures = self.create_signature_for_finished_node(node)
@@ -310,6 +313,7 @@ class TreeDistanceAlgorithm(object):
         elif isinstance(event, TrafficEvent):
             event.signature = []
             if self.supported.get(TrafficEvent, False):
+                result = []
                 # create or reuse node
                 node, parent = self.create_or_reuse_node(event, **kwargs)
                 signature = self.create_signature(node, parent)

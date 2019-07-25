@@ -257,7 +257,7 @@ class OrderedTree(object):
             previous_node = self._last_node
         # TODO: check if node_id is unique in tree
         node = OrderedTreeNode(
-            node_id=node_id or self.unique_node_id(),
+            node_id=node_id if node_id is not None else self.unique_node_id(),
             name=name,
             parent=parent,
             previous_node=previous_node,

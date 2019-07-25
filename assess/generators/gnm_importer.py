@@ -79,6 +79,8 @@ class PrototypeCache(object):
     def __iter__(self):
         if os.path.isdir(self.path):
             return self._prototypes_from_dir(self.path)
+        elif self.path.endswith(".pkl"):
+            return self._prototypes_from_pickle(self.path)
         else:
             return self._prototypes_from_csv(self.path)
 
@@ -89,6 +91,45 @@ class PrototypeCache(object):
         else:
             base_path, _ = os.path.splitext(real_path)
             return base_path + '_prototypes.pkl'
+
+    def _prototypes_from_pickle(self, pkl_path):
+        cache_path = self._cache_path(pkl_path)
+        try:
+            if self.force_refresh:
+                raise OSError
+            with open(cache_path, 'rb') as cache_pkl:
+                prototypes = pickle.load(cache_pkl)
+        except (OSError, IOError, EOFError):
+            if self.preloaded_only:
+                yield None
+            # serialize pickle creation in case multiple processes use the
+            # same prototype
+            cache_prototype_lock = filelock.FileLock(
+                os.path.splitext(cache_path)[0] + '.lock')
+            try:
+                # try to become the writer and create the pickle
+                with cache_prototype_lock.acquire(timeout=0):
+                    # clean up broken pickles
+                    if os.path.exists(cache_path):
+                        os.unlink(cache_path)
+                        self._logger.warning(
+                            'Refreshing existing cache %r', cache_path)
+                    data_source = self.data_source
+                    prototypes = None
+                    with open(pkl_path, "rb") as pkl_path:
+                        prototypes = [pickle.load(pkl_path)]
+                    if prototypes:
+                        with open(cache_path, 'wb') as cache_pkl:
+                            pickle.dump(prototypes, cache_pkl, pickle.HIGHEST_PROTOCOL)
+            except filelock.Timeout:
+                # we are NOT the writer - acquire the lock to see when the
+                # writer is done
+                with cache_prototype_lock:
+                    with open(cache_path, 'rb') as cache_pkl:
+                        prototypes = pickle.load(cache_pkl)
+        for prototype in prototypes:
+            yield prototype
+
 
     def _prototypes_from_csv(self, csv_path):
         # For each individual CSV, we store *all* its content to one pkl.
