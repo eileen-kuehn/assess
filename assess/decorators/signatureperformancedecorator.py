@@ -40,7 +40,7 @@ class SignaturePerformanceDecorator(Decorator):
         else:
             self._data.append([])
 
-    def create_signature(self, node, parent):
+    def _create_signature(self, node, parent):
         """
         This method encapsulates the signature creation process. It measures time
         from start to finish of the process.
@@ -50,14 +50,14 @@ class SignaturePerformanceDecorator(Decorator):
         :return: Resulting signature
         """
         start = time.time()
-        result = self._algorithm.__class__.create_signature(
+        result = self._algorithm.__class__._create_signature(
             self._algorithm, node, parent)
         end = time.time()
 
         self._data[-1].append(end - start)
         return result
 
-    def create_signature_for_finished_node(self, node):
+    def _create_signature_for_finished_node(self, node):
         """
         This method encapsulates the signature creation process for nodes that
         are finished. Thus those signature that need to be appended at the end
@@ -67,7 +67,7 @@ class SignaturePerformanceDecorator(Decorator):
         :return:
         """
         start = time.time()
-        result = self._algorithm.__class__.create_signature_for_finished_node(
+        result = self._algorithm.__class__._create_signature_for_finished_node(
             self._algorithm, node)
         end = time.time()
 

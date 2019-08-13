@@ -4,6 +4,7 @@ one single signature. This allows to pick the best available signature to
 calculate distances.
 """
 from itertools import zip_longest
+from typing import List
 
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignaturecache import \
@@ -22,7 +23,7 @@ class EnsembleSignature(Signature):
     signature_cache_class = EnsembleSignatureCache
     prototype_signature_cache_class = EnsemblePrototypeSignatureCache
 
-    def __init__(self, signatures=None):
+    def __init__(self, signatures: List[Signature] = None):
         Signature.__init__(self)
         self._signatures = signatures
         self.count = len(signatures)

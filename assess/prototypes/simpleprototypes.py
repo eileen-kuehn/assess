@@ -4,6 +4,7 @@ the definition for the single nodes is defined.
 """
 import bisect
 
+from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
 from assess.exceptions.exceptions import TreeInvalidatedException, \
@@ -639,7 +640,7 @@ class Prototype(Tree):
             _is_prototype=False
         )
 
-    def to_prototype(self, signature, start_support=True, exit_support=True,
+    def to_prototype(self, signature: Signature, start_support=True, exit_support=True,
                      traffic_support=False, cache=None, statistics_cls=None,
                      _is_prototype=True):
         if cache is None:
