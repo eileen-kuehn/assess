@@ -214,7 +214,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
         for tree in [tree_one, tree_two]:
             algorithm.start_tree()
-            for event in tree.event_iter():
+            for event in tree.event_iter(supported=algorithm.supported):
                 try:
                     algorithm.add_event(event)
                 except EventNotSupportedException:

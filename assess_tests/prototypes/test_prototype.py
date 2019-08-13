@@ -8,7 +8,8 @@ from assess.algorithms.signatures.signatures import ParentChildByNameTopologySig
 from assess.prototypes.simpleprototypes import Prototype
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
-from assess.events.events import ProcessExitEvent, ProcessStartEvent, Event
+from assess.events.events import ProcessExitEvent, ProcessStartEvent, Event, \
+    ParameterEvent
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -326,7 +327,11 @@ class TestPrototypeFunctions(unittest.TestCase):
         one.add_node("one.two", pid=5, ppid=2, tme=2, exit_tme=2, traffic=[])
         root.add_node("two", pid=4, ppid=1, tme=1, exit_tme=2, traffic=[])
         finished = set()
-        for event in prototype.event_iter():
+        for event in prototype.event_iter(
+                supported={
+                    ProcessStartEvent: True,
+                    ProcessExitEvent: True
+                }):
             if isinstance(event, ProcessStartEvent):
                 self.assertTrue(
                     event.ppid not in finished,
@@ -347,7 +352,7 @@ class TestPrototypeFunctions(unittest.TestCase):
                  root.add_node("three", pid=6, ppid=2, tme=1, exit_tme=3)]
 
         index = 0
-        for event in prototype.event_iter():
+        for event in prototype.event_iter(supported={ProcessStartEvent: True}):
             if isinstance(event, ProcessStartEvent):
                 self.assertEquals(nodes[index].name, event.name)
                 index += 1
@@ -361,15 +366,15 @@ class TestPrototypeFunctions(unittest.TestCase):
     def test_parameter_event_generation(self):
         prototype = Prototype()
         root = prototype.add_node("root", pid=1, ppid=0, test=2, muh=3, tme=3, exit_tme=3)
-        start_events, exit_events, parameter_events = Event.events_from_node(root)
-        self.assertEqual(2, len(parameter_events))
+        events = 0
         matches = 0
-        for parameter_event in parameter_events:
-            print(parameter_event)
-            if parameter_event.name == "test":
-                self.assertEqual(2, parameter_event.value)
+        for event in Event.events_from_node(root, supported={ParameterEvent: True}):
+            events += 1
+            if event.name == "test":
+                self.assertEqual(2, event.value)
                 matches += 1
-            if parameter_event.name == "muh":
-                self.assertEqual(3, parameter_event.value)
+            if event.name == "muh":
+                self.assertEqual(3, event.value)
                 matches += 1
+        self.assertEqual(2, events)
         self.assertEqual(2, matches)

@@ -656,7 +656,13 @@ class Prototype(Tree):
             add_signature = self._handle_ensemble_signature_list
         # FIXME: I should care about EmptyProcessEvent
         cache.supported[EmptyProcessEvent] = True
-        for event in self.event_iter(include_marker=True):
+        for event in self.event_iter(
+                include_marker=True,
+                supported={
+                    ProcessStartEvent: start_support,
+                    ProcessExitEvent: exit_support,
+                    TrafficEvent: traffic_support
+                }):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
@@ -732,53 +738,49 @@ class Prototype(Tree):
             #     "duration": 0
             # }
 
-    def event_iter(self, include_marker=True):
+    def event_iter(self, include_marker=True, supported=None):
         exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
-        events = 0  # used to push parent events at same tme to the left
+        event_count = 0  # used to push parent events at same tme to the left
 
         for node in self.node_iter(include_marker=include_marker):
             try:
                 now = node.tme
-                # create the events for the current process
-                start_event, exit_event, traffic_events = Event.events_from_node(
-                    node)
-                exit_event.node = node
             except AttributeError:
-                # received an EmptyNode Marker, it only needs to be forwarded
-                last_node = node.parent()
-                now = last_node.tme
-                start_event = EmptyProcessEvent()
-                exit_event = None
-                traffic_events = []
-            # create reference to node
-            start_event.node = node
-            events += 1
+                # EmptyNode Event only needs to be forwarded
+                event = EmptyProcessEvent()
+                event.node = node
+                yield event
+                continue
 
             # yield any exit events that should have happened so far
             while exit_event_queue and exit_event_queue[-1][0] > -now:
                 yield exit_event_queue.pop()[2]
-            # for traffic we first need to append the required nodes (if not existent)
-            existing_nodes = {}
-            for traffic_event in traffic_events:
+
+            existing_parameter_nodes = {}
+            for event in Event.events_from_node(node, supported=supported):
+                event_count += 1
+                if isinstance(event, ProcessStartEvent):
+                    event.node = node
+                    yield event
+                    continue
+                elif isinstance(event, ProcessExitEvent):
+                    event.node = node
+                else:
+                    try:
+                        current_node = existing_parameter_nodes[event.name]
+                    except KeyError:
+                        existing_parameter_nodes[event.name] = OrderedTreeNode(
+                            1, **event.__dict__)
+                        current_node = existing_parameter_nodes[event.name]
+                        current_node._parent = node
+                    event.node = current_node
                 try:
-                    current_node = existing_nodes[traffic_event.name]
-                except KeyError:
-                    existing_nodes[traffic_event.name] = OrderedTreeNode(
-                        1, **traffic_event.__dict__)
-                    current_node = existing_nodes[traffic_event.name]
-                    current_node._parent = node
-                traffic_event.node = current_node
-            # process starts NOW, exits LATER
-            yield start_event
-            try:
-                bisect.insort_right(
-                    exit_event_queue, (-exit_event.tme, events, exit_event))
-            except AttributeError:
-                pass
-            for traffic in traffic_events:
-                events += 1
-                bisect.insort_right(
-                    exit_event_queue, (-traffic.tme, events, traffic))
+                    # TODO: before, the exit event was inserted before the actual
+                    # traffic and parameter events, does this matter?
+                    bisect.insort_right(
+                        exit_event_queue, (-event.tme, event_count, event))
+                except AttributeError:
+                    pass
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 

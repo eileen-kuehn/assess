@@ -186,7 +186,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
 
     def _add_events(self, algorithm=None, events=None):
         algorithm.start_tree()
-        for event in events.event_iter():
+        for event in events.event_iter(supported=algorithm.supported):
             try:
                 result = algorithm.add_event(event)
             except EventNotSupportedException:

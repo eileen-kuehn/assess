@@ -130,7 +130,6 @@ class PrototypeCache(object):
         for prototype in prototypes:
             yield prototype
 
-
     def _prototypes_from_csv(self, csv_path):
         # For each individual CSV, we store *all* its content to one pkl.
         # That content may be multiple prototypes, so we yield it!
@@ -263,8 +262,9 @@ class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
     :param csv_path: path to a csv file
     :type csv_path: str or unicode
     """
-    def __init__(self, csv_path, streamer=None):
-        NodeGenerator.__init__(self, streamer=streamer)
+    def __init__(self, csv_path, **kwargs):
+        NodeGenerator.__init__(self, **kwargs)
+        EventGenerator.__init__(self, **kwargs)
         self.path = csv_path
 
     def node_iter(self):
@@ -273,7 +273,7 @@ class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
 
     def event_iter(self):
         for job in self._jobs():
-            return job.event_iter()
+            return job.event_iter(supported=self._supported)
 
     def _jobs(self):
         for prototype in PrototypeCache(self.path):
@@ -289,8 +289,8 @@ class EventStreamPruner(EventGenerator, NodeGenerator):
     """
     Remove individual nodes from a node stream
     """
-    def __init__(self, signature, chance=0.0, streamer=None, seed=None):
-        EventGenerator.__init__(self, streamer=streamer)
+    def __init__(self, signature, chance=0.0, streamer=None, seed=None, supported=None):
+        EventGenerator.__init__(self, streamer=streamer, supported=supported)
         self.signature = signature
         self.chance = chance
         self._kept = {}  # signature => kept: bool
@@ -299,7 +299,7 @@ class EventStreamPruner(EventGenerator, NodeGenerator):
             random.seed(seed)
 
     def event_iter(self):
-        return self._get_tree().event_iter()
+        return self._get_tree().event_iter(supported=self._supported)
 
     def node_iter(self):
         return self._get_tree().node_iter()

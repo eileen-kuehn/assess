@@ -31,7 +31,7 @@ class TestStartExitDistance(unittest.TestCase):
 
         monitoring_tree = real_tree("data/c01-007-102/2/1129-2-process.csv")
         algorithm.start_tree()
-        for event in monitoring_tree.event_iter():
+        for event in monitoring_tree.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -56,7 +56,7 @@ class TestStartExitDistance(unittest.TestCase):
         )
         algorithm.prototypes = [the_tree]
         algorithm.start_tree()
-        for event in the_tree.event_iter():
+        for event in the_tree.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -82,7 +82,7 @@ class TestStartExitDistance(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
         algorithm.prototypes = [simple_prototype()]
         algorithm.start_tree()
-        for event in simple_monitoring_tree().event_iter():
+        for event in simple_monitoring_tree().event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:

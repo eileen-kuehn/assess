@@ -36,7 +36,7 @@ class DynamicDistance(Distance):
         for prototype in prototypes:
             prototype_deque = deque(maxlen=self._max_count)
             for index, signature in enumerate(self._algorithm.signature):
-                for event in prototype.event_iter():
+                for event in prototype.event_iter(supported=self.supported):
                     prototype_deque.append(
                         signature.get_signature(node=event, parent=None)
                     )

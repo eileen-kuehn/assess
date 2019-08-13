@@ -64,6 +64,7 @@ class TestGNMImporter(unittest.TestCase):
                 (index, last_tme, event.tme)
             )
             last_tme = event.tme
+        self.assertTrue(index > 0)
 
     def test_gnm_csv_event_streamer(self):
         # FIXME: I would expect also traffic to be streamed here...

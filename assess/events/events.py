@@ -29,8 +29,8 @@ class Event(object):
     def from_node(cls: E, node: 'OrderedTreeNode') -> Iterator[E]:
         return NotImplemented
 
-    @staticmethod
-    def from_tree(tree, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
+    @classmethod
+    def from_tree(cls, tree, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
         """
         Method that returns a event generator based on a given tree.
 
@@ -39,9 +39,7 @@ class Event(object):
         :return: Tree event generator
         """
         for node in tree.nodes(depth_first=False):
-            for event_type in event_types:
-                if supported.get(event_type, False):
-                    yield from event_type.from_node(node)
+            yield from cls.events_from_node(node, supported)
 
     @staticmethod
     def start(tme, pid, ppid, **kwargs):
@@ -57,63 +55,16 @@ class Event(object):
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
 
     @classmethod
-    def events_from_node(cls, node):
+    def events_from_node(cls, node, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
         """
-        Method that returns a available events for a given process.
+        Method that yields available events for a given node.
 
-        :param node: The process to create the events
-        :return: tuple of ProcessStartEvent and ProcessExitEvent
+        :param node: The node to create the events for
+        :return: yields supported event types
         """
-        process_dict = vars(node).copy()
-        process_exit_dict = vars(node).copy()
-        process_exit_dict["start_tme"] = process_exit_dict["tme"]
-        process_exit_dict["tme"] = process_exit_dict["exit_tme"]
-        process_exit_dict["value"] = process_exit_dict["tme"] - \
-            process_exit_dict["start_tme"]
-
-        if "pid" not in process_dict:
-            process_dict["pid"] = process_dict.get("node_id", None)
-            process_exit_dict["pid"] = process_dict.get("node_id", None)
-            if process_dict.get("_parent", None) is not None:
-                ppid = process_dict["_parent"].node_id
-                process_dict["ppid"] = ppid
-                process_exit_dict["ppid"] = ppid
-            else:
-                process_dict["ppid"] = None
-                process_exit_dict["ppid"] = None
-
-        # prepare parameter events
-        parameters = node.parameters()
-        parameter_event_list: List[Union[TrafficEvent, ParameterEvent]] = []
-        for parameter, values in parameters.items():
-            # for each of the given parameters an event should be created
-            if "traffic" == parameter:
-                try:
-                    for traffic in values:
-                        if traffic.in_rate > 0:
-                            parameter_event_list.append(TrafficEvent(
-                                **cls.create_traffic(
-                                    traffic, "in_rate", traffic.in_rate)))
-                        if traffic.out_cnt > 0:
-                            parameter_event_list.append(TrafficEvent(
-                                **cls.create_traffic(
-                                    traffic, "out_rate", traffic.out_rate)))
-                except AttributeError:
-                    pass
-            else:
-                parameter_event_list.append(
-                    ParameterEvent(
-                        tme=values.tme if hasattr(values, "tme") else process_dict["tme"],
-                        pid=process_dict["pid"],
-                        ppid=process_dict["pid"],
-                        name=parameter,
-                        value=values,
-                    )
-                )
-
-        return ProcessStartEvent(**process_dict), \
-            ProcessExitEvent(**process_exit_dict), \
-            parameter_event_list
+        for event_type in event_types:
+            if supported.get(event_type, False):
+                yield from event_type.from_node(node)
 
     @staticmethod
     def create_traffic(traffic, variant, value):
@@ -228,12 +179,12 @@ class ProcessExitEvent(Event):
     @classmethod
     def from_node(cls, node):
         event_dict = vars(node).copy()
-        event_dict["value"] = event_dict.exit_tme - event_dict.tme
-        event_dict["start_tme"] = event_dict.tme
-        event_dict["tme"] = event_dict.exit_tme
+        event_dict["value"] = event_dict["exit_tme"] - event_dict["tme"]
+        event_dict["start_tme"] = event_dict["tme"]
+        event_dict["tme"] = event_dict["exit_tme"]
         if "pid" not in event_dict:
-            event_dict["pid"] = event_dict.node_id
-            event_dict["ppid"] = event_dict.parent.node_id
+            event_dict["pid"] = event_dict["node_id"]
+            event_dict["ppid"] = event_dict.parent["node_id"]
         yield cls(**event_dict)
 
 

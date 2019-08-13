@@ -181,7 +181,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
         algorithm.prototypes = [real_tree()]
 
         algorithm.start_tree()
-        for event in real_tree().event_iter(include_marker=True):
+        for event in real_tree().event_iter(include_marker=True, supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -201,7 +201,7 @@ class TestSignatureFunctionalities(unittest.TestCase):
         algorithm.prototypes = [real_tree()]
 
         algorithm.start_tree()
-        for event in real_tree().event_iter(include_marker=True):
+        for event in real_tree().event_iter(include_marker=True, supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
