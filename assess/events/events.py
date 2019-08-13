@@ -9,6 +9,7 @@ class Event(object):
     """
     Base event class that offers convenience methods to create single events.
     """
+    __slots__ = ("tme", "pid", "ppid", "value", "__dict__")
 
     def __init__(self, tme, pid, ppid, value=None, **kwargs):
         self.tme = tme

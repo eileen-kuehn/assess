@@ -793,6 +793,8 @@ class Prototype(Tree):
 
 
 class EmptyNode(object):
+    __slots__ = "_parent"
+
     def __init__(self, parent):
         self._parent = parent
 

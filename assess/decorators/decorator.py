@@ -8,6 +8,8 @@ from assess.exceptions.exceptions import DecoratorNotFoundException
 
 
 class EventWrapper(object):
+    __slots__ = ("_signature", "type")
+
     def __init__(self):
         self._signature = None
         self.type = None
@@ -29,6 +31,8 @@ class Decorator(object):
     Base decorator for ASSESS to measure different statistics based on methods
     of algorithm class.
     """
+    __slots__ = ("_algorithm", "decorator", "_name", "_last_event_counts")
+
     def __init__(self, name="decorator"):
         self._algorithm = None
         self.decorator = None

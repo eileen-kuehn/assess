@@ -21,6 +21,8 @@ class SignatureDecorator(Decorator):
         ]
     ]
     """
+    __slots__ = "_data"
+
     def __init__(self):
         Decorator.__init__(self, name="signature")
         self._data = []

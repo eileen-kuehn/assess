@@ -23,6 +23,8 @@ class StartExitDistance(Distance):
     * A weight of 1 means, that only nodes are considered.
     * A weight of zero means, that only attributes are considered.
     """
+    __slots__ = ("_signature_cache", "_weight", "_cached_weights")
+
     def __init__(self, weight=.5, **kwargs):
         Distance.__init__(self, **kwargs)
         self._based_on_original = False

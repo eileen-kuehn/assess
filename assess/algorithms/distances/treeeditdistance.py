@@ -8,6 +8,8 @@ from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEve
 
 
 class TreeEditDistance(Distance):
+    __slots__ = ("_tree", "_signature")
+
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._tree = None

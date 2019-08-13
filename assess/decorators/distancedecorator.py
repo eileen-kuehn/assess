@@ -34,6 +34,8 @@ class DistanceDecorator(Decorator):
         ]
     ]
     """
+    __slots__ = ("_data", "_normalized", "_tmp_prototype_counts")
+
     def __init__(self, normalized=False):
         if normalized:
             Decorator.__init__(self, name="normalized_distances")

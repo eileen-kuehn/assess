@@ -22,6 +22,8 @@ class SignaturePerformanceDecorator(Decorator):
 
     Also for accumulated values, you can expect to have a list in list.
     """
+    __slots__ = ("_data", "_accumulated")
+
     def __init__(self, accumulated=True):
         if accumulated:
             Decorator.__init__(self, name="accumulated_signature_performance")
@@ -32,7 +34,6 @@ class SignaturePerformanceDecorator(Decorator):
 
     def _algorithm_updated(self):
         self._data = None
-        self._start = None
 
     def _tree_started(self):
         if self._data is None:

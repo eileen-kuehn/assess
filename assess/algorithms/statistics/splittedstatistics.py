@@ -21,6 +21,9 @@ class SplittedStatistics(Statistics):
 
     Attention: the attraction factor is currently not in use.
     """
+    __slots__ = ("_statistics_type", "_statistics", "_threshold",
+                 "_distribution_threshold", "_attraction_factor")
+
     def __init__(self, statistics_type=MeanVariance, threshold=.5,
                  distribution_threshold=1.2, attraction_factor=None):
         self._statistics_type = statistics_type

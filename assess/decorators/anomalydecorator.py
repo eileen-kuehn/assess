@@ -24,6 +24,8 @@ class AnomalyDecorator(Decorator):
         ]
     ]
     """
+    __slots__ = ("_data", "_tmp_prototype_counts", "_tmp_event_weights", "_percentage")
+
     def __init__(self, percentage=0.1):
         Decorator.__init__(self, name="anomaly")
         self._data = []

@@ -29,6 +29,8 @@ class CompressionFactorDecorator(Decorator):
     that is processed. The accumulated gives information on how many nodes for
     all prototypes are compressed regarding a given ensemble.
     """
+    __slots__ = "_data"
+
     def __init__(self):
         Decorator.__init__(self, name="compression")
         self._data = None

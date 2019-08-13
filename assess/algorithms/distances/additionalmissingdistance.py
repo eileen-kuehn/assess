@@ -9,6 +9,8 @@ class AdditionalMissingDistance(Distance):
     """
     Class approximates number of missing nodes to measure distance.
     """
+    __slots__ = ("_additional_nodes_dict", "_missing_nodes_dict")
+
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._additional_nodes_dict = None

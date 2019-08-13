@@ -5,6 +5,8 @@ from assess.algorithms.statistics.statistics import Statistic, Statistics
 
 
 class SetStatistic(Statistic):
+    __slots__ = ("_count", "_value")
+
     def __init__(self, value, count):
         self._count = count
         self._value = value
@@ -19,6 +21,8 @@ class SetStatistic(Statistic):
 
 
 class SetStatistics(Statistics):
+    __slots__ = ("_data", "_convert", "_unconvert")
+
     def __init__(self, convert=lambda value: int(round(math.sqrt(value))),
                  unconvert=lambda value: value**2):
         self._data = collections.Counter()

@@ -5,6 +5,8 @@ from assess.algorithms.signatures.signaturecache import SignatureCache
 
 
 class DynamicDistance(Distance):
+    __slots__ = ("_max_count", "_wrapped_distance", "_order_cache", "_last_signatures")
+
     def __init__(self, max_count=3, wrapped_distance=None, **kwargs):
         Distance.__init__(self, **kwargs)
         self._max_count = max_count

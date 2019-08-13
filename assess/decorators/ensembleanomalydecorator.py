@@ -24,6 +24,10 @@ class EnsembleAnomalyDecorator(Decorator):
         ]
     ]
     """
+    __slots__ = ("_data", "_tmp_prototype_counts", "_band_widths", "_tmp_event_weights",
+                 "_percentage", "_last_result", "_mismatches", "_enhanced_mismatches",
+                 "_start_mismatch_counter")
+
     def __init__(self, percentage=0.1):
         Decorator.__init__(self, name="ensembleanomaly")
         self._data = []

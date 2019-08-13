@@ -4,6 +4,8 @@ from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEve
 
 
 class StartDistance(Distance):
+    __slots__ = "_signature_cache"
+
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._based_on_original = True
