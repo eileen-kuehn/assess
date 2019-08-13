@@ -2,7 +2,7 @@ import unittest
 
 from assess.decorators.performancedecorator import PerformanceDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
 
@@ -33,13 +33,13 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
         self.assertEqual(len(description["performance"][0]), 4)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
@@ -63,13 +63,13 @@ class TestDistancePerformanceDecorator(unittest.TestCase):
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
         self.assertEqual(type(description["accumulated_performance"][0][0]), float)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()

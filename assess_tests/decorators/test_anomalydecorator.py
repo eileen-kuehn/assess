@@ -8,7 +8,7 @@ from assess.algorithms.statistics.setstatistics import SetStatistics
 from assess.decorators.anomalydecorator import AnomalyDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.events.events import Event, TrafficEvent
+from assess.events.events import Event, TrafficEvent, ProcessStartEvent
 from assess.exceptions.exceptions import EventNotSupportedException
 
 from assess_tests.basedata import simple_monitoring_tree, simple_prototype, real_tree
@@ -27,7 +27,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -39,7 +39,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         ])
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -62,7 +62,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -75,7 +75,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         ])
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -103,7 +103,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -118,7 +118,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         ])
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -150,7 +150,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.data(), [
@@ -174,7 +174,7 @@ class TestAnomalyDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(

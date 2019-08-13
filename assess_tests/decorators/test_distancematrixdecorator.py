@@ -2,7 +2,7 @@ import unittest
 
 from assess.decorators.distancematrixdecorator import DistanceMatrixDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 from assess.exceptions.exceptions import MatrixDoesNotMatchBounds
 from assess_tests.basedata import simple_prototype, \
     simple_additional_monitoring_tree
@@ -40,7 +40,7 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"matrix": [[[0]]]})
@@ -48,12 +48,12 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         algorithm.prototypes = [simple_prototype(), simple_additional_monitoring_tree()]
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual({"matrix": [[[0, 2]]]}, decorator.descriptive_data())
         decorator.start_tree()
-        for event in Event.from_tree(simple_additional_monitoring_tree()):
+        for event in Event.from_tree(simple_additional_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual({"matrix": [[[0, 2]], [[2, 0]]]}, decorator.descriptive_data())
@@ -74,7 +74,7 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {"normalized_matrix": [[[0]]]})
@@ -82,14 +82,14 @@ class TestDistanceMatrixDecorator(unittest.TestCase):
         algorithm.prototypes = [simple_prototype(), simple_additional_monitoring_tree()]
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {
             "normalized_matrix": [[[0, .4]]]
         })
         decorator.start_tree()
-        for event in Event.from_tree(simple_additional_monitoring_tree()):
+        for event in Event.from_tree(simple_additional_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {

@@ -2,7 +2,7 @@ import unittest
 
 from assess.decorators.datadecorator import DataDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
 
@@ -51,7 +51,7 @@ class TestDataDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(
@@ -71,7 +71,7 @@ class TestDataDecorator(unittest.TestCase):
         )
 
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(

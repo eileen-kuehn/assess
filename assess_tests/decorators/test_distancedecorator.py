@@ -4,7 +4,7 @@ from assess.algorithms.signatures.signatures import \
     ParentChildByNameTopologySignature, ParentChildOrderByNameTopologySignature
 from assess.decorators.distancedecorator import DistanceDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
@@ -31,7 +31,7 @@ class TestDistanceDecorator(unittest.TestCase):
 
         algorithm.start_tree()
         self.assertEqual({'distances': [[[[]]]]}, decorator.descriptive_data())
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[[[2, 1, 1, 0]]]], decorator.data())
@@ -45,7 +45,7 @@ class TestDistanceDecorator(unittest.TestCase):
 
         algorithm.start_tree()
         self.assertEqual([[[[], []]]], decorator.data())
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[[[2, 1, 1, 0], [2, 1, 1, 0]]]], decorator.data())
@@ -62,7 +62,7 @@ class TestDistanceDecorator(unittest.TestCase):
 
         algorithm.start_tree()
         self.assertEqual([[[[]], [[]]]], decorator.data())
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[[[2, 1, 1, 0]], [[4, 3, 3, 2]]]], decorator.data())
@@ -79,7 +79,7 @@ class TestDistanceDecorator(unittest.TestCase):
 
         algorithm.start_tree()
         self.assertEqual([[[[], []], [[], []]]], decorator.data())
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(
@@ -99,7 +99,7 @@ class TestDistanceDecorator(unittest.TestCase):
 
         algorithm.start_tree()
         self.assertEqual([[[[], []], [[], []]]], decorator.data())
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
 

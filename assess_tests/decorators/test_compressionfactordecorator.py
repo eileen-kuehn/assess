@@ -2,7 +2,7 @@ import unittest
 
 from assess.decorators.compressionfactordecorator import CompressionFactorDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
 
@@ -59,7 +59,7 @@ class TestCompressionFactorDecorator(unittest.TestCase):
         algorithm.prototypes = [simple_prototype(), simple_prototype()]
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         self.assertEqual(

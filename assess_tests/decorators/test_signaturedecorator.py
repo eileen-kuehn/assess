@@ -5,7 +5,7 @@ from assess.algorithms.signatures.signatures import \
 from assess.decorators.signaturedecorator import SignatureDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
@@ -31,7 +31,7 @@ class TestSignatureDecorator(unittest.TestCase):
 
         decorator.wrap_algorithm(algorithm)
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
@@ -43,7 +43,7 @@ class TestSignatureDecorator(unittest.TestCase):
         self.assertEqual(description["signature"][0][0][3], "muh_149160533")
 
         decorator.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             decorator.add_event(event)
         decorator.finish_tree()
         description = decorator.descriptive_data()
@@ -60,7 +60,7 @@ class TestSignatureDecorator(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {'signature': [[[
@@ -75,7 +75,7 @@ class TestSignatureDecorator(unittest.TestCase):
             '.0.1_muh_245236498']]]})
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual(decorator.descriptive_data(), {'signature': [[[

@@ -2,7 +2,13 @@
 Module implements the different kind of events that are supported in dynamic
 process trees.
 """
-from typing import List, Union
+from typing import List, Union, Dict, Iterator, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from assess.prototypes.simpleprototypes import OrderedTreeNode
+
+E = TypeVar('E')
+E_co = TypeVar('E_co', bound='Event', contravariant=True)
 
 
 class Event(object):
@@ -19,22 +25,23 @@ class Event(object):
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
+    @classmethod
+    def from_node(cls: E, node: 'OrderedTreeNode') -> Iterator[E]:
+        return NotImplemented
+
     @staticmethod
-    def from_tree(tree):
+    def from_tree(tree, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
         """
         Method that returns a event generator based on a given tree.
 
         :param tree: Tree the generator is based on
+        :param supported: Supported event types
         :return: Tree event generator
         """
         for node in tree.nodes(depth_first=False):
-            # TODO: how to pass on complete dict?
-            yield ProcessStartEvent(
-                tme=node.tme,
-                pid=node.pid,
-                ppid=node.ppid,
-                name=node.name
-            )
+            for event_type in event_types:
+                if supported.get(event_type, False):
+                    yield from event_type.from_node(node)
 
     @staticmethod
     def start(tme, pid, ppid, **kwargs):
@@ -85,10 +92,12 @@ class Event(object):
                     for traffic in values:
                         if traffic.in_rate > 0:
                             parameter_event_list.append(TrafficEvent(
-                                **cls.create_traffic(traffic, "in_rate", traffic.in_rate)))
+                                **cls.create_traffic(
+                                    traffic, "in_rate", traffic.in_rate)))
                         if traffic.out_cnt > 0:
                             parameter_event_list.append(TrafficEvent(
-                                **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
+                                **cls.create_traffic(
+                                    traffic, "out_rate", traffic.out_rate)))
                 except AttributeError:
                     pass
             else:
@@ -179,6 +188,14 @@ class ProcessStartEvent(Event):
     def __init__(self, tme, pid, ppid, **kwargs):
         Event.__init__(self, tme, pid, ppid, **kwargs)
 
+    @classmethod
+    def from_node(cls, node):
+        event_dict = vars(node).copy()
+        if "pid" not in event_dict:
+            event_dict["pid"] = event_dict.node_id
+            event_dict["ppid"] = event_dict.parent.node_id
+        yield cls(**event_dict)
+
 
 class ProcessExitEvent(Event):
     """
@@ -208,6 +225,17 @@ class ProcessExitEvent(Event):
         """
         self._start_tme = value
 
+    @classmethod
+    def from_node(cls, node):
+        event_dict = vars(node).copy()
+        event_dict["value"] = event_dict.exit_tme - event_dict.tme
+        event_dict["start_tme"] = event_dict.tme
+        event_dict["tme"] = event_dict.exit_tme
+        if "pid" not in event_dict:
+            event_dict["pid"] = event_dict.node_id
+            event_dict["ppid"] = event_dict.parent.node_id
+        yield cls(**event_dict)
+
 
 class TrafficEvent(Event):
     """
@@ -217,6 +245,19 @@ class TrafficEvent(Event):
     def __init__(self, tme, pid, ppid, value, **kwargs):
         Event.__init__(self, tme, pid, ppid, value=value, **kwargs)
 
+    @classmethod
+    def from_node(cls, node):
+        try:
+            for traffic in node.traffic:
+                if traffic.in_rate > 0:
+                    yield cls(**super().create_traffic(
+                        traffic, "in_rate", traffic.in_rate))
+                if traffic.out_cnt > 0:
+                    yield cls(**super().create_traffic(
+                        traffic, "out_rate", traffic.out_rate))
+        except AttributeError:
+            pass
+
 
 class ParameterEvent(Event):
     """
@@ -224,3 +265,19 @@ class ParameterEvent(Event):
     """
     def __init__(self, tme, pid, ppid, name, value, **kwargs):
         Event.__init__(self, tme, pid, ppid, value=value, name=name, **kwargs)
+
+    @classmethod
+    def from_node(cls, node):
+        parameters = node.parameters()
+        for parameter, values in parameters.items():
+            yield cls(
+                tme=values.tme if hasattr(values, "tme") else node.tme,
+                pid=node.pid,
+                ppid=node.pid,
+                name=parameter,
+                value=values
+            )
+
+
+event_types: List[Event] = [ProcessStartEvent, TrafficEvent, ParameterEvent,
+                            ProcessExitEvent]

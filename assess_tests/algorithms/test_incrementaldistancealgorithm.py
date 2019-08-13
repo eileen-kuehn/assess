@@ -242,7 +242,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [self.prototype]
 
         algorithm.start_tree()
-        for event in Event.from_tree(self.prototype):
+        for event in Event.from_tree(self.prototype, supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         self.assertEqual(algorithm.tree_node_counts(signature=False)[0], 56)
         algorithm.finish_tree()
@@ -1230,7 +1230,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         # FIXME: I might expect [] here, because it is not initialised
         self.assertEqual([0], algorithm.tree_node_counts(signature=True))
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([4], algorithm.tree_node_counts(signature=False))
@@ -1267,7 +1267,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[3]], algorithm.event_counts())
@@ -1275,7 +1275,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype(), simple_monitoring_tree()]
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[3, 3]], algorithm.event_counts())
@@ -1288,7 +1288,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
 
         algorithm.start_tree()
         base_distance = 2
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             self.assertEqual([[base_distance]], algorithm.add_event(event)[0])
             if base_distance > 0:
                 base_distance -= 1
@@ -1298,7 +1298,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
 
         algorithm.start_tree()
         base_distance = 2
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             self.assertEqual(
                 [[base_distance, base_distance]], algorithm.add_event(event)[0])
             if base_distance > 0:
@@ -1316,7 +1316,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         self.assertEqual([], algorithm.tree_node_counts(signature=False))
         self.assertEqual([0, 0], algorithm.tree_node_counts(signature=True))
         algorithm.start_tree()
-        for event in Event.from_tree(simple_monitoring_tree()):
+        for event in Event.from_tree(simple_monitoring_tree(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([4, 4], algorithm.tree_node_counts(signature=False))
@@ -1361,7 +1361,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[3], [5]], algorithm.event_counts())
@@ -1369,7 +1369,7 @@ class TestIncrementalDistanceAlgorithmFunctionality(unittest.TestCase):
         algorithm.prototypes = [simple_prototype(), simple_monitoring_tree()]
 
         algorithm.start_tree()
-        for event in Event.from_tree(simple_prototype()):
+        for event in Event.from_tree(simple_prototype(), supported={ProcessStartEvent: True}):
             algorithm.add_event(event)
         algorithm.finish_tree()
         self.assertEqual([[3, 3], [5, 5]], algorithm.event_counts())
