@@ -199,3 +199,11 @@ class TrafficEvent(Event):
 
     def __init__(self, tme, pid, ppid, value, **kwargs):
         Event.__init__(self, tme, pid, ppid, value=value, **kwargs)
+
+
+class ParameterEvent(Event):
+    """
+    Class that represents any parameter event.
+    """
+    def __init__(self, tme, pid, ppid, name, value, **kwargs):
+        Event.__init__(self, tme, pid, ppid, value=value, name=name, **kwargs)
