@@ -726,7 +726,7 @@ class Prototype(Tree):
             try:
                 now = node.tme
                 # create the events for the current process
-                start_event, exit_event, traffic_events = Event.events_from_process(
+                start_event, exit_event, traffic_events = Event.events_from_node(
                     node)
                 exit_event.node = node
             except AttributeError:
@@ -764,7 +764,7 @@ class Prototype(Tree):
             for traffic in traffic_events:
                 events += 1
                 bisect.insort_right(
-                    exit_event_queue, (-(traffic.tme), events, traffic))
+                    exit_event_queue, (-traffic.tme, events, traffic))
         while exit_event_queue:
             yield exit_event_queue.pop()[2]
 

@@ -48,15 +48,15 @@ class Event(object):
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
 
     @classmethod
-    def events_from_process(cls, process):
+    def events_from_node(cls, node):
         """
         Method that returns a available events for a given process.
 
-        :param process: The process to create the events
+        :param node: The process to create the events
         :return: tuple of ProcessStartEvent and ProcessExitEvent
         """
-        process_dict = vars(process).copy()
-        process_exit_dict = vars(process).copy()
+        process_dict = vars(node).copy()
+        process_exit_dict = vars(node).copy()
         process_exit_dict["start_tme"] = process_exit_dict["tme"]
         process_exit_dict["tme"] = process_exit_dict["exit_tme"]
         process_exit_dict["value"] = process_exit_dict["tme"] - \
@@ -141,7 +141,8 @@ class Event(object):
             self.tme,
             self.pid,
             self.ppid,
-            ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self))
+            ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self)
+                      if attr not in ("tme", "pid", "ppid"))
         )
 
 
