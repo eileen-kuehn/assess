@@ -64,6 +64,19 @@ class OrderedTreeNode(object):
             key: getattr(self, key) for key in vars(self) if check_keys(key)
         }
 
+    def parameters(self):
+        # TODO: those should be configured via black- or whitelists
+        def check_keys(key):
+            return not ("name" in key
+                        or "node_id" in key
+                        or "tme" in key
+                        or "exit_tme" in key
+                        or "pid" in key
+                        or "ppid" in key)
+        return {
+            key: getattr(self, key) for key in self.dao() if check_keys(key)
+        }
+
     def depth(self):
         """
         Method returns the depth of the current node within the tree. If the node

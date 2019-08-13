@@ -2,6 +2,7 @@
 Module implements the different kind of events that are supported in dynamic
 process trees.
 """
+from typing import List, Union
 
 
 class Event(object):
@@ -73,21 +74,36 @@ class Event(object):
                 process_dict["ppid"] = None
                 process_exit_dict["ppid"] = None
 
-        # prepare traffic events
-        traffic_list = []
-        try:
-            for traffic in process.traffic:
-                if traffic.in_rate > 0:
-                    traffic_list.append(TrafficEvent(
-                        **cls.create_traffic(traffic, "in_rate", traffic.in_rate)))
-                if traffic.out_cnt > 0:
-                    traffic_list.append(TrafficEvent(
-                        **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
-        except AttributeError:
-            pass
+        # prepare parameter events
+        parameters = node.parameters()
+        parameter_event_list: List[Union[TrafficEvent, ParameterEvent]] = []
+        for parameter, values in parameters.items():
+            # for each of the given parameters an event should be created
+            if "traffic" == parameter:
+                try:
+                    for traffic in values:
+                        if traffic.in_rate > 0:
+                            parameter_event_list.append(TrafficEvent(
+                                **cls.create_traffic(traffic, "in_rate", traffic.in_rate)))
+                        if traffic.out_cnt > 0:
+                            parameter_event_list.append(TrafficEvent(
+                                **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
+                except AttributeError:
+                    pass
+            else:
+                parameter_event_list.append(
+                    ParameterEvent(
+                        tme=values.tme if hasattr(values, "tme") else process_dict["tme"],
+                        pid=process_dict["pid"],
+                        ppid=process_dict["pid"],
+                        name=parameter,
+                        value=values,
+                    )
+                )
+
         return ProcessStartEvent(**process_dict), \
             ProcessExitEvent(**process_exit_dict), \
-            traffic_list
+            parameter_event_list
 
     @staticmethod
     def create_traffic(traffic, variant, value):
