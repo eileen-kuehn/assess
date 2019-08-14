@@ -135,21 +135,15 @@ class TestComplexExamples(unittest.TestCase):
         signature = ParentChildByNameTopologySignature()
         tree_profiles = [tree_one.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics
         ), tree_two.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics
         ), tree_three.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics)
         ]
         algorithm = IncrementalDistanceAlgorithm(

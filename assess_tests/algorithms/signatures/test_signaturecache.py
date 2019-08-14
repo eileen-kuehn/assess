@@ -199,16 +199,20 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         two = simple_additional_monitoring_tree()
         prototype_one = one.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=False,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         prototype_two = two.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=False,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         self.assertEqual(one.node_count(), prototype_one.multiplicity(prototype=one))
@@ -222,16 +226,20 @@ class TestPrototypeSignatureCache(unittest.TestCase):
 
         prototype_three = one.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=True,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         prototype_four = two.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=True,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         self.assertEqual(
@@ -255,9 +263,11 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         for tree in [tree_1, tree_2]:
             signature_caches.append(tree.to_index(
                 signature=signature,
-                start_support=True,
-                exit_support=True,
-                traffic_support=True,
+                supported={
+                    ProcessStartEvent: True,
+                    ProcessExitEvent: True,
+                    TrafficEvent: True
+                },
                 statistics_cls=SetStatistics)
             )
 

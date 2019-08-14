@@ -613,43 +613,32 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, start_support=True, exit_support=True,
-                 traffic_support=False, cache=None, statistics_cls=None):
+    def to_index(self, signature, cache=None, statistics_cls=None,
+                 supported={
+                     ProcessStartEvent: True,
+                     ProcessExitEvent: True,
+                     TrafficEvent: False
+                 }):
         if cache is None:
             if isinstance(signature, EnsembleSignature):
-                cache = EnsembleSignatureCache(
-                    {
-                        ProcessStartEvent: start_support,
-                        ProcessExitEvent: exit_support,
-                        TrafficEvent: traffic_support
-                    }, statistics_cls=statistics_cls)
+                cache = EnsembleSignatureCache(supported, statistics_cls=statistics_cls)
             else:
-                cache = SignatureCache(
-                    {
-                        ProcessStartEvent: start_support,
-                        ProcessExitEvent: exit_support,
-                        TrafficEvent: traffic_support
-                    }, statistics_cls=statistics_cls)
+                cache = SignatureCache(supported, statistics_cls=statistics_cls)
         return self.to_prototype(
             signature=signature,
-            start_support=start_support,
-            exit_support=exit_support,
-            traffic_support=traffic_support,
             cache=cache,
             statistics_cls=statistics_cls,
-            _is_prototype=False
+            _is_prototype=False, supported=supported
         )
 
-    def to_prototype(self, signature: Signature, start_support=True, exit_support=True,
-                     traffic_support=False, cache=None, statistics_cls=None,
-                     _is_prototype=True):
+    def to_prototype(self, signature: Signature, cache=None, statistics_cls=None,
+                     _is_prototype=True, supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False
+            }):
         if cache is None:
-            cache = PrototypeSignatureCache(
-                {
-                    ProcessStartEvent: start_support,
-                    ProcessExitEvent: exit_support,
-                    TrafficEvent: traffic_support
-                }, statistics_cls=statistics_cls)
+            cache = PrototypeSignatureCache(supported, statistics_cls=statistics_cls)
         if _is_prototype:
             add_signature = self._handle_prototype_ensemble_signature_list
         else:
@@ -658,27 +647,23 @@ class Prototype(Tree):
         cache.supported[EmptyProcessEvent] = True
         for event in self.event_iter(
                 include_marker=True,
-                supported={
-                    ProcessStartEvent: start_support,
-                    ProcessExitEvent: exit_support,
-                    TrafficEvent: traffic_support
-                }):
+                supported=supported):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
                     # FIXME: turn into ExitEvent
                     add_signature(
-                        event, ensemble_signature, cache, start_support, exit_support)
+                        event, ensemble_signature, cache, supported)
                 continue
             else:
                 current_signature = signature.get_signature(
                     event.node, event.node.parent())
-            add_signature(event, current_signature, cache, start_support, exit_support)
+            add_signature(event, current_signature, cache, supported)
         del cache.supported[EmptyProcessEvent]
         return cache
 
-    def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache,
-                                        start_support=False, exit_support=False):
+    def _handle_ensemble_signature_list(
+            self, event, ensemble_signature_list, cache, supported):
         if type(event) == ProcessStartEvent:
             cache[ensemble_signature_list, ProcessStartEvent] = {
                 "count": 0
@@ -694,19 +679,18 @@ class Prototype(Tree):
                 "duration": event.value
             }
         if type(event) == EmptyProcessEvent:
-            if start_support:
+            if supported.get(ProcessStartEvent, False):
                 cache[ensemble_signature_list, ProcessStartEvent] = {
                     "count": 0
                 }
-            if exit_support:
+            if supported.get(ProcessExitEvent, False):
                 cache[ensemble_signature_list, ProcessExitEvent] = {
                     "count": 0,
                     "duration": 0
                 }
 
     def _handle_prototype_ensemble_signature_list(
-            self, event, ensemble_signature_list, cache, start_support=False,
-            exit_support=False):
+            self, event, ensemble_signature_list, cache, supported):
         if type(event) == ProcessStartEvent:
             cache[ensemble_signature_list, self, ProcessStartEvent] = {
                 "count": 0
@@ -724,11 +708,11 @@ class Prototype(Tree):
         if type(event) == EmptyProcessEvent:
             # EmptyProcessEvent means, that we are appending some dummy nodes.
             # Those apparently have Start and Exit events, so add it
-            if start_support:
+            if supported.get(ProcessStartEvent, False):
                 cache[ensemble_signature_list, self, ProcessStartEvent] = {
                     "count": 0
                 }
-            if exit_support:
+            if supported.get(ProcessExitEvent, False):
                 cache[ensemble_signature_list, self, ProcessExitEvent] = {
                     "count": 0,
                     "duration": 0

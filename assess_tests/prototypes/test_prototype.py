@@ -313,7 +313,10 @@ class TestPrototypeFunctions(unittest.TestCase):
             event_type=ProcessExitEvent).distance(2))
 
         index = prototype.to_index(
-            signature=ParentChildByNameTopologySignature(), exit_support=False)
+            signature=ParentChildByNameTopologySignature(), supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False
+            })
         self.assertEqual(3, index.node_count())
         self.assertEqual(1, index.multiplicity(signature="root_1"))
         self.assertEqual(2, index.multiplicity(signature="test_149160533"))

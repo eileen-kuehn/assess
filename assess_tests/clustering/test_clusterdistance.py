@@ -6,6 +6,7 @@ from assess.clustering.clusterdistance import ClusterDistance
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature, \
     EnsembleSignatureCache
 from assess.algorithms.distances.startexitdistance import StartExitDistance
+from assess.events.events import ProcessStartEvent, ProcessExitEvent
 
 from assess_tests.basedata import simple_prototype, simple_monitoring_tree
 
@@ -32,10 +33,16 @@ class TestClusterDistance(unittest.TestCase):
         signature = EnsembleSignature(signatures=[ParentChildByNameTopologySignature()])
         cache_one = EnsembleSignatureCache(supported=distance.distance.supported)
         cache_one = simple_prototype().to_index(
-            signature, start_support=True, exit_support=True, cache=cache_one)
+            signature, supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True
+            }, cache=cache_one)
         cache_two = EnsembleSignatureCache(supported=distance.distance.supported)
         cache_two = simple_monitoring_tree().to_index(
-            signature, start_support=True, exit_support=True, cache=cache_two)
+            signature, supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True
+            }, cache=cache_two)
         self.assertAlmostEqual(0.11, distance(cache_one, cache_two), 2)
 
     def test_ensemble_distance(self):

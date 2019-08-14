@@ -8,7 +8,8 @@ from assess.algorithms.statistics.setstatistics import SetStatistics
 from assess.decorators.anomalydecorator import AnomalyDecorator
 from assess.algorithms.incrementaldistancealgorithm import IncrementalDistanceAlgorithm
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.events.events import Event, TrafficEvent, ProcessStartEvent
+from assess.events.events import Event, TrafficEvent, ProcessStartEvent, \
+    ProcessExitEvent
 from assess.exceptions.exceptions import EventNotSupportedException
 
 from assess_tests.basedata import simple_monitoring_tree, simple_prototype, real_tree
@@ -192,9 +193,11 @@ class TestAnomalyDecorator(unittest.TestCase):
         for index, tree in enumerate([tree_one, tree_two]):
             prototype_caches.append(PrototypeSignatureCache.from_signature_caches(
                 [tree.to_index(signature=ParentChildByNameTopologySignature(),
-                               start_support=True,
-                               exit_support=True,
-                               traffic_support=True,
+                               supported={
+                                   ProcessStartEvent: True,
+                                   ProcessExitEvent: True,
+                                   TrafficEvent: True
+                               },
                                statistics_cls=SetStatistics)],
                 prototype=prototype_names[index], threshold=0))
 

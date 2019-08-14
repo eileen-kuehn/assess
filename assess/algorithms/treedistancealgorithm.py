@@ -99,9 +99,7 @@ class TreeDistanceAlgorithm(object):
             # store links to nodes based on node_ids into dictionary
             prototype.to_prototype(
                 signature=self.signature,
-                start_support=self.supported[ProcessStartEvent],
-                exit_support=self.supported[ProcessExitEvent],
-                traffic_support=self.supported[TrafficEvent],
+                supported=self.supported,
                 cache=self._signature_prototypes
             )
         self._prototypes = value
