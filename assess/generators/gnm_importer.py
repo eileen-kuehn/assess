@@ -263,8 +263,10 @@ class GNMCSVEventStreamer(NodeGenerator, EventGenerator):
     :type csv_path: str or unicode
     """
     def __init__(self, csv_path, **kwargs):
-        NodeGenerator.__init__(self, **kwargs)
-        EventGenerator.__init__(self, **kwargs)
+        streamer = kwargs.pop("streamer", None)
+        supported = kwargs.pop("supported", None)
+        NodeGenerator.__init__(self, streamer=streamer)
+        EventGenerator.__init__(self, streamer=streamer, supported=supported)
         self.path = csv_path
 
     def node_iter(self):

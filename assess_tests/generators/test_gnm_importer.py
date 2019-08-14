@@ -40,7 +40,7 @@ class TestGNMImporter(unittest.TestCase):
         alg.start_tree()
         successful_events = 0
         for index, event in enumerate(EventStreamer(
-                streamer=GNMCSVEventStreamer(self.file_path))):
+                streamer=GNMCSVEventStreamer(self.file_path, supported=alg.supported))):
             try:
                 distance = alg.add_event(event)[0]
                 successful_events += 1
