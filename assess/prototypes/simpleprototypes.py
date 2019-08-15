@@ -11,7 +11,7 @@ from assess.exceptions.exceptions import TreeInvalidatedException, \
     NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException, DataNotInCacheException
 from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, \
-    TrafficEvent, EmptyProcessEvent
+    TrafficEvent, EmptyProcessEvent, ParameterEvent
 from assess.algorithms.signatures.signaturecache import SignatureCache, \
     PrototypeSignatureCache
 
@@ -613,12 +613,14 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, cache=None, statistics_cls=None,
-                 supported={
-                     ProcessStartEvent: True,
-                     ProcessExitEvent: True,
-                     TrafficEvent: False
-                 }):
+    def to_index(self, signature, cache=None, statistics_cls=None, supported=None):
+        if supported is None:
+            supported = {
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False,
+                ParameterEvent: False
+            }
         if cache is None:
             if isinstance(signature, EnsembleSignature):
                 cache = EnsembleSignatureCache(supported, statistics_cls=statistics_cls)
@@ -628,15 +630,19 @@ class Prototype(Tree):
             signature=signature,
             cache=cache,
             statistics_cls=statistics_cls,
-            _is_prototype=False, supported=supported
+            _is_prototype=False,
+            supported=supported
         )
 
     def to_prototype(self, signature: Signature, cache=None, statistics_cls=None,
-                     _is_prototype=True, supported={
+                     _is_prototype=True, supported=None) -> SignatureCache:
+        if supported is None:
+            supported = {
                 ProcessStartEvent: True,
                 ProcessExitEvent: True,
-                TrafficEvent: False
-            }):
+                TrafficEvent: False,
+                ParameterEvent: False
+            }
         if cache is None:
             cache = PrototypeSignatureCache(supported, statistics_cls=statistics_cls)
         if _is_prototype:
@@ -645,15 +651,12 @@ class Prototype(Tree):
             add_signature = self._handle_ensemble_signature_list
         # FIXME: I should care about EmptyProcessEvent
         cache.supported[EmptyProcessEvent] = True
-        for event in self.event_iter(
-                include_marker=True,
-                supported=supported):
+        for event in self.event_iter(include_marker=True, supported=supported):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
                     # FIXME: turn into ExitEvent
-                    add_signature(
-                        event, ensemble_signature, cache, supported)
+                    add_signature(event, ensemble_signature, cache, supported)
                 continue
             else:
                 current_signature = signature.get_signature(
