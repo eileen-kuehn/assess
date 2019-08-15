@@ -1,7 +1,8 @@
 import unittest
 
 from assess.events.events import ProcessStartEvent, Event, ProcessExitEvent, \
-    TrafficEvent
+    TrafficEvent, ParameterEvent
+from assess.prototypes.simpleprototypes import Prototype
 
 
 class TestEventFunctionality(unittest.TestCase):
@@ -39,3 +40,38 @@ class TestEventFunctionality(unittest.TestCase):
         traffic.value = 5
         self.assertEqual(traffic.value, 5)
         self.assertEqual(traffic, Event.add(1, 2, 1, 5))
+
+    def test_number_of_events(self):
+        tree = Prototype()
+        root = tree.add_node("root", pid=1, ppid=0, tme=0, exit_tme=0, param=2)
+        for i in range(5):
+            root.add_node("child_%d" % i, pid=i+2, ppid=1, tme=0, exit_tme=0, param=i*2)
+        child = next(root.children())
+        child.add_node("child", pid=10, ppid=child.pid, tme=0, exit_tme=0, param=5)
+
+        event_count = 0
+        for _ in Event.from_tree(tree, supported={
+            ProcessStartEvent: True,
+            ProcessExitEvent: False,
+            ParameterEvent: False
+        }):
+            event_count += 1
+        self.assertEqual(7, event_count)
+
+        event_count = 0
+        for _ in Event.from_tree(tree, supported={
+            ProcessStartEvent: True,
+            ProcessExitEvent: True,
+            ParameterEvent: False
+        }):
+            event_count += 1
+        self.assertEqual(14, event_count)
+
+        event_count = 0
+        for _ in Event.from_tree(tree, supported={
+            ProcessStartEvent: True,
+            ProcessExitEvent: True,
+            ParameterEvent: True
+        }):
+            event_count += 1
+        self.assertEqual(21, event_count)
