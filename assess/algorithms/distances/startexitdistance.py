@@ -83,10 +83,10 @@ class StartExitDistance(Distance):
                 )
                 if event_type == ProcessStartEvent:
                     self._signature_cache[index][signature, ProcessStartEvent] = \
-                        {"count": 0}
+                        {"value": value}
                 else:
                     self._signature_cache[index][signature, event_type] = \
-                        {"count": 0, "duration": value if value is not None else 0}
+                        {"value": value if value is not None else 0}
         return [list(match)[0] for match in matches]
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False,
@@ -137,7 +137,7 @@ class StartExitDistance(Distance):
             if self._signature_cache[index].multiplicity(
                     signature=node_signature,
                     event_type=event_type
-            ) < prototype_nodes[prototype_node][event_type]["count"].count():
+            ) < prototype_nodes[prototype_node][event_type]["value"].count():
                 result -= node_base
             else:
                 result += node_base
@@ -145,7 +145,7 @@ class StartExitDistance(Distance):
                 try:
                     statistic = self._signature_cache[index].get_statistics(
                         signature=node_signature,
-                        key="duration",
+                        key="value",
                         event_type=event_type
                     )
                 except KeyError:
@@ -158,7 +158,7 @@ class StartExitDistance(Distance):
                 else:
                     try:
                         statistic = \
-                            prototype_nodes[prototype_node][event_type]["duration"]
+                            prototype_nodes[prototype_node][event_type]["value"]
                     except KeyError:
                         distance = 1
                     else:
@@ -210,7 +210,7 @@ class StartExitDistanceWOAttributes(StartExitDistance):
                     node_signature=signature,
                     value=value
                 )
-                self._signature_cache[index][signature, event_type] = {"count": 0}
+                self._signature_cache[index][signature, event_type] = {"value": value}
         return [list(match)[0] for match in matches]
 
     def _update_distances(self, prototypes, event_type=None, index=0,
@@ -225,7 +225,7 @@ class StartExitDistanceWOAttributes(StartExitDistance):
             if self._signature_cache[index].multiplicity(
                     signature=node_signature,
                     event_type=event_type
-            ) < prototype_nodes[prototype_node][event_type]["count"].count():
+            ) < prototype_nodes[prototype_node][event_type]["value"].count():
                 result -= node_base
             else:
                 result += node_base

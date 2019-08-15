@@ -136,8 +136,8 @@ class ProcessStartEvent(Event):
     Class that represents a start event.
     """
 
-    def __init__(self, tme, pid, ppid, **kwargs):
-        Event.__init__(self, tme, pid, ppid, **kwargs)
+    def __init__(self, tme, pid, ppid, value=0, **kwargs):
+        Event.__init__(self, tme, pid, ppid, value, **kwargs)
 
     @classmethod
     def from_node(cls, node):
@@ -154,8 +154,8 @@ class ProcessExitEvent(Event):
     """
 
     def __init__(self, tme, pid, ppid, start_tme, value=None, **kwargs):
-        Event.__init__(self, tme, pid, ppid, start_tme=start_tme,
-                       value=value or (tme - start_tme), **kwargs)
+        Event.__init__(self, tme, pid, ppid, value=value or (tme - start_tme),
+                       start_tme=start_tme, **kwargs)
         self._start_tme = start_tme
 
     @property

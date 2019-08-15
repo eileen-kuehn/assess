@@ -83,10 +83,10 @@ class SignatureCache(object):
             # iterate over all supported keys
             for support_key in self.support_keys():
                 result += statistics.get(support_key, {}).get(
-                    "count", self.statistics_cls()).count()
+                    "value", self.statistics_cls()).count()
         else:
             result += statistics.get(event_type, {}).get(
-                "count", self.statistics_cls()).count()
+                "value", self.statistics_cls()).count()
         return result
 
     def multiplicity(self, signature=None, event_type=None, by_event=False):

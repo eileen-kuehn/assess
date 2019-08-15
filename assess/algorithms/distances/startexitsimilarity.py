@@ -48,12 +48,11 @@ class StartExitSimilarity(Distance):
                 )
                 if event_type == ProcessStartEvent:
                     self._signature_cache[index][signature, event_type] = {
-                        "count": 0
+                        "value": 0
                     }
                 else:
                     self._signature_cache[index][signature, event_type] = {
-                        "count": 0,
-                        "duration": value
+                        "value": value
                     }
         return [list(match)[0] for match in matches]
 
@@ -74,7 +73,7 @@ class StartExitSimilarity(Distance):
         result_dict = dict.fromkeys(prototypes, 0)
         for prototype_node in prototype_nodes:
             # FIXME: Ich denke die 2* muss entfernt werden
-            statistic = prototype_nodes[prototype_node][ProcessExitEvent]["duration"]
+            statistic = prototype_nodes[prototype_node][ProcessExitEvent]["value"]
             if self._signature_cache[index].multiplicity(
                     signature=node_signature,
                     event_type=ProcessExitEvent

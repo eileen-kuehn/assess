@@ -305,11 +305,11 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(3, index.node_count())
         self.assertEqual(2, index.get_statistics(
             signature="muh_149160533",
-            key="duration",
+            key="value",
             event_type=ProcessExitEvent)._statistics[1].mean)
         self.assertEqual(0, index.get_statistics(
             signature="muh_149160533",
-            key="duration",
+            key="value",
             event_type=ProcessExitEvent).distance(2))
 
         index = prototype.to_index(
