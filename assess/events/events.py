@@ -2,7 +2,7 @@
 Module implements the different kind of events that are supported in dynamic
 process trees.
 """
-from typing import List, Union, Dict, Iterator, TypeVar, TYPE_CHECKING
+from typing import List, Dict, Iterator, TypeVar, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from assess.prototypes.simpleprototypes import OrderedTreeNode

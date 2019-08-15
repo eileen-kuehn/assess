@@ -1,6 +1,3 @@
-from __future__ import division
-
-
 def normalise_distance(distance, size_prototype, size_tree):
     return 2 * distance / (size_tree + size_prototype + distance)
 
