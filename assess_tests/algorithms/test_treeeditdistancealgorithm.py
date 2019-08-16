@@ -3,7 +3,7 @@ import unittest
 from assess.prototypes.simpleprototypes import Prototype
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.treeeditdistancealgorithm import TreeEditDistanceAlgorithm
-from assess.events.events import Event
+from assess.events.events import Event, ProcessStartEvent
 
 
 class TestTreeEditDistanceFunctionalities(unittest.TestCase):
@@ -32,7 +32,7 @@ class TestTreeEditDistanceFunctionalities(unittest.TestCase):
         algorithm.prototypes = [prototype]
 
         algorithm.start_tree()
-        algorithm.add_events(Event.from_tree(tree))
+        algorithm.add_events(Event.from_tree(tree, supported={ProcessStartEvent: True}))
         result = algorithm.finish_tree()
         return result[0]
 

@@ -5,6 +5,8 @@ from assess.algorithms.signatures.signaturecache import SignatureCache
 
 
 class DynamicDistance(Distance):
+    __slots__ = ("_max_count", "_wrapped_distance", "_order_cache", "_last_signatures")
+
     def __init__(self, max_count=3, wrapped_distance=None, **kwargs):
         Distance.__init__(self, **kwargs)
         self._max_count = max_count
@@ -24,7 +26,7 @@ class DynamicDistance(Distance):
                                       self._monitoring_results_dict.copy())
 
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         self._wrapped_distance.init_distance(prototypes, signature_prototypes)
         self._order_cache = [{} for _ in range(self.signature_count)]
         self._last_signatures = [deque(maxlen=self._max_count)] * self.signature_count
@@ -34,7 +36,7 @@ class DynamicDistance(Distance):
         for prototype in prototypes:
             prototype_deque = deque(maxlen=self._max_count)
             for index, signature in enumerate(self._algorithm.signature):
-                for event in prototype.event_iter():
+                for event in prototype.event_iter(supported=self.supported):
                     prototype_deque.append(
                         signature.get_signature(node=event, parent=None)
                     )

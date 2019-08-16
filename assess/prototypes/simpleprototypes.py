@@ -3,14 +3,16 @@ Module describes a general tree as well as a more specialised prototype. Also
 the definition for the single nodes is defined.
 """
 import bisect
+from collections import deque
 
+from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
 from assess.algorithms.signatures.ensemblesignaturecache import EnsembleSignatureCache
 from assess.exceptions.exceptions import TreeInvalidatedException, \
     NodeNotEmptyException, \
     NodeNotRemovedException, NodeNotFoundException, DataNotInCacheException
 from assess.events.events import Event, ProcessStartEvent, ProcessExitEvent, \
-    TrafficEvent, EmptyProcessEvent
+    TrafficEvent, EmptyProcessEvent, ParameterEvent
 from assess.algorithms.signatures.signaturecache import SignatureCache, \
     PrototypeSignatureCache
 
@@ -62,6 +64,19 @@ class OrderedTreeNode(object):
                         or key.startswith("_"))
         return {
             key: getattr(self, key) for key in vars(self) if check_keys(key)
+        }
+
+    def parameters(self):
+        # TODO: those should be configured via black- or whitelists
+        def check_keys(key):
+            return not ("name" in key
+                        or "node_id" in key
+                        or "tme" in key
+                        or "exit_tme" in key
+                        or "pid" in key
+                        or "ppid" in key)
+        return {
+            key: getattr(self, key) for key in self.dao() if check_keys(key)
         }
 
     def depth(self):
@@ -599,174 +614,138 @@ class Prototype(Tree):
             parent_dict[process] = node
         return result
 
-    def to_index(self, signature, start_support=True, exit_support=True,
-                 traffic_support=False, cache=None, statistics_cls=None):
+    def to_index(self, signature, cache=None, statistics_cls=None, supported=None):
+        if supported is None:
+            supported = {
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False,
+                ParameterEvent: False
+            }
         if cache is None:
             if isinstance(signature, EnsembleSignature):
-                cache = EnsembleSignatureCache(
-                    {
-                        ProcessStartEvent: start_support,
-                        ProcessExitEvent: exit_support,
-                        TrafficEvent: traffic_support
-                    }, statistics_cls=statistics_cls)
+                cache = EnsembleSignatureCache(supported, statistics_cls=statistics_cls)
             else:
-                cache = SignatureCache(
-                    {
-                        ProcessStartEvent: start_support,
-                        ProcessExitEvent: exit_support,
-                        TrafficEvent: traffic_support
-                    }, statistics_cls=statistics_cls)
+                cache = SignatureCache(supported, statistics_cls=statistics_cls)
         return self.to_prototype(
             signature=signature,
-            start_support=start_support,
-            exit_support=exit_support,
-            traffic_support=traffic_support,
             cache=cache,
             statistics_cls=statistics_cls,
-            _is_prototype=False
+            _is_prototype=False,
+            supported=supported
         )
 
-    def to_prototype(self, signature, start_support=True, exit_support=True,
-                     traffic_support=False, cache=None, statistics_cls=None,
-                     _is_prototype=True):
+    def to_prototype(self, signature: Signature, cache=None, statistics_cls=None,
+                     _is_prototype=True, supported=None) -> SignatureCache:
+        if supported is None:
+            supported = {
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False,
+                ParameterEvent: False
+            }
         if cache is None:
-            cache = PrototypeSignatureCache(
-                {
-                    ProcessStartEvent: start_support,
-                    ProcessExitEvent: exit_support,
-                    TrafficEvent: traffic_support
-                }, statistics_cls=statistics_cls)
+            cache = PrototypeSignatureCache(supported, statistics_cls=statistics_cls)
         if _is_prototype:
             add_signature = self._handle_prototype_ensemble_signature_list
         else:
             add_signature = self._handle_ensemble_signature_list
         # FIXME: I should care about EmptyProcessEvent
         cache.supported[EmptyProcessEvent] = True
-        for event in self.event_iter(include_marker=True):
+        for event in self.event_iter(include_marker=True, supported=supported):
             if isinstance(event.node, EmptyNode):
                 current_signature = signature.finish_node(event.node.parent())
                 for ensemble_signature in current_signature:
                     # FIXME: turn into ExitEvent
-                    add_signature(
-                        event, ensemble_signature, cache, start_support, exit_support)
+                    add_signature(event, ensemble_signature, cache, supported)
                 continue
             else:
                 current_signature = signature.get_signature(
                     event.node, event.node.parent())
-            add_signature(event, current_signature, cache, start_support, exit_support)
+            add_signature(event, current_signature, cache, supported)
         del cache.supported[EmptyProcessEvent]
         return cache
 
-    def _handle_ensemble_signature_list(self, event, ensemble_signature_list, cache,
-                                        start_support=False, exit_support=False):
-        if type(event) == ProcessStartEvent:
-            cache[ensemble_signature_list, ProcessStartEvent] = {
-                "count": 0
-            }
-        if type(event) == ProcessExitEvent:
-            cache[ensemble_signature_list, ProcessExitEvent] = {
-                "count": 0,
-                "duration": event.value
-            }
-        if type(event) == TrafficEvent:
-            cache[ensemble_signature_list, TrafficEvent] = {
-                "count": 0,
-                "duration": event.value
-            }
+    def _handle_ensemble_signature_list(
+            self, event, ensemble_signature_list, cache, supported):
         if type(event) == EmptyProcessEvent:
-            if start_support:
+            if supported.get(ProcessStartEvent, False):
                 cache[ensemble_signature_list, ProcessStartEvent] = {
-                    "count": 0
+                    "value": 0
                 }
-            if exit_support:
+            if supported.get(ProcessExitEvent, False):
                 cache[ensemble_signature_list, ProcessExitEvent] = {
-                    "count": 0,
-                    "duration": 0
+                    "value": 0
                 }
+        else:
+            cache[ensemble_signature_list, type(event)] = {
+                "value": event.value
+            }
 
     def _handle_prototype_ensemble_signature_list(
-            self, event, ensemble_signature_list, cache, start_support=False,
-            exit_support=False):
-        if type(event) == ProcessStartEvent:
-            cache[ensemble_signature_list, self, ProcessStartEvent] = {
-                "count": 0
-            }
-        if type(event) == ProcessExitEvent:
-            cache[ensemble_signature_list, self, ProcessExitEvent] = {
-                "count": 0,
-                "duration": event.value
-            }
-        if type(event) == TrafficEvent:
-            cache[ensemble_signature_list, self, TrafficEvent] = {
-                "count": 0,
-                "duration": event.value  # FIXME: what is expected here?
-            }
+            self, event, ensemble_signature_list, cache, supported):
         if type(event) == EmptyProcessEvent:
             # EmptyProcessEvent means, that we are appending some dummy nodes.
             # Those apparently have Start and Exit events, so add it
-            if start_support:
+            if supported.get(ProcessStartEvent, False):
                 cache[ensemble_signature_list, self, ProcessStartEvent] = {
-                    "count": 0
+                    "value": 0
                 }
-            if exit_support:
+            if supported.get(ProcessExitEvent, False):
                 cache[ensemble_signature_list, self, ProcessExitEvent] = {
-                    "count": 0,
-                    "duration": 0
+                    "value": 0
                 }
-            # cache[ensemble_signature_list, self, EmptyProcessEvent] = {
-            #     "count": 0,
-            #     "duration": 0
-            # }
+        else:
+            cache[ensemble_signature_list, self, type(event)] = {
+                "value": event.value
+            }
 
-    def event_iter(self, include_marker=True):
-        exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
-        events = 0  # used to push parent events at same tme to the left
+    def event_iter(self, include_marker=True, supported=None):
+        exit_event_queue = deque()  # (tme, -#events, event); leftmost popped FIRST
+        event_count = 0
 
         for node in self.node_iter(include_marker=include_marker):
             try:
                 now = node.tme
-                # create the events for the current process
-                start_event, exit_event, traffic_events = Event.events_from_process(
-                    node)
-                exit_event.node = node
             except AttributeError:
-                # received an EmptyNode Marker, it only needs to be forwarded
-                last_node = node.parent()
-                now = last_node.tme
-                start_event = EmptyProcessEvent()
-                exit_event = None
-                traffic_events = []
-            # create reference to node
-            start_event.node = node
-            events += 1
+                # EmptyNode Event only needs to be forwarded
+                event = EmptyProcessEvent()
+                event.node = node
+                yield event
+                continue
 
             # yield any exit events that should have happened so far
-            while exit_event_queue and exit_event_queue[-1][0] > -now:
-                yield exit_event_queue.pop()[2]
-            # for traffic we first need to append the required nodes (if not existent)
-            existing_nodes = {}
-            for traffic_event in traffic_events:
+            while exit_event_queue and exit_event_queue[0][0] < now:
+                yield exit_event_queue.popleft()[2]
+
+            existing_parameter_nodes = {}
+            for event in Event.events_from_node(node, supported=supported):
+                event_count += 1
+                if isinstance(event, ProcessStartEvent):
+                    event.node = node
+                    yield event
+                    continue
+                elif isinstance(event, ProcessExitEvent):
+                    event.node = node
+                else:
+                    try:
+                        current_node = existing_parameter_nodes[event.name]
+                    except KeyError:
+                        existing_parameter_nodes[event.name] = OrderedTreeNode(
+                            1, **event.__dict__)
+                        current_node = existing_parameter_nodes[event.name]
+                        current_node._parent = node
+                    event.node = current_node
+                    if event.tme <= now:
+                        yield event
+                        continue
                 try:
-                    current_node = existing_nodes[traffic_event.name]
-                except KeyError:
-                    existing_nodes[traffic_event.name] = OrderedTreeNode(
-                        1, **traffic_event.__dict__)
-                    current_node = existing_nodes[traffic_event.name]
-                    current_node._parent = node
-                traffic_event.node = current_node
-            # process starts NOW, exits LATER
-            yield start_event
-            try:
-                bisect.insort_right(
-                    exit_event_queue, (-exit_event.tme, events, exit_event))
-            except AttributeError:
-                pass
-            for traffic in traffic_events:
-                events += 1
-                bisect.insort_right(
-                    exit_event_queue, (-(traffic.tme), events, traffic))
+                    bisect.insort_right(
+                        exit_event_queue, (event.tme, -event_count, event))
+                except AttributeError:
+                    pass
         while exit_event_queue:
-            yield exit_event_queue.pop()[2]
+            yield exit_event_queue.popleft()[2]
 
     def node_iter(self, include_marker=False):
         return self.nodes(order_first=True, include_marker=include_marker)
@@ -779,6 +758,8 @@ class Prototype(Tree):
 
 
 class EmptyNode(object):
+    __slots__ = "_parent"
+
     def __init__(self, parent):
         self._parent = parent
 

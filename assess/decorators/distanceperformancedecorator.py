@@ -23,6 +23,8 @@ class DistancePerformanceDecorator(Decorator):
 
     Also for accumulated values, you can expect to have a list in list.
     """
+    __slots__ = ("_data", "_start", "_accumulated")
+
     def __init__(self, accumulated=True):
         if accumulated:
             Decorator.__init__(self, name="accumulated_distance_performance")

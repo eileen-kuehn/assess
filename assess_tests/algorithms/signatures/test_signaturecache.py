@@ -24,11 +24,11 @@ class TestSignatureCache(unittest.TestCase):
     def test_count(self):
         cache = SignatureCache(supported={object: True})
         self.assertEqual(cache.node_count(), 0)
-        cache["test", object] = {"count": 0}
+        cache["test", object] = {"value": 0}
         self.assertEqual(cache.node_count(), 1)
-        cache["test", object] = {"count": 0}
+        cache["test", object] = {"value": 0}
         self.assertEqual(cache.node_count(), 1)
-        cache["hello", object] = {"count": 0}
+        cache["hello", object] = {"value": 0}
         self.assertEqual(cache.node_count(), 2)
         self.assertEqual(cache.multiplicity(signature="test"), 2)
         self.assertEqual(cache.multiplicity(signature="muh"), 0)
@@ -36,17 +36,17 @@ class TestSignatureCache(unittest.TestCase):
     def test_frequency(self):
         cache = SignatureCache(supported={object: True})
         self.assertEqual(cache.multiplicity(), 0)
-        cache["test", object] = {"count": 0}
+        cache["test", object] = {"value": 0}
         self.assertEqual(cache.multiplicity(), 1)
-        cache["test", object] = {"count": 0}
+        cache["test", object] = {"value": 0}
         self.assertEqual(cache.multiplicity(), 2)
-        cache["hello", object] = {"count": 0}
+        cache["hello", object] = {"value": 0}
         self.assertEqual(cache.multiplicity(), 3)
 
     def test_none(self):
         cache = SignatureCache(supported={object: True})
-        cache[None, object] = {"count": 0}
-        cache[None, object] = {"count": 0}
+        cache[None, object] = {"value": 0}
+        cache[None, object] = {"value": 0}
         self.assertEqual(cache.node_count(), 1)
         self.assertEqual(cache.multiplicity(), 2)
         self.assertEqual(cache.multiplicity(signature=None), 2)
@@ -63,32 +63,32 @@ class TestPrototypeSignatureCache(unittest.TestCase):
     def test_count(self):
         cache = PrototypeSignatureCache(supported={object: True})
         self.assertEqual(cache.node_count(), 0)
-        cache["test", "1", object] = {"count": 0}
+        cache["test", "1", object] = {"value": 0}
         self.assertEqual(cache.node_count(), 1)
         self.assertEqual(cache.node_count(prototype="1"), 1)
         self.assertEqual(cache.node_count(prototype="2"), 0)
-        cache["test", "2", object] = {"count": 0}
+        cache["test", "2", object] = {"value": 0}
         self.assertEqual(cache.node_count(prototype="1"), 1)
         self.assertEqual(cache.node_count(prototype="2"), 1)
-        cache["hello", "1", object] = {"count": 0}
+        cache["hello", "1", object] = {"value": 0}
         self.assertEqual(cache.node_count(), 2)
         self.assertEqual(len(cache.get(signature="test")), 2)
         self.assertEqual(cache.get(
-            signature="test")["1"][object]["count"].count(), 1)
+            signature="test")["1"][object]["value"].count(), 1)
         self.assertEqual(cache.get(
-            signature="test")["2"][object]["count"].count(), 1)
+            signature="test")["2"][object]["value"].count(), 1)
         self.assertEqual(len(cache.get(signature="muh")), 0)
 
     def test_frequency(self):
         cache = PrototypeSignatureCache(supported={object: True})
         self.assertEqual(cache.multiplicity(), 0)
-        cache["test", "1", object] = {"count": 0, "duration": 1}
-        cache["test", "1", object] = {"count": 0, "duration": 1}
-        cache["test", "2", object] = {"count": 0, "duration": 2}
+        cache["test", "1", object] = {"value": 1}
+        cache["test", "1", object] = {"value": 1}
+        cache["test", "2", object] = {"value": 2}
         self.assertEqual(cache.multiplicity(), 3)
         self.assertEqual(cache.multiplicity(prototype="1"), 2)
         self.assertEqual(cache.multiplicity(prototype="2"), 1)
-        cache["hello", "1", object] = {"count": 0, "duration": 1}
+        cache["hello", "1", object] = {"value": 1}
         self.assertEqual(cache.multiplicity(prototype="1"), 3)
         self.assertEqual(cache.multiplicity(prototype="2"), 1)
 
@@ -199,16 +199,20 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         two = simple_additional_monitoring_tree()
         prototype_one = one.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=False,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         prototype_two = two.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=False,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         self.assertEqual(one.node_count(), prototype_one.multiplicity(prototype=one))
@@ -222,16 +226,20 @@ class TestPrototypeSignatureCache(unittest.TestCase):
 
         prototype_three = one.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=True,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         prototype_four = two.to_prototype(
             signature=signature,
-            start_support=True,
-            exit_support=True,
-            traffic_support=False,
+            supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: True,
+                TrafficEvent: False
+            },
             statistics_cls=SetStatistics
         )
         self.assertEqual(
@@ -255,9 +263,11 @@ class TestPrototypeSignatureCache(unittest.TestCase):
         for tree in [tree_1, tree_2]:
             signature_caches.append(tree.to_index(
                 signature=signature,
-                start_support=True,
-                exit_support=True,
-                traffic_support=True,
+                supported={
+                    ProcessStartEvent: True,
+                    ProcessExitEvent: True,
+                    TrafficEvent: True
+                },
                 statistics_cls=SetStatistics)
             )
 
@@ -269,11 +279,11 @@ class TestPrototypeSignatureCache(unittest.TestCase):
             self.assertEqual(
                 cr.get_statistics(
                     signature=token,
-                    key="duration",
+                    key="value",
                     prototype=tree_1,
                     event_type=ProcessExitEvent
                 ).count(), signature_caches[0].get_statistics(
                     signature=token,
-                    key="duration",
+                    key="value",
                     event_type=ProcessExitEvent).count()
             )

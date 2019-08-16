@@ -45,7 +45,7 @@ def prototype_signature(prototype=None, signature=None):
     for node in prototype.nodes():
         node_signature = signature.get_signature(node, node.parent())
         signature_prototype[node_signature, prototype, ProcessExitEvent] = {
-            "duration": (float(node.exit_tme) - float(node.tme))
+            "value": (float(node.exit_tme) - float(node.tme))
         }
     return signature_prototype
 

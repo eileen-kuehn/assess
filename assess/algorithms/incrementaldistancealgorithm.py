@@ -14,6 +14,8 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
     The IncrementalDistanceAlgorithm takes care to adapt distance calculation
     for dynamic trees.
     """
+    __slots__ = ("_measured_nodes", "_distance_builder")
+
     def __init__(self, signature=None, distance=SimpleDistance,
                  cache_statistics=SplittedStatistics, **kwargs):
         TreeDistanceAlgorithm.__init__(self, signature=signature,
@@ -44,8 +46,6 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         # initialise distance
         self.distance
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
-        self.distance.init_distance(prototypes=self.prototypes,
-                                    signature_prototypes=self.signature_prototypes)
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)

@@ -38,17 +38,17 @@ class TestGNMImporter(unittest.TestCase):
         alg = IncrementalDistanceAlgorithm()
         alg.prototypes = [tree_builder.build(self.file_path)]
         alg.start_tree()
-        last_index = 0
+        successful_events = 0
         for index, event in enumerate(EventStreamer(
-                streamer=GNMCSVEventStreamer(self.file_path))):
+                streamer=GNMCSVEventStreamer(self.file_path, supported=alg.supported))):
             try:
                 distance = alg.add_event(event)[0]
+                successful_events += 1
             except EventNotSupportedException:
                 pass
-            last_index = index
         alg.finish_tree()
 
-        self.assertEqual(33605, last_index + 1)
+        self.assertEqual(18218, successful_events)
         self.assertEqual(distance[0], [0])
 
     def test_correct_order(self):
@@ -64,6 +64,7 @@ class TestGNMImporter(unittest.TestCase):
                 (index, last_tme, event.tme)
             )
             last_tme = event.tme
+        self.assertTrue(index > 0)
 
     def test_gnm_csv_event_streamer(self):
         # FIXME: I would expect also traffic to be streamed here...

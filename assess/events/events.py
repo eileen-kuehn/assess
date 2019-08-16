@@ -2,12 +2,20 @@
 Module implements the different kind of events that are supported in dynamic
 process trees.
 """
+from typing import List, Dict, Iterator, TypeVar, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from assess.prototypes.simpleprototypes import OrderedTreeNode
+
+E = TypeVar('E')
+E_co = TypeVar('E_co', bound='Event', contravariant=True)
 
 
 class Event(object):
     """
     Base event class that offers convenience methods to create single events.
     """
+    __slots__ = ("tme", "pid", "ppid", "value", "__dict__")
 
     def __init__(self, tme, pid, ppid, value=None, **kwargs):
         self.tme = tme
@@ -17,22 +25,22 @@ class Event(object):
         for key in kwargs.keys():
             self.__setattr__(key, kwargs[key])
 
-    @staticmethod
-    def from_tree(tree):
+    @classmethod
+    def from_node(cls: E, node: 'OrderedTreeNode') -> Iterator[E]:
+        return NotImplemented
+
+    @classmethod
+    def from_tree(cls, tree, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
         """
         Method that returns a event generator based on a given tree.
 
         :param tree: Tree the generator is based on
+        :param supported: Supported event types
         :return: Tree event generator
         """
-        for node in tree.nodes(depth_first=False):
-            # TODO: how to pass on complete dict?
-            yield ProcessStartEvent(
-                tme=node.tme,
-                pid=node.pid,
-                ppid=node.ppid,
-                name=node.name
-            )
+        # FIXME: exit events are send before the child nodes are processed
+        for node in tree.nodes(order_first=True):
+            yield from cls.events_from_node(node, supported)
 
     @staticmethod
     def start(tme, pid, ppid, **kwargs):
@@ -48,46 +56,16 @@ class Event(object):
         return ProcessStartEvent(tme, pid, ppid, **kwargs)
 
     @classmethod
-    def events_from_process(cls, process):
+    def events_from_node(cls, node, supported: Dict[E_co, bool] = None) -> Iterator[E_co]:
         """
-        Method that returns a available events for a given process.
+        Method that yields available events for a given node.
 
-        :param process: The process to create the events
-        :return: tuple of ProcessStartEvent and ProcessExitEvent
+        :param node: The node to create the events for
+        :return: yields supported event types
         """
-        process_dict = vars(process).copy()
-        process_exit_dict = vars(process).copy()
-        process_exit_dict["start_tme"] = process_exit_dict["tme"]
-        process_exit_dict["tme"] = process_exit_dict["exit_tme"]
-        process_exit_dict["value"] = process_exit_dict["tme"] - \
-            process_exit_dict["start_tme"]
-
-        if "pid" not in process_dict:
-            process_dict["pid"] = process_dict.get("node_id", None)
-            process_exit_dict["pid"] = process_dict.get("node_id", None)
-            if process_dict.get("_parent", None) is not None:
-                ppid = process_dict["_parent"].node_id
-                process_dict["ppid"] = ppid
-                process_exit_dict["ppid"] = ppid
-            else:
-                process_dict["ppid"] = None
-                process_exit_dict["ppid"] = None
-
-        # prepare traffic events
-        traffic_list = []
-        try:
-            for traffic in process.traffic:
-                if traffic.in_rate > 0:
-                    traffic_list.append(TrafficEvent(
-                        **cls.create_traffic(traffic, "in_rate", traffic.in_rate)))
-                if traffic.out_cnt > 0:
-                    traffic_list.append(TrafficEvent(
-                        **cls.create_traffic(traffic, "out_rate", traffic.out_rate)))
-        except AttributeError:
-            pass
-        return ProcessStartEvent(**process_dict), \
-            ProcessExitEvent(**process_exit_dict), \
-            traffic_list
+        for event_type in event_types:
+            if supported.get(event_type, False):
+                yield from event_type.from_node(node)
 
     @staticmethod
     def create_traffic(traffic, variant, value):
@@ -136,12 +114,14 @@ class Event(object):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "%s(tme=%.1f, pid=%s, ppid=%s, %s)" % (
+        return "%s(tme=%.1f, pid=%s, ppid=%s, value=%s, %s)" % (
             self.__class__.__name__,
             self.tme,
             self.pid,
             self.ppid,
-            ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self))
+            self.value,
+            ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self)
+                      if attr not in ("tme", "pid", "ppid"))
         )
 
 
@@ -158,8 +138,16 @@ class ProcessStartEvent(Event):
     Class that represents a start event.
     """
 
-    def __init__(self, tme, pid, ppid, **kwargs):
-        Event.__init__(self, tme, pid, ppid, **kwargs)
+    def __init__(self, tme, pid, ppid, value=0, **kwargs):
+        Event.__init__(self, tme, pid, ppid, value, **kwargs)
+
+    @classmethod
+    def from_node(cls, node):
+        event_dict = vars(node).copy()
+        if "pid" not in event_dict:
+            event_dict["pid"] = event_dict.node_id
+            event_dict["ppid"] = event_dict.parent.node_id
+        yield cls(**event_dict)
 
 
 class ProcessExitEvent(Event):
@@ -168,8 +156,8 @@ class ProcessExitEvent(Event):
     """
 
     def __init__(self, tme, pid, ppid, start_tme, value=None, **kwargs):
-        Event.__init__(self, tme, pid, ppid, start_tme=start_tme,
-                       value=value or (tme - start_tme), **kwargs)
+        Event.__init__(self, tme, pid, ppid, value=value or (tme - start_tme),
+                       start_tme=start_tme, **kwargs)
         self._start_tme = start_tme
 
     @property
@@ -190,6 +178,17 @@ class ProcessExitEvent(Event):
         """
         self._start_tme = value
 
+    @classmethod
+    def from_node(cls, node):
+        event_dict = vars(node).copy()
+        event_dict["value"] = event_dict["exit_tme"] - event_dict["tme"]
+        event_dict["start_tme"] = event_dict["tme"]
+        event_dict["tme"] = event_dict["exit_tme"]
+        if "pid" not in event_dict:
+            event_dict["pid"] = event_dict["node_id"]
+            event_dict["ppid"] = event_dict.parent["node_id"]
+        yield cls(**event_dict)
+
 
 class TrafficEvent(Event):
     """
@@ -198,3 +197,40 @@ class TrafficEvent(Event):
 
     def __init__(self, tme, pid, ppid, value, **kwargs):
         Event.__init__(self, tme, pid, ppid, value=value, **kwargs)
+
+    @classmethod
+    def from_node(cls, node):
+        try:
+            for traffic in node.traffic:
+                if traffic.in_rate > 0:
+                    yield cls(**super().create_traffic(
+                        traffic, "in_rate", traffic.in_rate))
+                if traffic.out_cnt > 0:
+                    yield cls(**super().create_traffic(
+                        traffic, "out_rate", traffic.out_rate))
+        except AttributeError:
+            pass
+
+
+class ParameterEvent(Event):
+    """
+    Class that represents any parameter event.
+    """
+    def __init__(self, tme, pid, ppid, name, value, **kwargs):
+        Event.__init__(self, tme, pid, ppid, value=value, name=name, **kwargs)
+
+    @classmethod
+    def from_node(cls, node):
+        parameters = node.parameters()
+        for parameter, values in parameters.items():
+            yield cls(
+                tme=getattr(values, "tme", node.tme),
+                pid=node.pid,
+                ppid=node.pid,
+                name=parameter,
+                value=values
+            )
+
+
+event_types: List[Event] = [ProcessStartEvent, TrafficEvent, ParameterEvent,
+                            ProcessExitEvent]

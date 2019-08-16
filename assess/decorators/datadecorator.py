@@ -22,6 +22,8 @@ class DataDecorator(Decorator):
         }
     }
     """
+    __slots__ = "_data"
+
     def __init__(self):
         Decorator.__init__(self, name="data")
         self._data = None

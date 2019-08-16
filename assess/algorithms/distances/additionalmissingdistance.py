@@ -9,13 +9,15 @@ class AdditionalMissingDistance(Distance):
     """
     Class approximates number of missing nodes to measure distance.
     """
+    __slots__ = ("_additional_nodes_dict", "_missing_nodes_dict")
+
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._additional_nodes_dict = None
         self._missing_nodes_dict = None
 
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         self._additional_nodes_dict = [{} for _ in range(self.signature_count)]
         self._missing_nodes_dict = [{} for _ in range(self.signature_count)]
         for prototype in prototypes:

@@ -8,7 +8,8 @@ from assess.algorithms.signatures.signatures import ParentChildByNameTopologySig
 from assess.prototypes.simpleprototypes import Prototype
 from assess.exceptions.exceptions import TreeInvalidatedException, NodeNotEmptyException
 from assess_tests.basedata import simple_prototype
-from assess.events.events import ProcessExitEvent, ProcessStartEvent
+from assess.events.events import ProcessExitEvent, ProcessStartEvent, Event, \
+    ParameterEvent
 
 
 class TestPrototypeFunctions(unittest.TestCase):
@@ -304,15 +305,18 @@ class TestPrototypeFunctions(unittest.TestCase):
         self.assertEqual(3, index.node_count())
         self.assertEqual(2, index.get_statistics(
             signature="muh_149160533",
-            key="duration",
+            key="value",
             event_type=ProcessExitEvent)._statistics[1].mean)
         self.assertEqual(0, index.get_statistics(
             signature="muh_149160533",
-            key="duration",
+            key="value",
             event_type=ProcessExitEvent).distance(2))
 
         index = prototype.to_index(
-            signature=ParentChildByNameTopologySignature(), exit_support=False)
+            signature=ParentChildByNameTopologySignature(), supported={
+                ProcessStartEvent: True,
+                ProcessExitEvent: False
+            })
         self.assertEqual(3, index.node_count())
         self.assertEqual(1, index.multiplicity(signature="root_1"))
         self.assertEqual(2, index.multiplicity(signature="test_149160533"))
@@ -326,7 +330,11 @@ class TestPrototypeFunctions(unittest.TestCase):
         one.add_node("one.two", pid=5, ppid=2, tme=2, exit_tme=2, traffic=[])
         root.add_node("two", pid=4, ppid=1, tme=1, exit_tme=2, traffic=[])
         finished = set()
-        for event in prototype.event_iter():
+        for event in prototype.event_iter(
+                supported={
+                    ProcessStartEvent: True,
+                    ProcessExitEvent: True
+                }):
             if isinstance(event, ProcessStartEvent):
                 self.assertTrue(
                     event.ppid not in finished,
@@ -347,8 +355,29 @@ class TestPrototypeFunctions(unittest.TestCase):
                  root.add_node("three", pid=6, ppid=2, tme=1, exit_tme=3)]
 
         index = 0
-        for event in prototype.event_iter():
+        for event in prototype.event_iter(supported={ProcessStartEvent: True}):
             if isinstance(event, ProcessStartEvent):
                 self.assertEquals(nodes[index].name, event.name)
                 index += 1
         self.assertEquals(index, len(nodes))
+
+    def test_parameter(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=1, test=2, muh=3, tme=3)
+        self.assertEqual({"test": 2, "muh": 3}, root.parameters())
+
+    def test_parameter_event_generation(self):
+        prototype = Prototype()
+        root = prototype.add_node("root", pid=1, ppid=0, test=2, muh=3, tme=3, exit_tme=3)
+        events = 0
+        matches = 0
+        for event in Event.events_from_node(root, supported={ParameterEvent: True}):
+            events += 1
+            if event.name == "test":
+                self.assertEqual(2, event.value)
+                matches += 1
+            if event.name == "muh":
+                self.assertEqual(3, event.value)
+                matches += 1
+        self.assertEqual(2, events)
+        self.assertEqual(2, matches)

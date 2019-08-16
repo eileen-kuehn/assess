@@ -3,7 +3,10 @@ Module deals with different handlings for distances. Those can easily be attache
 to algorithms to adjust calculated distance. Therefore different combinations
 become available and can easily be parameterised.
 """
-from assess.events.events import ProcessExitEvent, ProcessStartEvent, TrafficEvent
+from typing import Dict
+
+from assess.events.events import ProcessExitEvent, ProcessStartEvent, TrafficEvent, \
+    ParameterEvent, Event
 
 
 class Distance(object):
@@ -16,18 +19,22 @@ class Distance(object):
     The class itself can be used as an iterator returning the different distances
     it currently stores.
     """
-    def __init__(self, signature_count=1):
+    __slots__ = ("_monitoring_results_dict", "_measured_nodes", "_based_on_original",
+                 "signature_count", "supported")
+
+    def __init__(self, signature_count: int=1):
         """
         :param signature_count: The count of signatures that are processed
         """
         self._monitoring_results_dict = None
         self._measured_nodes = None
         self._based_on_original = False
-        self.signature_count = signature_count
-        self.supported = {
+        self.signature_count: int = signature_count
+        self.supported: Dict[Event, bool] = {
             ProcessStartEvent: True,
             ProcessExitEvent: True,
-            TrafficEvent: False
+            TrafficEvent: False,
+            ParameterEvent: False
         }
 
     def iter_on_prototypes(self, prototypes=None):

@@ -50,7 +50,7 @@ class TestEnsembleSignature(unittest.TestCase):
         algorithm.prototypes = [simple_prototype()]
 
         algorithm.start_tree()
-        for event in simple_monitoring_tree().event_iter():
+        for event in simple_monitoring_tree().event_iter(supported=algorithm.supported):
             try:
                 distance = algorithm.add_event(event)
             except EventNotSupportedException:
@@ -85,7 +85,7 @@ class TestEnsembleSignature(unittest.TestCase):
         algorithm.prototypes = [tree]
 
         algorithm.start_tree()
-        for event in disturbed_tree.event_iter():
+        for event in disturbed_tree.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -104,7 +104,7 @@ class TestEnsembleSignature(unittest.TestCase):
             decorator.wrap_algorithm(algorithm)
             algorithm.prototypes = [real_tree()]
             algorithm.start_tree()
-            for event in disturbed_tree.event_iter():
+            for event in disturbed_tree.event_iter(supported=algorithm.supported):
                 try:
                     algorithm.add_event(event)
                 except EventNotSupportedException:

@@ -47,14 +47,14 @@ class TestComplexExamples(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in tree_1.event_iter():
+        for event in tree_1.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
         algorithm.start_tree()
-        for event in tree_2.event_iter():
+        for event in tree_2.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -78,7 +78,7 @@ class TestComplexExamples(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in tree.event_iter():
+        for event in tree.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -106,14 +106,14 @@ class TestComplexExamples(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in tree_1.event_iter():
+        for event in tree_1.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
         algorithm.start_tree()
-        for event in tree_2.event_iter():
+        for event in tree_2.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
@@ -135,21 +135,15 @@ class TestComplexExamples(unittest.TestCase):
         signature = ParentChildByNameTopologySignature()
         tree_profiles = [tree_one.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics
         ), tree_two.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics
         ), tree_three.to_index(
             signature=signature,
-            start_support=distance.supported.get(ProcessStartEvent, False),
-            exit_support=distance.supported.get(ProcessExitEvent, False),
-            traffic_support=distance.supported.get(TrafficEvent, False),
+            supported=distance.supported,
             statistics_cls=SetStatistics)
         ]
         algorithm = IncrementalDistanceAlgorithm(
@@ -188,14 +182,14 @@ class TestComplexExamples(unittest.TestCase):
         decorator.wrap_algorithm(algorithm)
 
         algorithm.start_tree()
-        for event in tree_one.event_iter():
+        for event in tree_one.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:
                 pass
         algorithm.finish_tree()
         algorithm.start_tree()
-        for event in tree_two.event_iter():
+        for event in tree_two.event_iter(supported=algorithm.supported):
             try:
                 algorithm.add_event(event)
             except EventNotSupportedException:

@@ -5,14 +5,18 @@ The ObjectCache allows sorting values by a key and another value.
 import bisect
 import logging
 
+from typing import Dict, Any, Set
+
 from assess.exceptions.exceptions import DataNotInCacheException
 
 
 class ObjectCache(object):
+    __slots__ = ("_object_cache", "faulty_nodes", "unfound")
+
     def __init__(self):
-        self._object_cache = {}
-        self.faulty_nodes = set()
-        self.unfound = set()
+        self._object_cache: Dict[Any, Any] = {}
+        self.faulty_nodes: Set[Any] = set()
+        self.unfound: Set[Any] = set()
 
     def add_data(self, data=None, key=None, value=None,
                  key_function=lambda data: data.pid,

@@ -2,10 +2,13 @@
 Module implement the general TreeDistanceAlgorithm that is the base for working
 with dynamic trees whilst calculating distances.
 """
-from assess.prototypes.simpleprototypes import Tree
+from typing import Dict, List
+
+from assess.prototypes.simpleprototypes import Tree, Prototype
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
-from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent
+from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEvent, \
+    ParameterEvent, Event
 from assess.exceptions.exceptions import EventNotSupportedException, \
     TreeNotStartedException, DataNotInCacheException
 from assess.utility.objectcache import ObjectCache
@@ -23,7 +26,11 @@ class TreeDistanceAlgorithm(object):
     * _add_event, and
     * _update_distance
     """
-    def __init__(self, signature=None, cache_statistics=None):
+    __slots__ = ("_signature", "_cache_statistics", "_signature_prototypes",
+                 "_distance", "_prototypes", "_tree", "_tree_dict", "_event_counter",
+                 "supported", "_maxlen", "__dict__")
+
+    def __init__(self, signature: Signature = None, cache_statistics=None):
         if signature is None:
             signature = Signature()
         if not isinstance(signature, EnsembleSignature):
@@ -36,17 +43,18 @@ class TreeDistanceAlgorithm(object):
             statistics_cls=self._cache_statistics)
         self._distance = None
 
-        self._prototypes = []
-        self._tree = None
+        self._prototypes: List[Prototype] = []
+        self._tree: Tree = None
         self._tree_dict = ObjectCache()
 
-        self._event_counter = 0
-        self.supported = {
+        self._event_counter: int = 0
+        self.supported: Dict[Event, bool] = {
             ProcessStartEvent: True,
             ProcessExitEvent: False,
-            TrafficEvent: False
+            TrafficEvent: False,
+            ParameterEvent: False
         }
-        self._maxlen = None
+        self._maxlen: int = None
 
     @property
     def signature(self):
@@ -91,9 +99,7 @@ class TreeDistanceAlgorithm(object):
             # store links to nodes based on node_ids into dictionary
             prototype.to_prototype(
                 signature=self.signature,
-                start_support=self.supported[ProcessStartEvent],
-                exit_support=self.supported[ProcessExitEvent],
-                traffic_support=self.supported[TrafficEvent],
+                supported=self.supported,
                 cache=self._signature_prototypes
             )
         self._prototypes = value
@@ -277,20 +283,18 @@ class TreeDistanceAlgorithm(object):
         self._event_counter += 1
         if isinstance(event, ProcessStartEvent):
             if self.supported.get(ProcessStartEvent, False):
-                result = []
-                event.signature = []
                 # create node
-                node, parent = self.create_node(event, **kwargs)
-                signature = self.create_signature(node, parent)
+                node, parent = self._create_node(event, **kwargs)
+                signature = self._create_signature(node, parent)
                 # added to keep information related signature for event
-                event.signature.append(signature)
-                result.append(self.update_distance(event, signature, **kwargs))
+                event.signature = [signature]
+                result = [self.update_distance(event, signature, **kwargs)]
         elif isinstance(event, ProcessExitEvent):
             # finish node to take care on empty nodes
             result = []
             event.signature = []
-            node, parent = self.finish_node(event, **kwargs)
-            signatures = self.create_signature_for_finished_node(node)
+            node, parent = self._finish_node(event, **kwargs)
+            signatures = self._create_signature_for_finished_node(node)
             for signature in signatures:
                 if self.supported.get(ProcessStartEvent, False):
                     start_event = ProcessStartEvent(event.tme, 0, event.pid)
@@ -306,25 +310,31 @@ class TreeDistanceAlgorithm(object):
                     event.signature.append(signature)
 
             if self.supported.get(ProcessExitEvent, False):
-                signature = self.create_signature(node, parent)
+                signature = self._create_signature(node, parent)
                 # added to keep information related signature for event
                 event.signature.append(signature)
                 result.append(self.update_distance(event, signature, **kwargs))
         elif isinstance(event, TrafficEvent):
-            event.signature = []
             if self.supported.get(TrafficEvent, False):
-                result = []
-                # create or reuse node
-                node, parent = self.create_or_reuse_node(event, **kwargs)
-                signature = self.create_signature(node, parent)
-                # added to keep information related signature for event
-                event.signature.append(signature)
-                result.append(self.update_distance(event, signature, **kwargs))
+                result = self._process_parameter_event(event, **kwargs)
+            else:
+                raise EventNotSupportedException(event)
+        elif isinstance(event, ParameterEvent):
+            if self.supported.get(ParameterEvent, False):
+                result = self._process_parameter_event(event, **kwargs)
             else:
                 raise EventNotSupportedException(event)
         else:
             raise EventNotSupportedException(event)
         return result
+
+    def _process_parameter_event(self, event, **kwargs):
+        # create or reuse node
+        node, parent = self._create_or_reuse_node(event, **kwargs)
+        signature = self._create_signature(node, parent)
+        # added to keep information related signature for event
+        event.signature = [signature]
+        return [self.update_distance(event, signature, **kwargs)]
 
     def _node_count(self):
         return NotImplemented
@@ -349,7 +359,7 @@ class TreeDistanceAlgorithm(object):
         return [[prototype.node_count() for prototype in self._prototypes]
                 for _ in range(self._signature.count)]
 
-    def create_node(self, event, **kwargs):
+    def _create_node(self, event, **kwargs):
         """
         Method to create a new node in the monitoring tree based on event data
         that was received.
@@ -375,7 +385,7 @@ class TreeDistanceAlgorithm(object):
         self._tree_dict.add_data(data=node, key=event.pid, value=event.tme)
         return node, parent
 
-    def create_or_reuse_node(self, event, **kwargs):
+    def _create_or_reuse_node(self, event, **kwargs):
         """
         Method to create a new node or reuse an existing node in the monitoring
         tree based on event data that was received.
@@ -405,13 +415,13 @@ class TreeDistanceAlgorithm(object):
                     ppid=event.ppid
                 )
                 node.attribute = True
-                # nodes don't have to be remembered to be loaded from cache,
+                # attributes don't have to be remembered to be loaded from cache,
                 # so skip this
         except AttributeError:
             raise TreeNotStartedException()
         return node, parent
 
-    def finish_node(self, event, **kwargs):
+    def _finish_node(self, event, **kwargs):
         """
         Method that finishs a node based on exit event.
 
@@ -428,7 +438,7 @@ class TreeDistanceAlgorithm(object):
         node = self._tree_dict.get_data(value=event.tme, key=event.pid)
         return node, parent
 
-    def create_signature_for_finished_node(self, node):
+    def _create_signature_for_finished_node(self, node):
         """
         Method to create the signature for finished nodes (missing nodes for
         windowed signatures).
@@ -438,7 +448,7 @@ class TreeDistanceAlgorithm(object):
         """
         return self._signature.finish_node(node)
 
-    def create_signature(self, node, parent):
+    def _create_signature(self, node, parent):
         """
         Method to create the signature of a node whilst considering its parent.
 

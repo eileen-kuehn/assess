@@ -4,6 +4,8 @@ from assess.events.events import ProcessStartEvent, ProcessExitEvent, TrafficEve
 
 
 class StartDistance(Distance):
+    __slots__ = "_signature_cache"
+
     def __init__(self, **kwargs):
         Distance.__init__(self, **kwargs)
         self._based_on_original = True
@@ -15,7 +17,7 @@ class StartDistance(Distance):
         }
 
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         self._signature_cache = [SignatureCache(
             statistics_cls=signature_prototypes.statistics_cls,
             supported=self.supported
@@ -43,7 +45,7 @@ class StartDistance(Distance):
                     node_signature=signature,
                     value=value
                 )
-                self._signature_cache[index][signature, event_type] = {"count": 0}
+                self._signature_cache[index][signature, event_type] = {"value": value}
         return [match.keys() for match in matches]
 
     def node_count(self, prototypes=None, signature_prototypes=None, signature=False,
@@ -72,7 +74,7 @@ class StartDistance(Distance):
             if self._signature_cache[index].multiplicity(
                     signature=node_signature,
                     event_type=ProcessStartEvent
-            ) < prototype_nodes[prototype_node][ProcessStartEvent]["count"].count():
+            ) < prototype_nodes[prototype_node][ProcessStartEvent]["value"].count():
                 result_dict[prototype_node] = -1
         # add local node distance to global tree distance
         self._monitoring_results_dict = self._add_result_dicts(
