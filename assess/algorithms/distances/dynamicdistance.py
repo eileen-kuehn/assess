@@ -26,7 +26,7 @@ class DynamicDistance(Distance):
                                       self._monitoring_results_dict.copy())
 
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         self._wrapped_distance.init_distance(prototypes, signature_prototypes)
         self._order_cache = [{} for _ in range(self.signature_count)]
         self._last_signatures = [deque(maxlen=self._max_count)] * self.signature_count

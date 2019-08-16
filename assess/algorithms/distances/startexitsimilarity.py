@@ -21,7 +21,7 @@ class StartExitSimilarity(Distance):
         self._signature_cache = None
 
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         self._signature_cache = [SignatureCache(
             statistics_cls=signature_prototypes.statistics_cls,
             supported=self.supported

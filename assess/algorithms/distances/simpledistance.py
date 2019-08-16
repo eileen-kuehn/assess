@@ -21,7 +21,7 @@ class SimpleDistance(Distance):
     * Recursive version: Too long ;)
     """
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         for prototype in prototypes:
             node_count = signature_prototypes.node_count(prototype=prototype)
             for index in range(self.signature_count):
@@ -66,7 +66,7 @@ class SimpleDistance2(Distance):
     Implementation of SimpleDistance starting with an initial distance of 0.
     """
     def init_distance(self, prototypes, signature_prototypes):
-        Distance.init_distance(self, prototypes, signature_prototypes)
+        super().init_distance(prototypes, signature_prototypes)
         for prototype in prototypes:
             for index in range(self.signature_count):
                 self._monitoring_results_dict[index][prototype] = 0
