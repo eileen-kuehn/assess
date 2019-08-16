@@ -223,7 +223,7 @@ class ParameterEvent(Event):
         parameters = node.parameters()
         for parameter, values in parameters.items():
             yield cls(
-                tme=values.tme if hasattr(values, "tme") else node.tme,
+                tme=getattr(values, "tme", node.tme),
                 pid=node.pid,
                 ppid=node.pid,
                 name=parameter,
