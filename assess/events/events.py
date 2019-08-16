@@ -113,11 +113,12 @@ class Event(object):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return "%s(tme=%.1f, pid=%s, ppid=%s, %s)" % (
+        return "%s(tme=%.1f, pid=%s, ppid=%s, value=%s, %s)" % (
             self.__class__.__name__,
             self.tme,
             self.pid,
             self.ppid,
+            self.value,
             ', '.join("%s=%r" % (attr, getattr(self, attr)) for attr in vars(self)
                       if attr not in ("tme", "pid", "ppid"))
         )
