@@ -21,7 +21,7 @@ if __name__ == '__main__':
         packages=setuptools.find_packages(),
         dependency_links=[
             'git+ssh://git@github.com:MaineKuehn/dengraph.git#egg=dengraph',
-            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git#egg=treedistancegenerator'
+            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git#egg=treedistancegenerator-0.1'
         ],
         install_requires=["zss", 'dengraph', 'treedistancegenerator', 'filelock'],
         extras_require={
