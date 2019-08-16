@@ -321,7 +321,7 @@ class TreeDistanceAlgorithm(object):
                 raise EventNotSupportedException(event)
         elif isinstance(event, ParameterEvent):
             if self.supported.get(ParameterEvent, False):
-                result = self._process_parameter_event(event, **Kwargs)
+                result = self._process_parameter_event(event, **kwargs)
             else:
                 raise EventNotSupportedException(event)
         else:

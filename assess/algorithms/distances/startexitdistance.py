@@ -5,7 +5,7 @@ trees based on their start and exit events.
 
 from assess.algorithms.distances.distance import Distance
 from assess.algorithms.signatures.signaturecache import SignatureCache
-from assess.events.events import ProcessStartEvent, TrafficEvent
+from assess.events.events import ProcessStartEvent, TrafficEvent, ParameterEvent
 
 
 class StartExitDistance(Distance):
@@ -82,7 +82,7 @@ class StartExitDistance(Distance):
                     value=value
                 )
                 if event_type == ProcessStartEvent:
-                    self._signature_cache[index][signature, ProcessStartEvent] = \
+                    self._signature_cache[index][signature, event_type] = \
                         {"value": value}
                 else:
                     self._signature_cache[index][signature, event_type] = \
@@ -112,7 +112,7 @@ class StartExitDistance(Distance):
         if self._cached_weights is None:
             self._cached_weights = {}
             for support_key in self.supported:
-                if support_key == TrafficEvent:
+                if support_key == TrafficEvent or support_key == ParameterEvent:
                     factor = 1.0
                 else:
                     factor = 2.0
