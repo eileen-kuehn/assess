@@ -46,8 +46,6 @@ class IncrementalDistanceAlgorithm(TreeDistanceAlgorithm):
         # initialise distance
         self.distance
         TreeDistanceAlgorithm.prototypes.__set__(self, value)
-        self.distance.init_distance(prototypes=self.prototypes,
-                                    signature_prototypes=self.signature_prototypes)
 
     def start_tree(self, **kwargs):
         TreeDistanceAlgorithm.start_tree(self, **kwargs)
