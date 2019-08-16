@@ -38,7 +38,8 @@ class Event(object):
         :param supported: Supported event types
         :return: Tree event generator
         """
-        for node in tree.nodes(depth_first=False):
+        # FIXME: exit events are send before the child nodes are processed
+        for node in tree.nodes(order_first=True):
             yield from cls.events_from_node(node, supported)
 
     @staticmethod

@@ -75,3 +75,29 @@ class TestEventFunctionality(unittest.TestCase):
         }):
             event_count += 1
         self.assertEqual(21, event_count)
+
+    def test_event_order(self):
+        tree = Prototype()
+        root = tree.add_node("root", pid=1, ppid=0, tme=0, exit_tme=0, param=2)
+        for i in range(5):
+            root.add_node("child_%d" % i, pid=i + 2, ppid=1, tme=0, exit_tme=0,
+                          param=i * 2)
+        child = next(root.children())
+        child.add_node("child", pid=8, ppid=child.pid, tme=0, exit_tme=0, param=5)
+
+        nodes = []
+        for event in tree.event_iter(supported={
+            ProcessStartEvent: True,
+            ProcessExitEvent: True,
+            ParameterEvent: True
+        }):
+            print(event)
+            if type(event) == ProcessStartEvent:
+                if event.ppid != 0:
+                    self.assertTrue(event.ppid in nodes)
+                nodes.append(event.pid)
+            elif type(event) == ProcessExitEvent:
+                self.assertTrue(event.pid in nodes)
+                nodes.remove(event.pid)
+            elif type(event) == ParameterEvent:
+                self.assertTrue(event.pid in nodes)

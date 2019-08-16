@@ -3,6 +3,7 @@ Module describes a general tree as well as a more specialised prototype. Also
 the definition for the single nodes is defined.
 """
 import bisect
+from collections import deque
 
 from assess.algorithms.signatures.signatures import Signature
 from assess.algorithms.signatures.ensemblesignature import EnsembleSignature
@@ -700,8 +701,8 @@ class Prototype(Tree):
             }
 
     def event_iter(self, include_marker=True, supported=None):
-        exit_event_queue = []  # (-tme, #events, event); rightmost popped FIRST
-        event_count = 0  # used to push parent events at same tme to the left
+        exit_event_queue = deque()  # (tme, -#events, event); leftmost popped FIRST
+        event_count = 0
 
         for node in self.node_iter(include_marker=include_marker):
             try:
@@ -714,8 +715,8 @@ class Prototype(Tree):
                 continue
 
             # yield any exit events that should have happened so far
-            while exit_event_queue and exit_event_queue[-1][0] > -now:
-                yield exit_event_queue.pop()[2]
+            while exit_event_queue and exit_event_queue[0][0] < now:
+                yield exit_event_queue.popleft()[2]
 
             existing_parameter_nodes = {}
             for event in Event.events_from_node(node, supported=supported):
@@ -735,15 +736,16 @@ class Prototype(Tree):
                         current_node = existing_parameter_nodes[event.name]
                         current_node._parent = node
                     event.node = current_node
+                    if event.tme <= now:
+                        yield event
+                        continue
                 try:
-                    # TODO: before, the exit event was inserted before the actual
-                    # traffic and parameter events, does this matter?
                     bisect.insort_right(
-                        exit_event_queue, (-event.tme, event_count, event))
+                        exit_event_queue, (event.tme, -event_count, event))
                 except AttributeError:
                     pass
         while exit_event_queue:
-            yield exit_event_queue.pop()[2]
+            yield exit_event_queue.popleft()[2]
 
     def node_iter(self, include_marker=False):
         return self.nodes(order_first=True, include_marker=include_marker)
