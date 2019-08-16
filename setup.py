@@ -20,8 +20,8 @@ if __name__ == '__main__':
         url="https://bitbucket.org/teamkseta/assess",
         packages=setuptools.find_packages(),
         dependency_links=[
-            'git+ssh://git@github.com:MaineKuehn/dengraph.git',
-            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git'
+            'git+ssh://git@github.com:MaineKuehn/dengraph.git#egg=dengraph',
+            'git+ssh://git@github.com:eileen-kuehn/treedistancegenerator.git#egg=treedistancegenerator'
         ],
         install_requires=["zss", 'dengraph', 'treedistancegenerator', 'filelock'],
         extras_require={
